@@ -3,7 +3,7 @@
 Hackathon project repository.
 
 ## Team
-Ien, Chandler, Eric.
+Ian, Chandler, Eric.
 
 ## Getting started
 TBD during the hackathon.
