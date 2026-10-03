@@ -7,7 +7,7 @@
 TBD (fill in at the start of the hackathon).
 
 ## Team
-Ien, Chandler, Eric. Roles and lanes: TBD.
+Ian, Chandler, Eric. Roles and lanes: TBD.
 
 ## Ground rules (hackathon)
 - Core feature before wow feature. Stretch items are cut without debate when behind.
@@ -21,7 +21,21 @@ Ien, Chandler, Eric. Roles and lanes: TBD.
 TBD.
 
 ## Repo layout
-TBD.
+```
+frontend/   UI app
+backend/    API services
+ml/         models, training, evaluation, notebooks
+shared/     cross-lane contracts (schemas, types, constants)
+scripts/    setup, dev and deploy helpers
+docs/       design docs and notes
+data/       local datasets (gitignored contents)
+```
+Each lane works inside its own folder. Anything two lanes depend on goes in `shared/`.
+
+## Branches
+- `main`: base branch.
+- `dev`: integration branch. Day-to-day work lands here (feature branches off `dev`, merge back to `dev`).
+- `prod`: deployed branch. Only merge `dev` into `prod` when the demo path passes the smoke test.
 
 ## Commands
 TBD (add setup, run and test commands as the project takes shape).

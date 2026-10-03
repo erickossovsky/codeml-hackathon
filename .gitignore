@@ -22,7 +22,8 @@ node_modules/
 dist/
 
 # Data and models (regenerate or share out of band)
-data/
+data/*
+!data/.gitkeep
 models/
 *.parquet
 *.sqlite
