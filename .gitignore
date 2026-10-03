@@ -1,0 +1,32 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+.next/
+dist/
+
+# Data and models (regenerate or share out of band)
+data/
+models/
+*.parquet
+*.sqlite
+*.db
+
+# Claude Code local-only
+.claude/settings.local.json
