@@ -69,3 +69,22 @@ def test_second_pass_binds_leftovers_with_penalised_margin():
     bound = bind_blocks([(100 + 150, 100.0), (400, 120.0)], outlines)
     assert [b.col for b in bound] == ["1", "2"]
     assert bound[0].second_pass and not bound[1].second_pass
+
+
+def test_off_grid_columns_are_found_by_a_relaxed_pass_with_low_confidence():
+    on = [shape(1352, 100), shape(1400, 200), shape(1220, 100)]
+    off = shape(1352 - 24, 200)  # a standard-size column 24 pt beside its gridline
+    strict = find_outlines([*on, off], GRID, 14.0)
+    assert ("L", "4") not in strict
+    relaxed = find_outlines([*on, off], GRID, 14.0, relaxed_tol=30.0)
+    assert ("L", "4") in relaxed and relaxed[("L", "4")].grid_conf <= 0.6
+    assert relaxed[("K", "4")].grid_conf == 1.0  # exact ones are untouched
+
+
+def test_relaxed_pass_ignores_shapes_of_another_size_and_taken_cells():
+    on = [shape(1352, 100), shape(1400, 200), shape(1220, 100)]
+    wall = shape(1376, 200, w=46, h=129)
+    dup = shape(1352 + 20, 100)  # same cell as an exact outline
+    out = find_outlines([*on, wall, dup], GRID, 14.0, relaxed_tol=30.0)
+    assert set(out) == {("K", "4"), ("L", "3.4"), ("K", "5")}
+    assert out[("K", "4")].shape.cx == 1352

@@ -81,13 +81,27 @@ def assemble_blocks(
     return blocks
 
 
+def _relaxed_tol(scale: PageScale, config: Config) -> float:
+    """Relaxed snap distance, never beyond half the closest gridline spacing (past that, the
+    nearest line is no longer a meaningful answer)."""
+    spacings = [s for s in (scale.row_spacing, scale.col_spacing) if s]
+    cap = 0.5 * min(spacings) if spacings else scale.snap_tol
+    return min(config.outline_relaxed_snap * scale.snap_tol, cap)
+
+
 def extract_plan_columns(
     page: PageData, level: str, grid: Grid | None, config: Config = DEFAULT_CONFIG
 ) -> list[ElementExt]:
     scale = calibrate(page.words, grid, config)
     blocks = assemble_blocks(page, config, scale)
     outlines = (
-        find_outlines(page.shapes, grid, scale.snap_tol, config.outline_size_tolerance)
+        find_outlines(
+            page.shapes,
+            grid,
+            scale.snap_tol,
+            config.outline_size_tolerance,
+            relaxed_tol=_relaxed_tol(scale, config),
+        )
         if grid
         else {}
     )

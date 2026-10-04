@@ -68,6 +68,7 @@ class Config:
     grid_align_word_heights: float = 0.6  # labels on one axis line up within this distance
     grid_min_labels: int = 4
     outline_size_tolerance: float = 1.0  # reject shapes more than 2x the typical outline size
+    outline_relaxed_snap: float = 3.0  # off-grid columns: second snap pass at this x snap_tol
     # ---- OCR (only for pages without a text layer)
     ocr_dpi: int = 200
     ocr_tile_px: int = 2000

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
@@ -25,6 +25,7 @@ MIN_MODE_COUNT = 3
 MODE_BIN_FRACTION = 0.1  # offset bins are a tenth of the binding radius
 SECOND_PASS_RADIUS = 1.67  # second pass looks this many times further
 SECOND_PASS_MARGIN_FACTOR = 0.5
+RELAXED_CONF_CAP = 0.6  # an off-grid column never scores as firmly placed (< trust threshold)
 
 
 @dataclass(frozen=True)
@@ -46,28 +47,62 @@ class Binding:
 
 
 def find_outlines(
-    shapes: list[Shape], grid: Grid, tol: float, size_tolerance: float = 0.4
+    shapes: list[Shape],
+    grid: Grid,
+    tol: float,
+    size_tolerance: float = 0.4,
+    relaxed_tol: float | None = None,
 ) -> dict[tuple[str, str], Outline]:
     """Small closed shapes whose centre snaps to a grid intersection; one per cell.
 
     Column outlines share one size on a sheet, so the size is learned from the data: shapes far
     from the most common snapped size (within `size_tolerance`) are dropped. No fixed point sizes.
+
+    Columns are sometimes drawn beside their gridline. With `relaxed_tol`, a second pass snaps
+    shapes of the learned size that missed the strict tolerance, but only into cells that no exact
+    outline took. They carry the (low) grid confidence of an ambiguous snap, so they surface as
+    needs-review rather than as firm cells.
     """
-    snapped: list[tuple[Shape, str, str, float]] = []
-    for s in shapes:
-        hit = grid.snap(s.cx, s.cy, tol)
-        if hit is not None:
-            snapped.append((s, hit[0], hit[1], hit[2]))
+    snapped = _snap_all(shapes, grid, tol)
+    size_ok = None
     if len(snapped) >= MIN_SNAPPED_FOR_MODE:
         step = _size_step(snapped)
         keys = Counter(_size_key(s, step) for s, *_ in snapped)
         lo, hi = sorted(keys.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
-        snapped = [
+
+        def size_ok(s: Shape) -> bool:
+            return (
+                abs(min(s.w, s.h) - lo) <= size_tolerance * lo
+                and abs(max(s.w, s.h) - hi) <= size_tolerance * hi
+            )
+
+        snapped = [t for t in snapped if size_ok(t[0])]
+    best = _closest_per_cell(grid, snapped)
+    if relaxed_tol is not None and relaxed_tol > tol and size_ok is not None:
+        taken = {id(o.shape) for _, o in best.values()}
+        extra = [
             t
-            for t in snapped
-            if abs(min(t[0].w, t[0].h) - lo) <= size_tolerance * lo
-            and abs(max(t[0].w, t[0].h) - hi) <= size_tolerance * hi
+            for t in _snap_all(shapes, grid, relaxed_tol)
+            if id(t[0]) not in taken and size_ok(t[0]) and (t[1], t[2]) not in best
         ]
+        for cell, (dist, outline) in _closest_per_cell(grid, extra).items():
+            capped = replace(outline, grid_conf=min(outline.grid_conf, RELAXED_CONF_CAP))
+            best[cell] = (dist, capped)
+    return {k: v[1] for k, v in sorted(best.items())}
+
+
+def _snap_all(shapes: list[Shape], grid: Grid, tol: float) -> list[tuple[Shape, str, str, float]]:
+    out: list[tuple[Shape, str, str, float]] = []
+    for s in shapes:
+        hit = grid.snap(s.cx, s.cy, tol)
+        if hit is not None:
+            out.append((s, hit[0], hit[1], hit[2]))
+    return out
+
+
+def _closest_per_cell(
+    grid: Grid, snapped: list[tuple[Shape, str, str, float]]
+) -> dict[tuple[str, str], tuple[float, Outline]]:
     best: dict[tuple[str, str], tuple[float, Outline]] = {}
     for s, row, col, conf in snapped:
         gx, gy = grid.center(row, col)
@@ -76,7 +111,7 @@ def find_outlines(
         rank = (dist, s.cx, s.cy)
         if key not in best or rank < (best[key][0], best[key][1].shape.cx, best[key][1].shape.cy):
             best[key] = (dist, Outline(row, col, s, conf))
-    return {k: v[1] for k, v in sorted(best.items())}
+    return best
 
 
 def _size_step(snapped: list[tuple[Shape, str, str, float]]) -> float:
