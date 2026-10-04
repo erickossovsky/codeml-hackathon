@@ -60,7 +60,8 @@ def build(meta: Path) -> str:
     matched = sum(1 for p in pairs if p.plan and p.shop)
     bound_plan = sum(1 for e in plan if e.match_key.row is not None and e.match_key.col is not None)
     out += [
-        f"- plan elements with a grid cell: {bound_plan}/{len(plan)} ({pct(bound_plan, len(plan))})",
+        f"- plan elements with a grid cell: {bound_plan}/{len(plan)} "
+        f"({pct(bound_plan, len(plan))})",
         f"- plan elements matched to a shop element: {matched}/{len(plan)} "
         f"({pct(matched, len(plan))})",
         f"- shop elements unmatched (`added` candidates): "
