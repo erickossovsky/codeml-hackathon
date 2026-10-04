@@ -63,13 +63,19 @@ def _grid_of(grid, x: float, y: float) -> dict | None:
 
 def _page_title(words: list[Word], h: float) -> str | None:
     """Text after a title-block label (`Titre`, `Title`): the run to its right, else just below."""
-    labels = [w for w in words if w.text.strip(" :.").upper() in {"TITRE", "TITLE", "DESSIN", "DRAWING"}]
+    labels = [
+        w for w in words if w.text.strip(" :.").upper() in {"TITRE", "TITLE", "DESSIN", "DRAWING"}
+    ]
     runs = text_runs(words, gap=3 * h)
     for lab in sorted(labels, key=lambda w: -w.y0):
         cands = [
             r
             for r in runs
-            if r.x1 > lab.x1 and r.y0 >= lab.y0 - h and r.y0 <= lab.y1 + 6 * h and r.x0 >= lab.x0 and len(r.text) > 3
+            if r.x1 > lab.x1
+            and r.y0 >= lab.y0 - h
+            and r.y0 <= lab.y1 + 6 * h
+            and r.x0 >= lab.x0
+            and len(r.text) > 3
         ]
         cands = [r for r in cands if r.text.strip(" :.").upper() not in {"TITRE", "TITLE"}]
         if cands:
@@ -104,7 +110,13 @@ def extract_page(
     runs = text_runs(page.words, gap=1.6 * h) if page.words else []
     titles = ctx.find_titles(runs, h) if runs else []
     summary["titles"] = [
-        {"text": t.text, "x": round(t.x, 1), "y": round(t.y, 1), "level": t.level, "kind_hint": t.kind}
+        {
+            "text": t.text,
+            "x": round(t.x, 1),
+            "y": round(t.y, 1),
+            "level": t.level,
+            "kind_hint": t.kind,
+        }
         for t in titles
     ]
     summary["page_title"] = _page_title(page.words, h) if page.words else None
@@ -134,7 +146,9 @@ def extract_page(
         drawings = dr.vector_drawings(vec, h, page.width, page.height)
     else:
         drawings = dr.raster_drawings(pdf_page, h)
-    summary["drawing_method"] = drawings[0]["method"] if drawings else ("vector" if vector_items else "none")
+    summary["drawing_method"] = (
+        drawings[0]["method"] if drawings else ("vector" if vector_items else "none")
+    )
     for k, d in enumerate(drawings, 1):
         d["id"] = f"p{n}d{k}"
         bb = d["bbox"]
@@ -149,7 +163,9 @@ def extract_page(
     rest_words, _ = tb.assign_words(tables, page.words)
     texts: list[dict[str, Any]] = []
     for t in tables:
-        result["tables"].append({"id": f"p{n}{t.id}", "bbox": t.bbox, "rows": len(t.ys) - 1, "cols": len(t.xs) - 1})
+        result["tables"].append(
+            {"id": f"p{n}{t.id}", "bbox": t.bbox, "rows": len(t.ys) - 1, "cols": len(t.xs) - 1}
+        )
         grid_text = {c: tb.cell_text(ws) for c, ws in t.cells.items()}
         for (i, j), words in sorted(t.cells.items()):
             lines = grid_text[(i, j)]
@@ -204,7 +220,12 @@ def extract_page(
         t["facts"] = _facts(t["lines"])
         gp = _grid_of(grid, t["x"], t["y"])
         if gp:
-            t["grid"] = {"cell": gp["cell"], "row": gp["row"], "col": gp["col"], "inside_grid": gp["inside_grid"]}
+            t["grid"] = {
+                "cell": gp["cell"],
+                "row": gp["row"],
+                "col": gp["col"],
+                "inside_grid": gp["inside_grid"],
+            }
         title = ctx.nearest_title(titles, t["x"], t["y"])
         if title:
             t["drawing_title"] = title.text
@@ -230,7 +251,12 @@ def _page_task(args: tuple) -> tuple[str, int, dict[str, Any]]:
     with pymupdf.open(pdf) as doc:
         pdf_page = doc[index]
         data, vec = pageread.read_page(
-            pdf_page, rel, index + 1, config, words=words, source="ocr" if words is not None else "native"
+            pdf_page,
+            rel,
+            index + 1,
+            config,
+            words=words,
+            source="ocr" if words is not None else "native",
         )
         if words is not None:
             data.layer = pageread.layer_of(pdf_page, vec_paths=data.n_paths, config=config)
@@ -284,7 +310,8 @@ def extract_many(
     else:
         results = [_page_task(t) for t in tasks]
     out: dict[str, dict[str, Any]] = {
-        rel: {"file": metas[rel], "pages": [], "texts": [], "drawings": [], "tables": []} for _, rel in items
+        rel: {"file": metas[rel], "pages": [], "texts": [], "drawings": [], "tables": []}
+        for _, rel in items
     }
     for rel, _, res in results:
         o = out[rel]
@@ -305,4 +332,6 @@ def extract_pdf(
     workers: int = 1,
     ocr_cache: Path | None = None,
 ) -> dict[str, Any]:
-    return extract_many([(pdf, rel)], ocr=ocr, config=config, pages=pages, workers=workers, ocr_cache=ocr_cache)[rel]
+    return extract_many(
+        [(pdf, rel)], ocr=ocr, config=config, pages=pages, workers=workers, ocr_cache=ocr_cache
+    )[rel]

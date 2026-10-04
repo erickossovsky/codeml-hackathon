@@ -20,7 +20,9 @@ from l2c.free.vectors import Vectors, read_vectors
 from l2c.ingest.pages import PageData
 
 MIN_WORDS = 10
-_SECONDARY_LINE = re.compile(r"^\s*(\d{1,3})\s+((?:[A-Za-z]{1,4}\.\s?){1,3})\s*$")  # `6 r.b.`: a quantity and a short abbreviation
+_SECONDARY_LINE = re.compile(
+    r"^\s*(\d{1,3})\s+((?:[A-Za-z]{1,4}\.\s?){1,3})\s*$"
+)  # `6 r.b.`: a quantity and a short abbreviation
 
 
 def entries(lines: list[str]) -> tuple[list[dict], list[dict], list[dict]]:
@@ -30,7 +32,12 @@ def entries(lines: list[str]) -> tuple[list[dict], list[dict], list[dict]]:
     descs: list[dict] = []
     for line in lines:
         sec = _SECONDARY_LINE.match(line)
-        if sec and bars and bars[-1].get("secondary_count") is None and bars[-1].get("count") is not None:
+        if (
+            sec
+            and bars
+            and bars[-1].get("secondary_count") is None
+            and bars[-1].get("count") is not None
+        ):
             # a lone `quantity abbreviation` line under a bar group is that group's second quantity
             bars[-1]["secondary_count"] = int(sec.group(1))
             bars[-1]["secondary_unit"] = sec.group(2).strip()
@@ -76,7 +83,13 @@ def read_page(
     runs = text_runs(page.words, gap=1.6 * h)
     titles = ctx.find_titles(runs, h)
     summary.drawings = [
-        {"title": t.text, "x": round(t.x, 1), "y": round(t.y, 1), "level": t.level, "kind_hint": t.kind}
+        {
+            "title": t.text,
+            "x": round(t.x, 1),
+            "y": round(t.y, 1),
+            "level": t.level,
+            "kind_hint": t.kind,
+        }
         for t in titles
     ]
     summary.scale_text = ctx.find_scales(runs)

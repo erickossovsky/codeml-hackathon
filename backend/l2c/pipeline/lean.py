@@ -28,8 +28,8 @@ from l2c.extract.config import DEFAULT_CONFIG, Config
 from l2c.extract.grid import fit_grid
 from l2c.extract.runs import text_runs
 from l2c.free import context as ctx
-from l2c.free.layout import make_blocks, text_height
 from l2c.free.facts import parse_line
+from l2c.free.layout import make_blocks, text_height
 from l2c.free.reader import entries
 from l2c.ingest.pages import PageData, Word
 from l2c.llm import prompts as P
@@ -42,7 +42,9 @@ STRIP_LABEL = re.compile(r"^([A-Z]{1,2}(?:\.\d)?'?)-(\d{1,2}(?:\.\d)?)$")
 MIN_STRIP_LABELS = 3
 AMBIGUOUS_RATIO = 1.3  # a second candidate this close to the first makes a question
 DETAIL_MAX_TEXTS = 40
-NOISE = re.compile(r"^(?:[A-Z]{1,2}(?:\.\d)?'?|\d{1,3}(?:\.\d)?|[-–—•.])$")  # lone grid letters, numbers
+NOISE = re.compile(
+    r"^(?:[A-Z]{1,2}(?:\.\d)?'?|\d{1,3}(?:\.\d)?|[-–—•.])$"
+)  # lone grid letters, numbers
 
 
 ALT_LOW, ALT_HIGH = 0.2, 0.8  # a note this far between two gridlines may belong to either
@@ -118,7 +120,9 @@ def _kind_by_line(lines: list[str]) -> tuple[str | None, list[str]]:
     return None, []
 
 
-def _schedules(runs: list, h: float, words: list) -> tuple[dict[str, dict], list[tuple[float, float, float, float]]]:
+def _schedules(
+    runs: list, h: float, words: list
+) -> tuple[dict[str, dict], list[tuple[float, float, float, float]]]:
     """Rows of a schedule keyed by a type code (`TYPE D | 8'-0" | ... | 7-20M | 7-20M`). Each cell is
     read with the column header above it as its label. Returns code -> facts, and the table regions."""
     keys = [r for r in runs if KEY_RUN.match(r.text)]
@@ -126,7 +130,14 @@ def _schedules(runs: list, h: float, words: list) -> tuple[dict[str, dict], list
     regions: list[tuple[float, float, float, float]] = []
     for k in keys:
         code = KEY_RUN.match(k.text).group(1).upper()
-        cells = sorted((r for r in runs if r is not k and abs(r.cy - k.cy) <= 0.6 * h and k.x1 < r.x0 < k.x1 + 80 * h), key=lambda r: r.x0)
+        cells = sorted(
+            (
+                r
+                for r in runs
+                if r is not k and abs(r.cy - k.cy) <= 0.6 * h and k.x1 < r.x0 < k.x1 + 80 * h
+            ),
+            key=lambda r: r.x0,
+        )
         if not cells:
             continue
         bars, chars, descs = [], [], []
@@ -135,8 +146,12 @@ def _schedules(runs: list, h: float, words: list) -> tuple[dict[str, dict], list
             # the column header: on the nearest line above that is not another schedule row, the words
             # that sit over this column (a header row is often printed as one long run)
             cand = [
-                w for w in words
-                if w.y1 <= k.y0 and k.y0 - w.y1 <= 15 * h and w.x1 >= c.x0 - h and w.x0 <= c.x1 + h
+                w
+                for w in words
+                if w.y1 <= k.y0
+                and k.y0 - w.y1 <= 15 * h
+                and w.x1 >= c.x0 - h
+                and w.x0 <= c.x1 + h
                 and not any(abs(w.cy - kk.cy) <= 0.6 * h for kk in keys)
             ]
             header = None
@@ -145,7 +160,12 @@ def _schedules(runs: list, h: float, words: list) -> tuple[dict[str, dict], list
                 # a header word belongs to the column whose centre it is nearest
                 centres = [cc.cx for cc in cells]
                 line = sorted(
-                    (w for w in cand if abs(w.y1 - top) <= 0.6 * h and min(centres, key=lambda x: abs(x - w.cx)) == c.cx),
+                    (
+                        w
+                        for w in cand
+                        if abs(w.y1 - top) <= 0.6 * h
+                        and min(centres, key=lambda x: abs(x - w.cx)) == c.cx
+                    ),
                     key=lambda w: w.x0,
                 )
                 header = " ".join(w.text for w in line) or None
@@ -155,9 +175,20 @@ def _schedules(runs: list, h: float, words: list) -> tuple[dict[str, dict], list
             bars += parsed["bars"]
             chars += parsed["characteristics"]
             if parsed["rest"]:
-                chars.append({"name": (header or "value").lower().strip(" .:"), "value": parsed["rest"], "source_text": c.text})
+                chars.append(
+                    {
+                        "name": (header or "value").lower().strip(" .:"),
+                        "value": parsed["rest"],
+                        "source_text": c.text,
+                    }
+                )
         if bars or chars:
-            out[code] = {"bars": bars, "characteristics": chars, "descriptions": descs, "key": k.text.strip()}
+            out[code] = {
+                "bars": bars,
+                "characteristics": chars,
+                "descriptions": descs,
+                "key": k.text.strip(),
+            }
             regions.append((x0 - h, y0 - h, x1 + h, y1 + h))
     return out, regions
 
@@ -173,7 +204,14 @@ def _strip_labels(blocks: list, facts_of: dict) -> list[dict]:
         lines = b.lines
         if len(lines) == 1 and STRIP_LABEL.match(lines[0].strip()) and not facts_of[id(b)]["bars"]:
             t = b.text_bbox
-            out.append({"cell": lines[0].strip(), "x": (t.x0 + t.x1) / 2, "y": (t.y0 + t.y1) / 2, "block": b})
+            out.append(
+                {
+                    "cell": lines[0].strip(),
+                    "x": (t.x0 + t.x1) / 2,
+                    "y": (t.y0 + t.y1) / 2,
+                    "block": b,
+                }
+            )
     return out
 
 
@@ -207,21 +245,32 @@ def read_page_blocks(
         return {"summary": summary, "blocks": []}
     h = text_height(words)
     runs = text_runs(words, gap=1.6 * h)
-    titles = [t for t in ctx.find_titles(runs, h) if "REVISION" not in ctx.plain(t.text) and "CHELLE" not in ctx.plain(t.text)[:8]]
+    titles = [
+        t
+        for t in ctx.find_titles(runs, h)
+        if "REVISION" not in ctx.plain(t.text) and "CHELLE" not in ctx.plain(t.text)[:8]
+    ]
     summary["text_height"] = round(h, 2)
-    summary["titles"] = [{"text": t.text, "x": round(t.x, 1), "y": round(t.y, 1), "level": t.level} for t in titles]
+    summary["titles"] = [
+        {"text": t.text, "x": round(t.x, 1), "y": round(t.y, 1), "level": t.level} for t in titles
+    ]
     summary["scale_text"] = ctx.find_scales(runs)
     summary["page_title"] = pageread_title(words, h)
-    for t in titles:
-        pass
-    sheet_levels = sorted({t.level or ctx.level_guess(t.text, plan_title=True) for t in titles if (t.level or ctx.level_guess(t.text, plan_title=True))})
+    sheet_levels = sorted(
+        {
+            t.level or ctx.level_guess(t.text, plan_title=True)
+            for t in titles
+            if (t.level or ctx.level_guess(t.text, plan_title=True))
+        }
+    )
     stem_span = ctx.level_span(stem)
     stem_level, _ = ctx.level_of(stem)
     stem_level = stem_level or ctx.level_guess(stem, drop_first=True)
     summary["level_hints"] = {
         "from_titles": sheet_levels,
         "from_file_name": stem_span or ([stem_level] if stem_level else []),
-        "from_page_title": ctx.level_span(summary["page_title"] or "") or [x for x in [ctx.level_of(summary["page_title"] or "")[0]] if x],
+        "from_page_title": ctx.level_span(summary["page_title"] or "")
+        or [x for x in [ctx.level_of(summary["page_title"] or "")[0]] if x],
     }
     kind_words = {t.kind for t in titles if t.kind}
     page_kind = ctx.kind_of(summary["page_title"], stem)[0]
@@ -268,7 +317,12 @@ def read_page_blocks(
             rec["ocr_conf"] = round(sum(confs) / len(confs), 3)
         gp = ctx.grid_position(grid, cx, cy)
         if gp:
-            rec["grid"] = {"cell": gp["cell"], "inside_grid": gp["inside_grid"], "alts": _alt_cells(gp), "rc": [_axis_value(gp["row"], True), _axis_value(gp["col"], False)]}
+            rec["grid"] = {
+                "cell": gp["cell"],
+                "inside_grid": gp["inside_grid"],
+                "alts": _alt_cells(gp),
+                "rc": [_axis_value(gp["row"], True), _axis_value(gp["col"], False)],
+            }
         title = ctx.nearest_title(titles, cx, cy)
         if title:
             rec["drawing_title"] = title.text
@@ -281,12 +335,19 @@ def read_page_blocks(
                 and t2.y >= cy
                 and ((t2.x - cx) ** 2 + (t2.y - cy) ** 2) ** 0.5 < AMBIGUOUS_RATIO * max(d1, 1.0)
                 # both titles must say something, and different things: only then does the answer matter
-                and ((t2.level and title.level and t2.level != title.level) or (t2.kind and title.kind and t2.kind != title.kind))
+                and (
+                    (t2.level and title.level and t2.level != title.level)
+                    or (t2.kind and title.kind and t2.kind != title.kind)
+                )
             ]
             if rivals:
-                rec["title_close_call"] = [min(rivals, key=lambda t2: (t2.x - cx) ** 2 + (t2.y - cy) ** 2).text]
+                rec["title_close_call"] = [
+                    min(rivals, key=lambda t2: (t2.x - cx) ** 2 + (t2.y - cy) ** 2).text
+                ]
         if in_region(cx, cy):
-            rec["schedule_part"] = True  # a schedule is a definition: its rows become elements through their tags
+            rec["schedule_part"] = (
+                True  # a schedule is a definition: its rows become elements through their tags
+            )
         named = _named_cells(b.lines)
         if named:
             rec["named_cells"] = named
@@ -313,7 +374,10 @@ def read_page_blocks(
                 if other:
                     second = min(other, key=lambda l: abs(l["x"] - cx))  # noqa: E741
                     if abs(second["x"] - cx) < AMBIGUOUS_RATIO * max(dx1, 1.0):
-                        nearest_second = min((l for l in below if abs(l["x"] - second["x"]) <= 2.0), key=lambda l: l["y"] - cy)  # noqa: E741
+                        nearest_second = min(
+                            (ln for ln in below if abs(ln["x"] - second["x"]) <= 2.0),
+                            key=lambda ln: ln["y"] - cy,
+                        )  # noqa: E741
                         rec["strip_close_call"] = [best["cell"], nearest_second["cell"]]
             if views:
                 lv, _flags = assign_level(views, t.y0)
@@ -324,7 +388,10 @@ def read_page_blocks(
         lone = {id(w) for r in runs if len(r.words) == 1 for w in r.words}
         table_kind = None
         for r in runs:
-            if any(b - 15 * h <= r.y1 and r.y0 <= d and a <= r.cx <= c for a, b, c, d in regions) and ctx.kind_of(r.text)[0]:
+            if (
+                any(b - 15 * h <= r.y1 and r.y0 <= d and a <= r.cx <= c for a, b, c, d in regions)
+                and ctx.kind_of(r.text)[0]
+            ):
                 table_kind = ctx.kind_of(r.text)[0]
         for w in words:
             code = w.text.strip().upper()
@@ -342,9 +409,18 @@ def read_page_blocks(
                 "x": round(w.cx, 2),
                 "y": round(w.cy, 2),
                 "has_facts": True,
-                "facts": {"bars": [dict(b) for b in d["bars"]], "characteristics": [dict(c) for c in d["characteristics"]], "descriptions": []},
+                "facts": {
+                    "bars": [dict(b) for b in d["bars"]],
+                    "characteristics": [dict(c) for c in d["characteristics"]],
+                    "descriptions": [],
+                },
                 "source": page.source,
-                "grid": {"cell": gp["cell"], "inside_grid": True, "alts": _alt_cells(gp), "rc": [_axis_value(gp["row"], True), _axis_value(gp["col"], False)]},
+                "grid": {
+                    "cell": gp["cell"],
+                    "inside_grid": True,
+                    "alts": _alt_cells(gp),
+                    "rc": [_axis_value(gp["row"], True), _axis_value(gp["col"], False)],
+                },
                 "type_key": code,
                 "keyed": {"code": code, "definition": d["key"]},
             }
@@ -379,8 +455,21 @@ def _page_task(args: tuple) -> tuple[str, int, dict[str, Any]]:
         data = pageread.read_text_page(page, rel, index + 1, config, words=words, source=source)
         try:
             return rel, index, read_page_blocks(data, PurePath(rel).stem, config=config)
-        except Exception as exc:  # one unreadable page must not stop the project: it is reported instead
-            return rel, index, {"summary": {"page": index + 1, "sheet": data.feuillet, "notes": [f"error: {type(exc).__name__}: {exc}"]}, "blocks": []}
+        except (
+            Exception
+        ) as exc:  # one unreadable page must not stop the project: it is reported instead
+            return (
+                rel,
+                index,
+                {
+                    "summary": {
+                        "page": index + 1,
+                        "sheet": data.feuillet,
+                        "notes": [f"error: {type(exc).__name__}: {exc}"],
+                    },
+                    "blocks": [],
+                },
+            )
 
 
 def read_many(
@@ -399,11 +488,19 @@ def read_many(
     ocr_pages: list[tuple[Path, str, int]] = []
     for pdf, rel in items:
         with pymupdf.open(pdf) as doc:
-            metas[rel] = {"file": rel, "stem": PurePath(rel).stem, "pages": len(doc), "size_bytes": pdf.stat().st_size}
+            metas[rel] = {
+                "file": rel,
+                "stem": PurePath(rel).stem,
+                "pages": len(doc),
+                "size_bytes": pdf.stat().st_size,
+            }
             for index in range(len(doc)):
                 if pages and (index + 1) not in pages:
                     continue
-                if ocr and (pageread.word_count(doc[index]) < MIN_WORDS or pageread.raster_share(doc[index]) >= pageread.RASTER_SHARE_MIN):
+                if ocr and (
+                    pageread.word_count(doc[index]) < MIN_WORDS
+                    or pageread.raster_share(doc[index]) >= pageread.RASTER_SHARE_MIN
+                ):
                     ocr_pages.append((pdf, rel, index))
                 tasks.append([pdf, rel, index, None, config])
     ocr_words: dict[tuple[str, int], list[Word]] = {}
@@ -433,7 +530,11 @@ def read_many(
 def _compact_note(b: dict) -> str:
     import json
 
-    return json.dumps({"text": _clip(b["text"]), "grid": (b.get("grid") or {}).get("cell")}, ensure_ascii=False, separators=(",", ":"))
+    return json.dumps(
+        {"text": _clip(b["text"]), "grid": (b.get("grid") or {}).get("cell")},
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
 
 
 def build_elements(read: dict[str, Any], source: str, client: LlmClient) -> dict[str, Any]:
@@ -454,7 +555,8 @@ def build_elements(read: dict[str, Any], source: str, client: LlmClient) -> dict
     ]
     got = choose_many(client, P.GROUP_SYSTEM, users, P.OPTIONS, version=P.GROUP_VERSION)
     answers: dict[tuple[int, str], tuple[str, float | None]] = {
-        (id(b), kind): (ans.option, ans.certainty) for (b, kind, _, _), ans in zip(questions, got, strict=True)
+        (id(b), kind): (ans.option, ans.certainty)
+        for (b, kind, _, _), ans in zip(questions, got, strict=True)
     }
     elements: list[dict] = []
     detail: dict[tuple[int, str], list[dict]] = defaultdict(list)
@@ -512,7 +614,14 @@ def _locations(b: dict, page: dict, answers: dict) -> tuple[list[dict], str | No
     hints = page.get("level_hints", {})
     if b.get("title_close_call") and answers.get((id(b), "title"), (None, None))[0] == "no":
         b = {**b, "drawing_title": b["title_close_call"][0]}
-    title_level = (ctx.level_of(b["drawing_title"])[0] or ctx.level_guess(b["drawing_title"], plan_title=True)) if b.get("drawing_title") else None
+    title_level = (
+        (
+            ctx.level_of(b["drawing_title"])[0]
+            or ctx.level_guess(b["drawing_title"], plan_title=True)
+        )
+        if b.get("drawing_title")
+        else None
+    )
     if b.get("strip_level"):
         locs.append({"type": "level", "value": b["strip_level"], "basis": "strip_level_line"})
     elif title_level:
@@ -564,9 +673,17 @@ def _fact_element(b: dict, page: dict, read: dict, answers: dict) -> dict:
         "bars": f["bars"],
         "characteristics": f["characteristics"],
         "descriptions": f["descriptions"],
-        "match": {"method": "schedule_tag" if b.get("keyed") else "text_block", **({"keyed": b["keyed"]} if b.get("keyed") else {})},
+        "match": {
+            "method": "schedule_tag" if b.get("keyed") else "text_block",
+            **({"keyed": b["keyed"]} if b.get("keyed") else {}),
+        },
         **({"type_key": b["type_key"]} if b.get("type_key") else {}),
-        "quality": {"has_facts": True, "kind_basis": basis, "text_source": b["source"], "ocr_conf": b.get("ocr_conf")},
+        "quality": {
+            "has_facts": True,
+            "kind_basis": basis,
+            "text_source": b["source"],
+            "ocr_conf": b.get("ocr_conf"),
+        },
         "evidence": [{"page": b["page"], "bbox": b["bbox"], "text": b["lines"]}],
     }
 
@@ -575,7 +692,12 @@ def _detail_element(pg: int, title: str, members: list[dict], page: dict, read: 
     members = sorted(members, key=lambda m: (m["y"], m["x"]))[:DETAIL_MAX_TEXTS]
     xs = [m["x"] for m in members]
     ys = [m["y"] for m in members]
-    bb = [min(m["bbox"][0] for m in members), min(m["bbox"][1] for m in members), max(m["bbox"][2] for m in members), max(m["bbox"][3] for m in members)]
+    bb = [
+        min(m["bbox"][0] for m in members),
+        min(m["bbox"][1] for m in members),
+        max(m["bbox"][2] for m in members),
+        max(m["bbox"][3] for m in members),
+    ]
     level, written = ctx.level_of(title)
     kind, _ = ctx.kind_of(title)
     locs: list[dict] = [{"type": "drawing", "title": title}]

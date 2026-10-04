@@ -125,6 +125,10 @@ class Config:
     ocr_min_orientation_share: float = 0.5  # (probe only) also read an orientation with this share
     ocr_probe_tiles: int = 3
     ocr_min_conf: float = 0.3
+    ocr_det_scale: float = (
+        1.0  # text detection on a copy this much smaller; lines are read at full resolution
+    )
+    ocr_use_cls: bool = True  # the 180-degree text-angle classifier
     # ---- page classification (heuristics for choosing OCR, not for extraction)
     min_text_words: int = 150
     min_vector_paths: int = 300

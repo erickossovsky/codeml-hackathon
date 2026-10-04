@@ -32,7 +32,12 @@ class Table:
 
     @property
     def bbox(self) -> list[float]:
-        return [round(self.xs[0], 2), round(self.ys[0], 2), round(self.xs[-1], 2), round(self.ys[-1], 2)]
+        return [
+            round(self.xs[0], 2),
+            round(self.ys[0], 2),
+            round(self.xs[-1], 2),
+            round(self.ys[-1], 2),
+        ]
 
     def cell_of(self, x: float, y: float) -> tuple[int, int] | None:
         if not (self.xs[0] <= x <= self.xs[-1] and self.ys[0] <= y <= self.ys[-1]):
@@ -42,7 +47,12 @@ class Table:
         return min(i, len(self.ys) - 2), min(j, len(self.xs) - 2)
 
     def cell_bbox(self, i: int, j: int) -> list[float]:
-        return [round(self.xs[j], 2), round(self.ys[i], 2), round(self.xs[j + 1], 2), round(self.ys[i + 1], 2)]
+        return [
+            round(self.xs[j], 2),
+            round(self.ys[i], 2),
+            round(self.xs[j + 1], 2),
+            round(self.ys[i + 1], 2),
+        ]
 
 
 def _cluster(values: list[float], tol: float) -> list[float]:
@@ -59,7 +69,11 @@ def _cluster(values: list[float], tol: float) -> list[float]:
 def _extend_header(t: Table, words: list[Word], h: float) -> None:
     """A schedule often has no top line: its header row (the element names) floats above the first
     printed line. When words sit above in most columns, the table starts at the top of them."""
-    above = [w for w in words if t.xs[0] <= w.cx <= t.xs[-1] and t.ys[0] - HEADER_REACH_H * h <= w.cy < t.ys[0]]
+    above = [
+        w
+        for w in words
+        if t.xs[0] <= w.cx <= t.xs[-1] and t.ys[0] - HEADER_REACH_H * h <= w.cy < t.ys[0]
+    ]
     if not above:
         return
     cols = {max(0, int(np.searchsorted(t.xs, w.cx, side="right")) - 1) for w in above}
@@ -67,7 +81,9 @@ def _extend_header(t: Table, words: list[Word], h: float) -> None:
         t.ys.insert(0, min(w.y0 for w in above) - 0.5 * h)
 
 
-def find_tables(vec: Vectors, words: list[Word], h: float, page_w: float, page_h: float) -> list[Table]:
+def find_tables(
+    vec: Vectors, words: list[Word], h: float, page_w: float, page_h: float
+) -> list[Table]:
     min_len = MIN_LINE_H * h
     hl = [s for s in vec.hlines if s.x1 - s.x0 >= min_len]
     vl = [s for s in vec.vlines if s.y1 - s.y0 >= min_len]
@@ -112,8 +128,12 @@ def find_tables(vec: Vectors, words: list[Word], h: float, page_w: float, page_h
         left = min(vl[j].x0 for j in vs)
         right = max(vl[j].x0 for j in vs)
         # lines that cross most of the table separate cells; short ones are marks inside a cell
-        ys = _cluster([hl[i].y0 for i in hs if hl[i].x1 - hl[i].x0 >= SPAN_SHARE * (right - left)], tol)
-        xs = _cluster([vl[j].x0 for j in vs if vl[j].y1 - vl[j].y0 >= SPAN_SHARE * (bottom - top)], tol)
+        ys = _cluster(
+            [hl[i].y0 for i in hs if hl[i].x1 - hl[i].x0 >= SPAN_SHARE * (right - left)], tol
+        )
+        xs = _cluster(
+            [vl[j].x0 for j in vs if vl[j].y1 - vl[j].y0 >= SPAN_SHARE * (bottom - top)], tol
+        )
         if len(ys) < 3 or len(xs) < 3:
             continue
         if (xs[-1] - xs[0]) * (ys[-1] - ys[0]) > 0.95 * page_w * page_h:

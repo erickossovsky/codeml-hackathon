@@ -75,7 +75,9 @@ def first_token_certainty(top: list[dict], chosen: str, options: list[str]) -> f
 class LlmClient(Protocol):
     model_id: str
 
-    def ask(self, system: str, user: str, schema: dict, *, version: str, decision: str | None = None) -> Answer: ...
+    def ask(
+        self, system: str, user: str, schema: dict, *, version: str, decision: str | None = None
+    ) -> Answer: ...
 
     def choose(self, system: str, user: str, options: list[str], *, version: str) -> Choice: ...
 
@@ -125,7 +127,9 @@ class DiskCache:
 
     def put(self, key: str, value: dict) -> None:
         if self.root is not None:
-            (self.root / f"{key}.json").write_text(json.dumps(value, ensure_ascii=False), encoding="utf-8")
+            (self.root / f"{key}.json").write_text(
+                json.dumps(value, ensure_ascii=False), encoding="utf-8"
+            )
 
 
 def _add_cuda_to_path() -> None:
@@ -146,9 +150,13 @@ def _decision_certainty(choice: dict, options: list[str]) -> float | None:
         text = tok.get("token", "").strip().strip('"').lower()
         if not text or text in {"{", "}", ":", "answer"}:
             continue
-        alts = {a["token"].strip().strip('"').lower(): a["logprob"] for a in tok.get("top_logprobs", [])}
+        alts = {
+            a["token"].strip().strip('"').lower(): a["logprob"] for a in tok.get("top_logprobs", [])
+        }
         alts[text] = tok["logprob"]
-        probs = {o: math.exp(lp) for t, lp in alts.items() for o in options if o.startswith(t) and t}
+        probs = {
+            o: math.exp(lp) for t, lp in alts.items() for o in options if o.startswith(t) and t
+        }
         if text in {o for o in options} or any(o.startswith(text) for o in options):
             total = sum(probs.values())
             own = math.exp(tok["logprob"])
@@ -219,7 +227,9 @@ class LlamaClient:
         choice = r["choices"][0]
         option = choice["message"]["content"].strip().lower()
         content = (choice.get("logprobs") or {}).get("content") or []
-        certainty = first_token_certainty(content[0]["top_logprobs"], option, options) if content else None
+        certainty = (
+            first_token_certainty(content[0]["top_logprobs"], option, options) if content else None
+        )
         if self._cache:
             self._cache.put(key, {"option": option, "certainty": certainty})
         return Choice(option, certainty, cached=False, seconds=dt)
@@ -227,7 +237,9 @@ class LlamaClient:
     def token_count(self, text: str) -> int:
         return len(self._load().tokenize(text.encode("utf-8")))
 
-    def ask(self, system: str, user: str, schema: dict, *, version: str, decision: str | None = None) -> Answer:
+    def ask(
+        self, system: str, user: str, schema: dict, *, version: str, decision: str | None = None
+    ) -> Answer:
         key = prompt_key(self.model_id, version, system, user, schema)
         hit = self._cache.get(key) if self._cache else None
         if hit is not None:
@@ -276,15 +288,20 @@ class FakeClient:
     calls: list[str] = field(default_factory=list)
     budget: Budget = field(default_factory=Budget)
 
-    def ask(self, system: str, user: str, schema: dict, *, version: str, decision: str | None = None) -> Answer:
+    def ask(
+        self, system: str, user: str, schema: dict, *, version: str, decision: str | None = None
+    ) -> Answer:
         self.budget.check()
         self.calls.append(user)
         self.budget.charge(0.0)
         if len(user) // 3 > MAX_PROMPT_TOKENS:
             raise PromptTooLong(f"prompt is about {len(user) // 3} tokens")
-        data = self.rule(user) if self.rule else {k: _default(v) for k, v in schema.get("properties", {}).items()}
+        data = (
+            self.rule(user)
+            if self.rule
+            else {k: _default(v) for k, v in schema.get("properties", {}).items()}
+        )
         return Answer(data, self.certainty)
-
 
     def choose(self, system: str, user: str, options: list[str], *, version: str) -> Choice:
         self.budget.check()
@@ -302,12 +319,31 @@ def _default(prop: dict) -> Any:
     return {"string": "", "boolean": False, "number": 0, "integer": 0}.get(prop.get("type"), None)
 
 
+@dataclass
+class NeutralClient:
+    """No model and no opinion: every question goes unanswered, so no cost moves, no pair is confirmed
+    and no sentence is written. The baseline for measuring what the model adds."""
+
+    model_id: str = "none"
+
+    def choose(self, system: str, user: str, options: list[str], *, version: str) -> Choice:
+        return Choice(None, None)  # type: ignore[arg-type]
+
+    def ask(
+        self, system: str, user: str, schema: dict, *, version: str, decision: str | None = None
+    ) -> Answer:
+        return Answer({}, None)
+
+
 def make_client(kind: str = "auto", **kw) -> LlmClient:
     """`server` runs the local llama.cpp server (parallel questions); `llama` loads the model in this
-    process (one question at a time); `fake` never calls a model. `auto` picks the server when its
-    binary and model are installed, else the in-process model, else the fake."""
+    process (one question at a time); `fake` never calls a model; `none` answers nothing (see
+    NeutralClient). `auto` picks the server when its binary and model are installed, else the
+    in-process model, else the fake."""
     if kind == "fake":
         return FakeClient(**kw)
+    if kind == "none":
+        return NeutralClient()
     from l2c.llm import server as S
 
     if kind == "server" or (kind == "auto" and S.SERVER_EXE.exists() and S.MODEL.exists()):
@@ -320,7 +356,9 @@ def make_client(kind: str = "auto", **kw) -> LlmClient:
     return FakeClient()
 
 
-def choose_many(client, system: str, users: list[str], options: list[str], *, version: str) -> list[Choice]:
+def choose_many(
+    client, system: str, users: list[str], options: list[str], *, version: str
+) -> list[Choice]:
     """Answers to many one-element questions. A client that can run them in parallel (the llama.cpp
     server) does; any other client answers them one after another."""
     if not users:

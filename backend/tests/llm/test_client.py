@@ -10,7 +10,10 @@ from l2c.llm.client import (
     prompt_key,
 )
 
-SCHEMA = {"type": "object", "properties": {"answer": {"type": "string", "enum": ["yes", "no", "unsure"]}}}
+SCHEMA = {
+    "type": "object",
+    "properties": {"answer": {"type": "string", "enum": ["yes", "no", "unsure"]}},
+}
 
 
 def test_prompt_key_is_stable_and_sensitive():
@@ -44,10 +47,14 @@ def test_decision_certainty_from_logprobs():
         "logprobs": {
             "content": [
                 {"token": "{", "logprob": -0.0, "top_logprobs": []},
-                {"token": "yes", "logprob": -0.1, "top_logprobs": [
-                    {"token": "yes", "logprob": -0.1},
-                    {"token": "no", "logprob": -2.4},
-                ]},
+                {
+                    "token": "yes",
+                    "logprob": -0.1,
+                    "top_logprobs": [
+                        {"token": "yes", "logprob": -0.1},
+                        {"token": "no", "logprob": -2.4},
+                    ],
+                },
             ]
         }
     }

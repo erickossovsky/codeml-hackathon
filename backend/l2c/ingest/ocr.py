@@ -57,9 +57,9 @@ _GPU_ACTIVE = False
 
 
 def _enable_gpu() -> bool:
-    """Use the CUDA build of onnxruntime kept under data/vendor (onnxruntime-gpu for CUDA 12 plus the
-    cuDNN libraries). It must be on sys.path before onnxruntime is first imported in this process;
-    when that has already happened, or the folder is missing, OCR stays on the CPU. Set
+    """Use the CUDA build of onnxruntime kept under data/vendor (onnxruntime-gpu for CUDA 12
+    plus the cuDNN libraries). It must be on sys.path before onnxruntime is first imported in this
+    process; when that has already happened, or the folder is missing, OCR stays on the CPU. Set
     L2C_OCR_GPU=0 to force the CPU."""
     import glob
     import os
@@ -71,7 +71,9 @@ def _enable_gpu() -> bool:
     if "onnxruntime" in sys.modules:
         return _GPU_ACTIVE
     sys.path.insert(0, str(VENDOR / "ortgpu"))
-    dirs = glob.glob(str(VENDOR / "ortgpu" / "nvidia" / "*" / "bin")) + glob.glob(str(VENDOR / "ortgpu_cudnn" / "nvidia" / "*" / "bin"))
+    dirs = glob.glob(str(VENDOR / "ortgpu" / "nvidia" / "*" / "bin")) + glob.glob(
+        str(VENDOR / "ortgpu_cudnn" / "nvidia" / "*" / "bin")
+    )
     dirs += glob.glob(os.path.join(sys.prefix, "Lib", "site-packages", "nvidia", "*", "bin"))
     for d in dirs:
         os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
@@ -86,13 +88,12 @@ def engine():
     gpu = _enable_gpu()
     from rapidocr_onnxruntime import RapidOCR
 
-    kwargs = {
-        f"{part}_{kind}_op_num_threads": _THREADS
-        for part in ("det", "cls", "rec")
-        for kind in ("intra", "inter")
-    }
+    # RapidOCR copies its global thread settings over the per-model ones: the global keys count
+    kwargs: dict = {"intra_op_num_threads": _THREADS, "inter_op_num_threads": _THREADS}
     if gpu:
-        kwargs.update(det_use_cuda=True, cls_use_cuda=True, rec_use_cuda=True)
+        # the angle classifier resizes every crop to one size, so a large batch only saves calls;
+        # the recogniser pads a batch to its widest crop, which changes readings: it keeps its batch
+        kwargs.update(det_use_cuda=True, cls_use_cuda=True, rec_use_cuda=True, cls_batch_num=64)
     return RapidOCR(use_cls=_USE_CLS, **kwargs)
 
 
@@ -118,7 +119,8 @@ def render(page: pymupdf.Page, dpi: int) -> np.ndarray:
 
 
 def ink(tile: np.ndarray) -> float:
-    return float((tile.mean(axis=2) < 128).mean())
+    # one channel, every second pixel: only blank tiles are skipped, so a sample is enough
+    return float((tile[::2, ::2, 0] < 128).mean())
 
 
 def tiles(img: np.ndarray, tile_px: int, overlap: float):
@@ -143,13 +145,43 @@ def to_tile_frame(xp: float, yp: float, rotation: int, w: int, h: int) -> tuple[
     return yp, h - xp  # 270
 
 
+def _read_scaled(img: np.ndarray, scale: float, use_cls: bool) -> list:
+    """RapidOCR with the text detection run on a smaller copy of the image. Detection cost grows
+    with the pixels; each detected line is still cut from the full-resolution image for reading, so
+    small text keeps its detail. Same steps and filters as RapidOCR's own call otherwise."""
+    import cv2
+
+    eng = engine()
+    small = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    boxes, _ = eng.auto_text_det(small)
+    if boxes is None or len(boxes) == 0:
+        return []
+    h, w = img.shape[:2]
+    boxes = [
+        np.clip(np.asarray(b, dtype=np.float32) / scale, 0, [w - 1, h - 1]).astype(np.float32)
+        for b in boxes
+    ]
+    crops = eng.get_crop_img_list(img, boxes)
+    if use_cls:
+        crops, _, _ = eng.text_cls(crops)
+    rec, _ = eng.text_rec(crops, False)
+    return [
+        [b.tolist(), r[0], r[1]]
+        for b, r in zip(boxes, rec, strict=True)
+        if float(r[1]) >= eng.text_score
+    ]
+
+
 def read_tile(
-    tile: np.ndarray, rotation: int
+    tile: np.ndarray, rotation: int, det_scale: float = 1.0, use_cls: bool = True
 ) -> list[tuple[float, float, float, float, str, float]]:
     """OCR one tile; boxes (x0, y0, x1, y1) are in the tile's own pixels."""
     h, w = tile.shape[:2]
     turned = np.ascontiguousarray(np.rot90(tile, rotation // 90))
-    result, _ = engine()(turned)
+    if det_scale < 0.999:
+        result = _read_scaled(turned, det_scale, use_cls)
+    else:
+        result, _ = engine()(turned, use_cls=use_cls)
     out = []
     for box, text, conf in result or []:
         pts = [to_tile_frame(px, py, rotation, w, h) for px, py in box]
@@ -202,19 +234,44 @@ def dedupe(words: list[Word]) -> list[Word]:
 
     Longer, more confident readings win; a word mostly covered by one already kept is dropped.
     """
+    # only words whose boxes overlap can be duplicates: a grid index keeps this near linear
     kept: list[Word] = []
+    index: dict[tuple[int, int], list[Word]] = {}
     for w in sorted(words, key=lambda w: (-len(w.text) * (w.conf or 0.0), w.y0, w.x0, w.text)):
-        same = any(k.text == w.text and _iou(k, w) > DEDUP_IOU for k in kept)
-        covered = any(_inside(w, k) >= CONTAINED_SHARE for k in kept)
+        near = _near(index, w)
+        same = any(k.text == w.text and _iou(k, w) > DEDUP_IOU for k in near)
+        covered = any(_inside(w, k) >= CONTAINED_SHARE for k in near)
         if not (same or covered):
             kept.append(w)
-    kept = [w for w in kept if not _is_ghost(w, kept)]
+            for c in _cells(w):
+                index.setdefault(c, []).append(w)
+    kept = [w for w in kept if not _is_ghost(w, _near(index, w))]
     return sorted(kept, key=lambda w: (round(w.y0, 1), w.x0, w.text))
+
+
+GRID_PT = 48.0
+
+
+def _cells(w: Word) -> list[tuple[int, int]]:
+    return [
+        (i, j)
+        for i in range(int(w.x0 // GRID_PT), int(w.x1 // GRID_PT) + 1)
+        for j in range(int(w.y0 // GRID_PT), int(w.y1 // GRID_PT) + 1)
+    ]
+
+
+def _near(index: dict[tuple[int, int], list[Word]], w: Word) -> list[Word]:
+    seen: dict[int, Word] = {}
+    for c in _cells(w):
+        for k in index.get(c, ()):
+            seen[id(k)] = k
+    return list(seen.values())
 
 
 def _is_ghost(w: Word, kept: list[Word]) -> bool:
     """A low-confidence word lying over several better-read words is a bad reading of that text
-    (the same line read twice from overlapping tiles, the longer misreading winning on length)."""
+    (the same line read twice from overlapping tiles, the longer misreading winning on length).
+    `kept` may be only the words near `w`: the others cannot lie inside it."""
     better = [
         k
         for k in kept
@@ -260,7 +317,9 @@ def ocr_page(
         if ink(tile) < MIN_INK:
             continue
         for r in orientations:
-            for x0, y0, x1, y1, text, conf in read_tile(tile, r):
+            for x0, y0, x1, y1, text, conf in read_tile(
+                tile, r, config.ocr_det_scale, config.ocr_use_cls
+            ):
                 if conf < config.ocr_min_conf:
                     continue
                 for wx0, wy0, wx1, wy1, tok, c in line_to_words((x0, y0, x1, y1), text, conf, r):
@@ -335,6 +394,8 @@ def cache_key(path: Path, page_number: int, config: Config) -> str:
             config.ocr_orientation_probe,
             config.bar_sizes,
             CACHE_VERSION,
+            *(("det", config.ocr_det_scale) if config.ocr_det_scale != 1.0 else ()),
+            *(("nocls",) if not config.ocr_use_cls else ()),
         )
     )
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:24]

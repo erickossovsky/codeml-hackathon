@@ -37,7 +37,9 @@ from l2c.pipeline import lean
 SIZES = ["10M", "15M", "20M", "25M", "30M", "35M"]
 
 
-def core(read: dict[str, dict], sources: dict[str, str], client) -> tuple[list[dict], list[dict], dict]:
+def core(
+    read: dict[str, dict], sources: dict[str, str], client
+) -> tuple[list[dict], list[dict], dict]:
     """Elements, matching and comparison, in memory (no files, no report)."""
     plan, shop = [], []
     for rel, r in read.items():
@@ -49,7 +51,6 @@ def core(read: dict[str, dict], sources: dict[str, str], client) -> tuple[list[d
 
 def _mutate_line(line: str, bar: dict, kind: str, rng: random.Random) -> tuple[str, Any] | None:
     """The line with one number changed, and the new value; None when this bar cannot take that change."""
-    src = bar.get("source_text") or ""
     if kind == "count" and bar.get("count") is not None:
         old = bar["count"]
         new = max(1, old + rng.choice([-3, -2, -1, 1, 2, 3, 4]))
@@ -74,7 +75,9 @@ def _mutate_line(line: str, bar: dict, kind: str, rng: random.Random) -> tuple[s
     return None
 
 
-def plant(read: dict[str, dict], sources: dict[str, str], n: int, seed: int, allowed: set | None = None) -> tuple[dict[str, dict], list[dict]]:
+def plant(
+    read: dict[str, dict], sources: dict[str, str], n: int, seed: int, allowed: set | None = None
+) -> tuple[dict[str, dict], list[dict]]:
     """A copy of the read project with `n` shop notes changed, and the list of changes. With `allowed`,
     only shop notes at those places are changed: the ones whose pair agreed before the change, as the
     jury's planted differences were made on elements that appear in both documents."""
@@ -101,13 +104,21 @@ def plant(read: dict[str, dict], sources: dict[str, str], n: int, seed: int, all
             for k in ("count", "size", "spacing"):
                 if stated is not None and (x.get("source_text"), k) not in stated:
                     continue
-                if (k == "count" and x.get("count") is not None and x.get("spacing") is None) or (k == "size" and x.get("size")) or (k == "spacing" and x.get("spacing") is not None):
+                if (
+                    (k == "count" and x.get("count") is not None and x.get("spacing") is None)
+                    or (k == "size" and x.get("size"))
+                    or (k == "spacing" and x.get("spacing") is not None)
+                ):
                     options.append((x, k))
         if not options:
             continue
         bar, kind = rng.choice(options)
         for li, line in enumerate(b["lines"]):
-            if (bar.get("source_text") or "") and bar["source_text"] in line or line in (bar.get("source_text") or ""):
+            if (
+                (bar.get("source_text") or "")
+                and bar["source_text"] in line
+                or line in (bar.get("source_text") or "")
+            ):
                 got = _mutate_line(line, bar, kind, rng)
                 if not got:
                     continue
@@ -118,7 +129,15 @@ def plant(read: dict[str, dict], sources: dict[str, str], n: int, seed: int, all
                 b["lines"], b["text"] = lines, " | ".join(lines)
                 b["facts"] = {"bars": bars2, "characteristics": chars2, "descriptions": descs2}
                 changes.append(
-                    {"file": rel, "page": b["page"], "bbox": b["bbox"], "field": kind, "old_line": line, "new_line": new_line, "new_value": new_value}
+                    {
+                        "file": rel,
+                        "page": b["page"],
+                        "bbox": b["bbox"],
+                        "field": kind,
+                        "old_line": line,
+                        "new_line": new_line,
+                        "new_value": new_value,
+                    }
                 )
                 break
     return mutated, changes
@@ -134,7 +153,9 @@ def _value_matches(flag: dict, change: dict) -> bool:
     return str(v).strip().upper() == str(new).strip().upper()
 
 
-def judge(changes: list[dict], shop: list[dict], findings: dict, base_status: dict[tuple, str]) -> list[dict]:
+def judge(
+    changes: list[dict], shop: list[dict], findings: dict, base_status: dict[tuple, str]
+) -> list[dict]:
     """Was each planted change found? Each change is located by the shop note it was planted in."""
     by_place = {(e["file"], e["page"], tuple(e["bbox"])): e for e in shop}
     finding_of = {}
@@ -149,13 +170,23 @@ def judge(changes: list[dict], shop: list[dict], findings: dict, base_status: di
             verdict = "not an element"
         elif r is None or r["status"] == "not_in_plan":
             verdict = "never matched"
-        elif any(_value_matches(f, ch) for f in r["flags"] + [i for i in r["info"] if i.get("result") == "possible_difference"]):
+        elif any(
+            _value_matches(f, ch)
+            for f in r["flags"] + [i for i in r["info"] if i.get("result") == "possible_difference"]
+        ):
             verdict = "found" if r["status"] in ("differs", "uncertain") else "found (as info)"
         elif r["flags"]:
             verdict = "flagged something else"
         else:
             verdict = "matched, not flagged"
-        out.append({**ch, "verdict": verdict, "status": r["status"] if r else None, "baseline_status": base_status.get((ch["file"], ch["page"], tuple(ch["bbox"])))})
+        out.append(
+            {
+                **ch,
+                "verdict": verdict,
+                "status": r["status"] if r else None,
+                "baseline_status": base_status.get((ch["file"], ch["page"], tuple(ch["bbox"]))),
+            }
+        )
     return out
 
 
@@ -183,14 +214,18 @@ def main() -> int:
     t0 = time.time()
     found = list(discover(args.project))
     sources = {rel: src for _, rel, src in found}
-    read = lean.read_many([(pdf, rel) for pdf, rel, _ in found], workers=args.workers, ocr_cache=OCR_CACHE)
+    read = lean.read_many(
+        [(pdf, rel) for pdf, rel, _ in found], workers=args.workers, ocr_cache=OCR_CACHE
+    )
     _ocr.release_engine()
     client = make_client(args.llm)
     t = time.time()
     plan0, shop0, base = core(read, sources, client)
     t_base = time.time() - t
     base_status = {}
-    finding_of = {m["element_id"]: r["status"] for r in base["entities"] for m in r["members"]["shop"]}
+    finding_of = {
+        m["element_id"]: r["status"] for r in base["entities"] for m in r["members"]["shop"]
+    }
     for e in shop0:
         base_status[(e["file"], e["page"], tuple(e["bbox"]))] = finding_of.get(e["id"])
     field_of = {"count": "count", "size": "size", "spacing mm": "spacing"}
@@ -210,8 +245,15 @@ def main() -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "findings.json").write_text(dumps(base), encoding="utf-8")
     (args.out / "elements").mkdir(exist_ok=True)
-    (args.out / "elements" / "elements.all.json").write_text(dumps({"elements": plan0 + shop0}), encoding="utf-8")
-    _, shop1, after = core(mutated, sources, client)
+    (args.out / "elements" / "elements.all.json").write_text(
+        dumps({"elements": plan0 + shop0}), encoding="utf-8"
+    )
+    plan1, shop1, after = core(mutated, sources, client)
+    # the changed run too, so each miss can be traced to its pairing
+    (args.out / "findings.changed.json").write_text(dumps(after), encoding="utf-8")
+    (args.out / "elements" / "elements.changed.json").write_text(
+        dumps({"elements": plan1 + shop1}), encoding="utf-8"
+    )
     results = judge(changes, shop1, after, base_status)
     verdicts = Counter(r["verdict"] for r in results)
     found_n = verdicts["found"] + verdicts["found (as info)"]
@@ -219,8 +261,13 @@ def main() -> int:
     new_flags = _flagged(after) - _flagged(base)
     by_id = {e["id"]: e for e in shop1}
     stray = [
-        f for f in new_flags
-        if not any((by_id[i]["file"], by_id[i]["page"], tuple(by_id[i]["bbox"])) in planted_ids for i in f.split("|")[1].split(",") if i in by_id)
+        f
+        for f in new_flags
+        if not any(
+            (by_id[i]["file"], by_id[i]["page"], tuple(by_id[i]["bbox"])) in planted_ids
+            for i in f.split("|")[1].split(",")
+            if i in by_id
+        )
     ]
     summary = {
         "project": args.project.name,
@@ -228,7 +275,10 @@ def main() -> int:
         "found": found_n,
         "recall": round(found_n / len(results), 3) if results else None,
         "verdicts": dict(verdicts),
-        "by_field": {k: f"{sum(1 for r in results if r['field'] == k and r['verdict'].startswith('found'))}/{sum(1 for r in results if r['field'] == k)}" for k in ("count", "size", "spacing")},
+        "by_field": {
+            k: f"{sum(1 for r in results if r['field'] == k and r['verdict'].startswith('found'))}/{sum(1 for r in results if r['field'] == k)}"
+            for k in ("count", "size", "spacing")
+        },
         "false_flags_created": len(stray),
         "plan_coverage": f"{sum(1 for r in base['entities'] if r['members']['plan'] and r['members']['shop'])} of {sum(1 for r in base['entities'] if r['members']['plan'])} plan elements matched",
         "baseline_counts": base["counts"],
@@ -237,11 +287,15 @@ def main() -> int:
         "total_seconds": round(time.time() - t0, 1),
     }
     args.out.mkdir(parents=True, exist_ok=True)
-    (args.out / "eval.json").write_text(dumps({"summary": summary, "changes": results}), encoding="utf-8")
+    (args.out / "eval.json").write_text(
+        dumps({"summary": summary, "changes": results}), encoding="utf-8"
+    )
     print(json.dumps(summary, indent=1))
     for r in results:
         if not r["verdict"].startswith("found"):
-            print(f"  MISS [{r['verdict']}] {r['field']}: {r['old_line']!r} -> {r['new_line']!r}  ({Path(r['file']).name} p{r['page']}, baseline {r['baseline_status']})")
+            print(
+                f"  MISS [{r['verdict']}] {r['field']}: {r['old_line']!r} -> {r['new_line']!r}  ({Path(r['file']).name} p{r['page']}, baseline {r['baseline_status']})"
+            )
     return 0
 
 

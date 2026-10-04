@@ -127,13 +127,22 @@ def raster_drawings(page: pymupdf.Page, h: float) -> list[dict[str, Any]]:
     items = []
     for c in contours:
         x, y, w, ht = cv2.boundingRect(c)
-        if max(w, ht) < min_px or w >= MAX_PAGE_SHARE * pix.width or ht >= MAX_PAGE_SHARE * pix.height:
+        if (
+            max(w, ht) < min_px
+            or w >= MAX_PAGE_SHARE * pix.width
+            or ht >= MAX_PAGE_SHARE * pix.height
+        ):
             continue
         area = float(cv2.contourArea(c))
         items.append(
             {
                 "shape": "region",
-                "bbox": [round(x / zoom, 2), round(y / zoom, 2), round((x + w) / zoom, 2), round((y + ht) / zoom, 2)],
+                "bbox": [
+                    round(x / zoom, 2),
+                    round(y / zoom, 2),
+                    round((x + w) / zoom, 2),
+                    round((y + ht) / zoom, 2),
+                ],
                 "size_pt": [round(w / zoom, 1), round(ht / zoom, 1)],
                 "fill_ratio": round(area / max(1.0, w * ht), 3),
                 "method": "raster",

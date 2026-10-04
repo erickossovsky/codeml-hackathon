@@ -89,7 +89,34 @@ def level_span(text: str) -> list[str]:
 
 
 _KIND_TOKENS = {w for _, ws in KIND_WORDS for w in ws}
-_NOISE_TOKENS = {"BETON", "TYPIQUE", "ELEVATION", "ELEVATIONS", "COUPE", "DETAIL", "DETAILS", "VUE", "SERIE", "LEGENDE", "SECTION", "TABLEAU", "PLAN", "DU", "DE", "DES", "D", "LA", "LE", "PARTIE", "PART", "ARMATURES", "ARMATURE", "TITRE", "DESSIN", "PAGE"}
+_NOISE_TOKENS = {
+    "BETON",
+    "TYPIQUE",
+    "ELEVATION",
+    "ELEVATIONS",
+    "COUPE",
+    "DETAIL",
+    "DETAILS",
+    "VUE",
+    "SERIE",
+    "LEGENDE",
+    "SECTION",
+    "TABLEAU",
+    "PLAN",
+    "DU",
+    "DE",
+    "DES",
+    "D",
+    "LA",
+    "LE",
+    "PARTIE",
+    "PART",
+    "ARMATURES",
+    "ARMATURE",
+    "TITRE",
+    "DESSIN",
+    "PAGE",
+}
 
 
 def level_guess(text: str, drop_first: bool = False, plan_title: bool = False) -> str | None:
@@ -100,9 +127,19 @@ def level_guess(text: str, drop_first: bool = False, plan_title: bool = False) -
         return None  # a drawing title names a level only as `PLAN <level> - ...`
     if drop_first and tokens:
         tokens = tokens[1:]
-    left = [t for t in tokens if t not in _KIND_TOKENS and t not in _NOISE_TOKENS and not any(t.startswith(k) for k in _KIND_TOKENS if len(k) > 3)]
+    left = [
+        t
+        for t in tokens
+        if t not in _KIND_TOKENS
+        and t not in _NOISE_TOKENS
+        and not any(t.startswith(k) for k in _KIND_TOKENS if len(k) > 3)
+    ]
     words = [t for t in left if t.isalpha()]
-    return words[0] if len(words) == 1 and len(words[0]) >= 4 and not [t for t in left if t.isdigit()] else None
+    return (
+        words[0]
+        if len(words) == 1 and len(words[0]) >= 4 and not [t for t in left if t.isdigit()]
+        else None
+    )
 
 
 def level_of(text: str) -> tuple[str | None, str | None]:

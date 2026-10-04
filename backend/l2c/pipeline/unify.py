@@ -151,7 +151,9 @@ class _Builder:
         self.used_drawings: set[str] = set()
 
     # ------------------------------------------------------------------ helpers
-    def _emit(self, texts: list[dict], drawings: list[dict], page: dict, method: str, **extra: Any) -> dict:
+    def _emit(
+        self, texts: list[dict], drawings: list[dict], page: dict, method: str, **extra: Any
+    ) -> dict:
         bars, chars, descs = _merge_facts(texts)
         boxes = [t["bbox"] for t in texts] + [d["bbox"] for d in drawings]
         bbox = [
@@ -165,7 +167,16 @@ class _Builder:
         locations, _ = level_info(page, texts[0] if texts else None)
         if texts and texts[0].get("grid"):
             g = texts[0]["grid"]
-            locations.insert(0, {"type": "grid", "cell": g["cell"], "row": g["row"], "col": g["col"], "inside_grid": g["inside_grid"]})
+            locations.insert(
+                0,
+                {
+                    "type": "grid",
+                    "cell": g["cell"],
+                    "row": g["row"],
+                    "col": g["col"],
+                    "inside_grid": g["inside_grid"],
+                },
+            )
         elif drawings and drawings[0].get("grid"):
             locations.insert(0, {"type": "grid", "cell": drawings[0]["grid"]["cell"]})
         for t in texts:
@@ -174,7 +185,13 @@ class _Builder:
                 break
         for d in drawings:
             if d["shape"] == "solid":
-                chars.append({"name": "symbol_size_pt", "value": d["size_pt"], "note": "drawn size on the page"})
+                chars.append(
+                    {
+                        "name": "symbol_size_pt",
+                        "value": d["size_pt"],
+                        "note": "drawn size on the page",
+                    }
+                )
         ocr = [t["ocr_conf"] for t in texts if t.get("ocr_conf") is not None]
         element = {
             "file": self.raw["file"]["file"],
@@ -196,7 +213,9 @@ class _Builder:
                 "ocr_conf_min": min(ocr) if ocr else None,
                 "has_facts": bool(bars or chars),
             },
-            "evidence": [{"page": page["page"], "bbox": t["bbox"], "text": t["lines"]} for t in texts],
+            "evidence": [
+                {"page": page["page"], "bbox": t["bbox"], "text": t["lines"]} for t in texts
+            ],
         }
         element.update(extra)
         for d in drawings:
@@ -211,7 +230,7 @@ class _Builder:
             if t.get("cell"):
                 by_table[t["cell"]["table"]].append(t)
         consumed: set[str] = set()
-        for table_id, cells in by_table.items():
+        for _table_id, cells in by_table.items():
             orient = _orientation(cells)
             if orient == "columns":
                 self._table_columns(page, cells)
@@ -227,7 +246,9 @@ class _Builder:
         for t in cells:
             cols[t["cell"]["col"]].append(t)
         row_headers = {t["cell"]["row"]: t for t in cols.get(0, [])}
-        header_text = " ".join(" ".join(t["lines"]) for t in sorted(cols.get(0, []), key=lambda t: t["cell"]["row"]))
+        header_text = " ".join(
+            " ".join(t["lines"]) for t in sorted(cols.get(0, []), key=lambda t: t["cell"]["row"])
+        )
         for j, members in sorted(cols.items()):
             if j == 0:
                 continue
@@ -246,10 +267,14 @@ class _Builder:
                 continue
             # OCR reads the row letter I as 1 (`1.2-10`); a row label never starts with a digit
             cells_found = [
-                f"{('I' + r[1:]) if r.startswith('1') else r}-{c}" for r, c in GRID_CELL.findall(name or "")
+                f"{('I' + r[1:]) if r.startswith('1') else r}-{c}"
+                for r, c in GRID_CELL.findall(name or "")
             ]
             el = self._emit(
-                texts, [], page, "table_column",
+                texts,
+                [],
+                page,
+                "table_column",
                 name=name,
                 header=header_text,
                 match={"rule_certainty": 0.95, "table": members[0]["cell"]["table"], "column": j},
@@ -273,16 +298,32 @@ class _Builder:
                 value = " ".join(t["lines"])
                 tt = dict(t)
                 tt["facts"] = {
-                    "bars": parse_line(value, header)["bars"] if header else parse_line(value)["bars"],
-                    "characteristics": [{"name": (header or f"col{t['cell']['col']}").lower(), "value": value, "source_text": value}],
+                    "bars": parse_line(value, header)["bars"]
+                    if header
+                    else parse_line(value)["bars"],
+                    "characteristics": [
+                        {
+                            "name": (header or f"col{t['cell']['col']}").lower(),
+                            "value": value,
+                            "source_text": value,
+                        }
+                    ],
                     "descriptions": [],
                 }
                 texts.append(tt)
-            self._emit(texts, [], page, "table_row", name=" ".join(texts[0]["lines"]),
-                       match={"rule_certainty": 0.95, "table": members[0]["cell"]["table"], "row": i})
+            self._emit(
+                texts,
+                [],
+                page,
+                "table_row",
+                name=" ".join(texts[0]["lines"]),
+                match={"rule_certainty": 0.95, "table": members[0]["cell"]["table"], "row": i},
+            )
 
     # ------------------------------------------------------------------ callouts and loose notes
-    def _candidates(self, text: dict, index: _Index, h: float, by_id: dict) -> list[tuple[float, dict, bool, bool]]:
+    def _candidates(
+        self, text: dict, index: _Index, h: float, by_id: dict
+    ) -> list[tuple[float, dict, bool, bool]]:
         """Drawings worth asking about for one note: the one a leader line reaches, if any, then the
         nearest others within reach. This only lists candidates; the model decides."""
         out: list[tuple[float, dict, bool, bool]] = []
@@ -314,13 +355,26 @@ class _Builder:
             users = []
             for j in pending:
                 g, d, leader, inside = j["cands"][round_no]
-                users.append(f"NOTE: {note_json(j['text'])}\nOBJECT: {drawing_json(d, g, leader, inside)}\nANSWER:")
-            answers = choose_many(self.client, P.LINK_SYSTEM, users, P.OPTIONS, version=P.LINK_VERSION)
+                users.append(
+                    f"NOTE: {note_json(j['text'])}\nOBJECT: {drawing_json(d, g, leader, inside)}\nANSWER:"
+                )
+            answers = choose_many(
+                self.client, P.LINK_SYSTEM, users, P.OPTIONS, version=P.LINK_VERSION
+            )
             self.llm_calls += len(users)
             for j, ans in zip(pending, answers, strict=True):
                 if ans.option == "yes":
                     g, d, leader, _ = j["cands"][round_no]
-                    j["result"] = ([d], {"method": "llm_link", "llm_certainty": ans.certainty, "gap_pt": round(g, 1), "leader_line": leader, "candidate_rank": round_no + 1})
+                    j["result"] = (
+                        [d],
+                        {
+                            "method": "llm_link",
+                            "llm_certainty": ans.certainty,
+                            "gap_pt": round(g, 1),
+                            "leader_line": leader,
+                            "candidate_rank": round_no + 1,
+                        },
+                    )
 
     def _texts_and_drawings(self, page: dict, texts: list[dict], drawings: list[dict]) -> None:
         h = page.get("text_height", 8.0)
@@ -331,7 +385,9 @@ class _Builder:
             if _has_facts(t) or t.get("frame_bbox") or t.get("leader"):
                 loose.append(t)
             else:
-                self._emit([t], [], page, "text_only", role="annotation", match={"rule_certainty": 1.0})
+                self._emit(
+                    [t], [], page, "text_only", role="annotation", match={"rule_certainty": 1.0}
+                )
         dup_groups: dict[tuple, list[dict]] = defaultdict(list)
         for t in loose:
             sig = _signature(t)
@@ -342,10 +398,22 @@ class _Builder:
             members.sort(key=lambda t: (t["y"], t["x"]))
             lead = members[0]
             cands = self._candidates(lead, index, h, by_id)
-            jobs.append({"members": members, "text": lead, "cands": cands, "result": None if cands else ([], {"method": "text_only", "rule_certainty": 1.0})})
+            jobs.append(
+                {
+                    "members": members,
+                    "text": lead,
+                    "cands": cands,
+                    "result": None
+                    if cands
+                    else ([], {"method": "text_only", "rule_certainty": 1.0}),
+                }
+            )
         self._resolve(jobs)
         for j in jobs:
-            ds, m = j["result"] or ([], {"method": "text_only", "unconfirmed_candidates": [c[1]["id"] for c in j["cands"]]})
+            ds, m = j["result"] or (
+                [],
+                {"method": "text_only", "unconfirmed_candidates": [c[1]["id"] for c in j["cands"]]},
+            )
             members = j["members"]
             el = self._emit(members, ds, page, m.pop("method"), match=m)
             if len(members) > 1:
@@ -375,7 +443,13 @@ class _Builder:
             if d["shape"] in {"solid", "outline"}:
                 self._drawing_only(pages[d["page"]], d)
             else:
-                unattached.append({k: d[k] for k in ("id", "page", "shape", "bbox", "size_pt", "x", "y") if k in d})
+                unattached.append(
+                    {
+                        k: d[k]
+                        for k in ("id", "page", "shape", "bbox", "size_pt", "x", "y")
+                        if k in d
+                    }
+                )
         self.elements.sort(key=lambda e: (e["page"], round(e["y"]), e["x"]))
         for i, e in enumerate(self.elements, 1):
             e["id"] = f"{self.stem}_e{i:05d}"
@@ -390,7 +464,7 @@ class _Builder:
                 "elements": len(self.elements),
                 "with_facts": sum(e["quality"]["has_facts"] for e in self.elements),
                 "llm_calls": self.llm_calls,
-                                "model": getattr(self.client, "model_id", None),
+                "model": getattr(self.client, "model_id", None),
             },
         }
 
@@ -406,9 +480,14 @@ class _Builder:
                 "kind": None,
                 "name": None,
                 "role": "drawing",
-                "locations": ([{"type": "grid", "cell": d["grid"]["cell"]}] if d.get("grid") else []),
+                "locations": (
+                    [{"type": "grid", "cell": d["grid"]["cell"]}] if d.get("grid") else []
+                ),
                 "bars": [],
-                "characteristics": [{"name": "size_pt", "value": d["size_pt"]}, {"name": "shape", "value": d["shape"]}],
+                "characteristics": [
+                    {"name": "size_pt", "value": d["size_pt"]},
+                    {"name": "shape", "value": d["shape"]},
+                ],
                 "descriptions": [],
                 "parts": {"texts": [], "drawings": [d["id"]]},
                 "match": {"method": "drawing_only"},
@@ -421,7 +500,12 @@ class _Builder:
 def _signature(t: dict) -> tuple:
     f = t["facts"]
     return (
-        tuple(sorted(f"{b.get('count')}|{b.get('size')}|{b.get('spacing_mm')}|{b.get('secondary_count')}" for b in f["bars"])),
+        tuple(
+            sorted(
+                f"{b.get('count')}|{b.get('size')}|{b.get('spacing_mm')}|{b.get('secondary_count')}"
+                for b in f["bars"]
+            )
+        ),
         tuple(sorted(json_key(c) for c in f["characteristics"])),
         re.sub(r"\s+", " ", t["text"].lower()) if not (f["bars"] or f["characteristics"]) else "",
     )
@@ -461,8 +545,12 @@ def _quantity(members: list[dict]) -> int | None:
 def _orientation(cells: list[dict]) -> str | None:
     """`columns` when the first column holds property names and the first row element names;
     `rows` when the first row holds property names and the first column element names."""
-    first_col = [" ".join(t["lines"]) for t in cells if t["cell"]["col"] == 0 and t["cell"]["row"] > 0]
-    first_row = [" ".join(t["lines"]) for t in cells if t["cell"]["row"] == 0 and t["cell"]["col"] > 0]
+    first_col = [
+        " ".join(t["lines"]) for t in cells if t["cell"]["col"] == 0 and t["cell"]["row"] > 0
+    ]
+    first_row = [
+        " ".join(t["lines"]) for t in cells if t["cell"]["row"] == 0 and t["cell"]["col"] > 0
+    ]
     if not first_col or not first_row:
         return None
 

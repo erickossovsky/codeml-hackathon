@@ -29,7 +29,11 @@ def main() -> int:
         rel = pdf.relative_to(root).as_posix()
         source = args.source
         if source == "auto":  # a PDF inside a DA folder is a shop drawing, one beside it is a plan
-            source = "shop" if any(part.upper() == "DA" for part in pdf.parts) or pdf.parent != root else "plan"
+            source = (
+                "shop"
+                if any(part.upper() == "DA" for part in pdf.parts) or pdf.parent != root
+                else "plan"
+            )
         pages = load_pdf(pdf, rel, DEFAULT_CONFIG)
         with pymupdf.open(pdf) as doc:
             for pg in pages:

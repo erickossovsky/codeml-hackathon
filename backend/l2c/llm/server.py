@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import atexit
 import json
-import os
 import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -43,7 +42,9 @@ def _post(url: str, body: dict, timeout: float = 120.0) -> dict:
 
 def server_up(port: int = PORT) -> bool:
     try:
-        return json.load(urlopen(f"http://127.0.0.1:{port}/health", timeout=1)).get("status") == "ok"
+        return (
+            json.load(urlopen(f"http://127.0.0.1:{port}/health", timeout=1)).get("status") == "ok"
+        )
     except (URLError, OSError, ValueError):
         return False
 
@@ -66,11 +67,28 @@ class ServerClient:
         out = open(log, "wb") if log else subprocess.DEVNULL  # noqa: SIM115
         self._proc = subprocess.Popen(
             [
-                str(exe), "-m", str(model), "-ngl", "99", "-c", str(self.slots * self.ctx_per_slot),
-                "-np", str(self.slots), "--host", "127.0.0.1", "--port", str(self.port),
-                "-fa", "on", "--no-webui", "--seed", str(self.seed),
+                str(exe),
+                "-m",
+                str(model),
+                "-ngl",
+                "99",
+                "-c",
+                str(self.slots * self.ctx_per_slot),
+                "-np",
+                str(self.slots),
+                "--host",
+                "127.0.0.1",
+                "--port",
+                str(self.port),
+                "-fa",
+                "on",
+                "--no-webui",
+                "--seed",
+                str(self.seed),
             ],
-            stdout=out, stderr=subprocess.STDOUT, cwd=str(exe.parent),
+            stdout=out,
+            stderr=subprocess.STDOUT,
+            cwd=str(exe.parent),
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
         atexit.register(self.stop)
@@ -111,27 +129,46 @@ class ServerClient:
 
     def choose(self, system: str, user: str, options: list[str], *, version: str = "") -> Choice:
         r = self._complete(
-            system, user,
-            {"n_predict": 2, "n_probs": 8, "grammar": "root ::= " + " | ".join(f'"{o}"' for o in options)},
+            system,
+            user,
+            {
+                "n_predict": 2,
+                "n_probs": 8,
+                "grammar": "root ::= " + " | ".join(f'"{o}"' for o in options),
+            },
         )
         option = r["content"].strip().lower()
         probs = r.get("completion_probabilities") or []
-        certainty = first_token_certainty(probs[0]["top_logprobs"], option, options) if probs else None
+        certainty = (
+            first_token_certainty(probs[0]["top_logprobs"], option, options) if probs else None
+        )
         return Choice(option, certainty)
 
-    def ask(self, system: str, user: str, schema: dict, *, version: str = "", decision: str | None = None) -> Answer:
+    def ask(
+        self,
+        system: str,
+        user: str,
+        schema: dict,
+        *,
+        version: str = "",
+        decision: str | None = None,
+    ) -> Answer:
         r = self._complete(system, user, {"n_predict": 120, "json_schema": schema})
         return Answer(json.loads(r["content"]), None)
 
     # ------------------------------------------------------------------ many questions at once
-    def choose_many(self, system: str, users: list[str], options: list[str], *, version: str = "") -> list[Choice]:
+    def choose_many(
+        self, system: str, users: list[str], options: list[str], *, version: str = ""
+    ) -> list[Choice]:
         """Answers in the order of `users`. The questions run in parallel slots of the server."""
         if not users:
             return []
         with ThreadPoolExecutor(min(self.workers, len(users))) as pool:
             return list(pool.map(lambda u: self.choose(system, u, options, version=version), users))
 
-    def ask_many(self, system: str, users: list[str], schema: dict, *, version: str = "") -> list[Answer]:
+    def ask_many(
+        self, system: str, users: list[str], schema: dict, *, version: str = ""
+    ) -> list[Answer]:
         if not users:
             return []
         with ThreadPoolExecutor(min(self.workers, len(users))) as pool:

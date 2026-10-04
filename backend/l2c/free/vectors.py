@@ -88,7 +88,9 @@ def _rect_to_page(rects: np.ndarray, m: pymupdf.Matrix) -> np.ndarray:
     """(n, 4) rectangles x0,y0,x1,y1 -> bounding rectangles in the displayed frame."""
     if rects.size == 0:
         return rects
-    pts = np.stack([rects[:, [0, 1]], rects[:, [2, 1]], rects[:, [2, 3]], rects[:, [0, 3]]], axis=1)  # n,4,2
+    pts = np.stack(
+        [rects[:, [0, 1]], rects[:, [2, 1]], rects[:, [2, 3]], rects[:, [0, 3]]], axis=1
+    )  # n,4,2
     x = m.a * pts[:, :, 0] + m.c * pts[:, :, 1] + m.e
     y = m.b * pts[:, :, 0] + m.d * pts[:, :, 1] + m.f
     return np.stack([x.min(axis=1), y.min(axis=1), x.max(axis=1), y.max(axis=1)], axis=1)
@@ -122,8 +124,18 @@ def vectors_from_drawings(drawings: list[dict], m: pymupdf.Matrix) -> Vectors:
                 seg_color.append(c)
             elif kind == "re":
                 r = it[1]
-                rx0, ry0, rx1, ry1 = min(r[0], r[2]), min(r[1], r[3]), max(r[0], r[2]), max(r[1], r[3])
-                seg_xy += [(rx0, ry0, rx1, ry0), (rx1, ry0, rx1, ry1), (rx1, ry1, rx0, ry1), (rx0, ry1, rx0, ry0)]
+                rx0, ry0, rx1, ry1 = (
+                    min(r[0], r[2]),
+                    min(r[1], r[3]),
+                    max(r[0], r[2]),
+                    max(r[1], r[3]),
+                )
+                seg_xy += [
+                    (rx0, ry0, rx1, ry0),
+                    (rx1, ry0, rx1, ry1),
+                    (rx1, ry1, rx0, ry1),
+                    (rx0, ry1, rx0, ry0),
+                ]
                 seg_color += [c, c, c, c]
     out = Vectors()
     for r in _rect_to_page(np.array(solids, dtype=float).reshape(-1, 4), m):

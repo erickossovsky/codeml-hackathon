@@ -26,6 +26,24 @@ MAX_COST = 1.8  # an assigned pair above this is rejected
 UNMATCHED_COST = 0.8  # cost of leaving one side without a partner (dummy rows and columns)
 NOTHING_IN_COMMON = 1.7  # above two unmatched costs: such a pair is never preferred to no pair
 SYNONYMS = [{"column", "pier"}, {"wall", "shear_wall"}, {"footing", "raft", "pier"}]
+FOUNDATION = {
+    "footing",
+    "raft",
+    "pile",
+    "pile_cap",
+}  # at the foundation by definition: their level label is not evidence
+REL_TOL = 0.04  # inch-to-metric rounding stays under 2%; a real change (a bar size, a spacing step) is about 8% or more
+
+
+def same_length(a: float, b: float, floor_mm: float = 5.0) -> bool:
+    """Two lengths in mm are the same value written in two unit systems or rounded."""
+    return abs(a - b) <= max(floor_mm, REL_TOL * max(abs(a), abs(b)))
+
+
+def _field_equal(k: str, a, b) -> bool:
+    return same_length(a, b) if k == "spacing_mm" else a == b
+
+
 TOP_CANDIDATES = 3  # shop slots asked about per plan element, lowest prior cost first
 SECOND_PASS_MAX_COST = 1.7  # relaxed candidates up to this cost are asked about
 SECOND_PASS_MIN_CERTAINTY = 0.6
@@ -57,7 +75,9 @@ class Slot:
     level: str | None
     level_to: str | None
     kind: str | None
-    group: list[dict] = field(default_factory=list)  # other shop elements with the same cell, level and kind
+    group: list[dict] = field(
+        default_factory=list
+    )  # other shop elements with the same cell, level and kind
     rc: tuple[float, float] | None = None
     union: dict | None = None  # all bars of the group, for costing
 
@@ -80,7 +100,11 @@ def _loc(el: dict, kind: str) -> dict | None:
 
 
 def _quality_rank(e: dict) -> tuple:
-    return (-(1 if e["quality"].get("has_facts") else 0), e["match"].get("rule_certainty") is None, e["id"])
+    return (
+        -(1 if e["quality"].get("has_facts") else 0),
+        e["match"].get("rule_certainty") is None,
+        e["id"],
+    )
 
 
 def eligible(e: dict) -> bool:
@@ -104,7 +128,11 @@ def build_entities(plan: list[dict]) -> list[Entity]:
     for (cell, level, kind), members in sorted(groups.items(), key=lambda kv: str(kv[0])):
         members.sort(key=_quality_rank)
         g = _loc(members[0], "grid") or {}
-        out.append(Entity("", members, cell, level, kind, list(g.get("alt_cells", [])), _rc(g.get("rc"), cell)))
+        out.append(
+            Entity(
+                "", members, cell, level, kind, list(g.get("alt_cells", [])), _rc(g.get("rc"), cell)
+            )
+        )
     for e in loose:
         lv = _loc(e, "level")
         out.append(Entity("", [e], None, lv["value"] if lv else None, e.get("kind")))
@@ -151,17 +179,25 @@ def _kind_cost(a: str | None, b: str | None) -> float:
         return 0.2
     if a == b:
         return 0.0
-    return 0.3 if any(a in s and b in s for s in SYNONYMS) else 2.0  # two different known kinds: not the same object
+    return (
+        0.3 if any(a in s and b in s for s in SYNONYMS) else 2.0
+    )  # two different known kinds: not the same object
 
 
-def _level_cost(plan_level: str | None, s: Slot) -> float:
+def _level_cost(plan_level: str | None, s: Slot, kind: str | None = None) -> float:
     if plan_level is None or s.level is None:
         return 0.3
     if plan_level == s.level:
         return 0.0
     if s.level_to and plan_level == s.level_to:
         return 0.4
-    return 1.2
+    if kind in FOUNDATION or s.kind in FOUNDATION:
+        return (
+            0.3  # a footing's level label (foundation, sub-grade, the storey above) is not evidence
+        )
+    # two known, different storeys are two different members; reinforcement changes between storeys,
+    # so such a pair would read as a changed value
+    return NOT_CANDIDATE
 
 
 def _cell_cost(a: str | None, b: str | None) -> float:
@@ -197,7 +233,11 @@ def _relaxed_cell_cost(a: str | None, b: str | None) -> float:
 
 
 def _bar_fields(b: dict) -> dict[str, object]:
-    return {k: b.get(k) for k in ("size", "count", "secondary_count", "spacing_mm") if b.get(k) is not None}
+    return {
+        k: b.get(k)
+        for k in ("size", "count", "secondary_count", "spacing_mm")
+        if b.get(k) is not None
+    }
 
 
 def _content_cost(a: dict, b: dict) -> float:
@@ -216,7 +256,7 @@ def _content_cost(a: dict, b: dict) -> float:
             if not both:
                 continue
             seen = True
-            best = max(best, sum(fa[k] == fb[k] for k in both) / len(both))
+            best = max(best, sum(_field_equal(k, fa[k], fb[k]) for k in both) / len(both))
     if not seen:
         return 0.0
     if best == 0:
@@ -229,13 +269,17 @@ def _section_cost(a: dict, b: dict) -> float:
     sa, sb = _section(a), _section(b)
     if not sa or not sb:
         return 0.0
-    same = all(abs(x - y) <= 1.0 for x, y in zip(sa, sb, strict=True)) or all(abs(x - y) <= 1.0 for x, y in zip(sa, sb[::-1], strict=True))
+    same = all(same_length(x, y, 1.0) for x, y in zip(sa, sb, strict=True)) or all(
+        same_length(x, y, 1.0) for x, y in zip(sa, sb[::-1], strict=True)
+    )
     return -0.3 if same else 0.4
 
 
 def _ent_cell_cost(ent: Entity, s: Slot) -> float:
     if s.cell and s.cell in ent.alts:
-        return 0.3  # a neighbouring cell the note sits between: the note's content has to confirm it
+        return (
+            0.3  # a neighbouring cell the note sits between: the note's content has to confirm it
+        )
     return _cell_cost(ent.cell, s.cell)
 
 
@@ -249,11 +293,16 @@ def _distance(ent: Entity, s: Slot) -> float:
 
 def base_cost(ent: Entity, s: Slot) -> float:
     shop_side = s.union or s.shop
-    cost = _ent_cell_cost(ent, s) + _level_cost(ent.level, s) + _kind_cost(ent.kind, s.kind) + _content_cost(ent.primary, shop_side)
+    cost = (
+        _ent_cell_cost(ent, s)
+        + _level_cost(ent.level, s, ent.kind)
+        + _kind_cost(ent.kind, s.kind)
+        + _content_cost(ent.primary, shop_side)
+    )
     cost += 0.15 * min(_distance(ent, s), 2.0)
     a, b = _section(ent.primary), _section(shop_side)
     if a and b:
-        cost += -0.2 if all(abs(x - y) <= 1.0 for x, y in zip(a, b, strict=True)) else 0.0
+        cost += -0.2 if all(same_length(x, y, 1.0) for x, y in zip(a, b, strict=True)) else 0.0
     return round(cost, 3)
 
 
@@ -279,7 +328,9 @@ def _row_of(cell: str | None) -> str | None:
     return pc[0].split(".")[0].rstrip("'") if pc else None
 
 
-def _components(n: int, m: int, edges: dict[tuple[int, int], float]) -> list[tuple[list[int], list[int]]]:
+def _components(
+    n: int, m: int, edges: dict[tuple[int, int], float]
+) -> list[tuple[list[int], list[int]]]:
     """Plan entities and slots joined by candidate edges. Each component is solved on its own, so the
     assignment never builds one matrix for the whole project."""
     parent = list(range(n + m))
@@ -293,7 +344,7 @@ def _components(n: int, m: int, edges: dict[tuple[int, int], float]) -> list[tup
     for i, j in edges:
         parent[find(i)] = find(n + j)
     comps: dict[int, tuple[list[int], list[int]]] = {}
-    for i, j in edges:
+    for i, _ in edges:
         comps.setdefault(find(i), ([], []))
     for i in {i for i, _ in edges}:
         comps[find(i)][0].append(i)
@@ -302,7 +353,9 @@ def _components(n: int, m: int, edges: dict[tuple[int, int], float]) -> list[tup
     return [(sorted(set(a)), sorted(set(b))) for a, b in comps.values()]
 
 
-def _solve(rows: list[int], cols: list[int], edges: dict[tuple[int, int], float]) -> list[tuple[int, int, float]]:
+def _solve(
+    rows: list[int], cols: list[int], edges: dict[tuple[int, int], float]
+) -> list[tuple[int, int, float]]:
     """Hungarian assignment of one component, with dummy rows and columns so a poor pairing is never forced."""
     r, c = len(rows), len(cols)
     ri = {v: k for k, v in enumerate(rows)}
@@ -371,8 +424,13 @@ def assign(plan: list[dict], shop: list[dict], client: LlmClient) -> Result:
     edges: dict[tuple[int, int], float] = {}
     close: list[int] = []  # plan entities whose pairing is a close call
     for i, ent in enumerate(entities):
-        pool = [j for c in [ent.cell, *ent.alts] for j in exact.get(c or "", [])] or by_row.get(_row_of(ent.cell) or "", [])
-        if ent.level is None and len({slots[j].level for j in pool if _kind_cost(ent.kind, slots[j].kind) < 1.0}) > 1:
+        pool = [j for c in [ent.cell, *ent.alts] for j in exact.get(c or "", [])] or by_row.get(
+            _row_of(ent.cell) or "", []
+        )
+        if (
+            ent.level is None
+            and len({slots[j].level for j in pool if _kind_cost(ent.kind, slots[j].kind) < 1.0}) > 1
+        ):
             # the plan does not say which level this is and the shop has several: any pairing would be a guess
             res.level_unknown.add(i)  # type: ignore[attr-defined]
             continue
@@ -392,13 +450,25 @@ def assign(plan: list[dict], shop: list[dict], client: LlmClient) -> Result:
     for (i, j), c in edges.items():
         per_entity[i].append((c, j))
     for i in close:
-        for c, j in sorted(per_entity[i])[:1]:  # the best candidate; a no moves its cost up and the next one wins
+        for _c, j in sorted(per_entity[i])[
+            :1
+        ]:  # the best candidate; a no moves its cost up and the next one wins
             asked.append((i, j))
-    answers = choose_many(client, P.MATCH_SYSTEM, [_pair_question(entities[i], slots[j]) for i, j in asked], P.OPTIONS, version=P.MATCH_VERSION)
+    answers = choose_many(
+        client,
+        P.MATCH_SYSTEM,
+        [_pair_question(entities[i], slots[j]) for i, j in asked],
+        P.OPTIONS,
+        version=P.MATCH_VERSION,
+    )
     res.llm_calls += len(asked)
     for (i, j), ans in zip(asked, answers, strict=True):
+        if ans.option is None:
+            continue  # no answer: the cost stays as the evidence set it
         certainty[(i, j)] = ans.certainty
-        edges[(i, j)] = round(edges[(i, j)] + (-0.3 * (ans.certainty or 0.5) if ans.option == "yes" else 0.8), 3)
+        edges[(i, j)] = round(
+            edges[(i, j)] + (-0.3 * (ans.certainty or 0.5) if ans.option == "yes" else 0.8), 3
+        )
     matched_plan: set[int] = set()
     matched_slot: set[int] = set()
     for rows, cols in _components(len(entities), len(slots), edges):
@@ -424,14 +494,18 @@ def assign(plan: list[dict], shop: list[dict], client: LlmClient) -> Result:
     _second_pass(entities, slots, matched_plan, matched_slot, res, client, by_row)
     res.pairs.sort(key=lambda p: (p["cost"], p["plan_entity"]))
     res.plan_unmatched = [e for k, e in enumerate(entities) if k not in matched_plan]
-    shop_with_match = {slots[j].shop["id"] for j in matched_slot} | {g["id"] for j in matched_slot for g in slots[j].group}
+    shop_with_match = {slots[j].shop["id"] for j in matched_slot} | {
+        g["id"] for j in matched_slot for g in slots[j].group
+    }
     res.shop_unmatched = [s for s in shop if eligible(s) and s["id"] not in shop_with_match]
     return res
 
 
 NEAR_ROWS = 1.3  # a note's text can sit up to about one bay away from what it describes
 NEAR_COLS = 2.2
-MIN_SAME_SHARE = 0.5  # at least half of the fields both notes state must agree to be worth a question
+MIN_SAME_SHARE = (
+    0.5  # at least half of the fields both notes state must agree to be worth a question
+)
 
 
 def _same_share(a: dict, b: dict) -> float:
@@ -443,11 +517,19 @@ def _same_share(a: dict, b: dict) -> float:
             fb = _bar_fields(bb)
             both = fa.keys() & fb.keys()
             if both:
-                best = max(best, sum(fa[k] == fb[k] for k in both) / len(both))
+                best = max(best, sum(_field_equal(k, fa[k], fb[k]) for k in both) / len(both))
     return best
 
 
-def _second_pass(entities, slots, matched_plan: set, matched_slot: set, res: Result, client: LlmClient, by_row: dict) -> None:
+def _second_pass(
+    entities,
+    slots,
+    matched_plan: set,
+    matched_slot: set,
+    res: Result,
+    client: LlmClient,
+    by_row: dict,
+) -> None:
     """Try harder for what is left. A note's text can sit up to about a bay away from the member it
     describes, on either document, so candidates are the free shop notes within about one bay (in
     continuous grid coordinates) at a compatible level and kind that say nearly the same thing. One
@@ -469,23 +551,39 @@ def _second_pass(entities, slots, matched_plan: set, matched_slot: set, res: Res
                 dr, dc = abs(s.rc[0] - r0), abs(s.rc[1] - c0)
                 if dr > NEAR_ROWS or dc > NEAR_COLS:
                     continue
-                lv, kc = _level_cost(ent.level, s), _kind_cost(ent.kind, s.kind)
+                lv, kc = _level_cost(ent.level, s, ent.kind), _kind_cost(ent.kind, s.kind)
                 if lv >= 1.0 or kc >= 1.0:
                     continue
                 shop_side = s.union or s.shop
                 share = _same_share(ent.primary, shop_side)
                 if share < MIN_SAME_SHARE:
                     continue
-                c = 0.4 * (dr + 0.5 * dc) + lv + kc + _content_cost(ent.primary, shop_side) + _section_cost(ent.primary, shop_side)
+                c = (
+                    0.4 * (dr + 0.5 * dc)
+                    + lv
+                    + kc
+                    + _content_cost(ent.primary, shop_side)
+                    + _section_cost(ent.primary, shop_side)
+                )
                 if c < SECOND_PASS_MAX_COST:
                     cands.append((round(c, 3), i, j))
         batch += sorted(cands)[:1]
-    answers = choose_many(client, P.MATCH_SYSTEM, [_pair_question(entities[i], slots[j]) for _, i, j in batch], P.OPTIONS, version=P.MATCH_VERSION)
+    answers = choose_many(
+        client,
+        P.MATCH_SYSTEM,
+        [_pair_question(entities[i], slots[j]) for _, i, j in batch],
+        P.OPTIONS,
+        version=P.MATCH_VERSION,
+    )
     res.llm_calls += len(batch)
     taken_p: set[int] = set()
     taken_s: set[int] = set()
     confirmed = sorted(
-        ((c, i, j, ans) for (c, i, j), ans in zip(batch, answers, strict=True) if ans.option == "yes" and (ans.certainty or 0) >= SECOND_PASS_MIN_CERTAINTY),
+        (
+            (c, i, j, ans)
+            for (c, i, j), ans in zip(batch, answers, strict=True)
+            if ans.option == "yes" and (ans.certainty or 0) >= SECOND_PASS_MIN_CERTAINTY
+        ),
         key=lambda t: (-(t[3].certainty or 0), t[0], t[1], t[2]),
     )
     for c, i, j, ans in confirmed:

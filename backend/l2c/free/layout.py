@@ -136,9 +136,17 @@ class _Sorted:
             lo = np.array([s.y0 for s in segs])
             hi = np.array([s.y1 for s in segs])
         order = np.argsort(pos, kind="stable")
-        self.order, self.pos, self.a, self.b, self.cid = order, pos[order], lo[order], hi[order], cid[order]
+        self.order, self.pos, self.a, self.b, self.cid = (
+            order,
+            pos[order],
+            lo[order],
+            hi[order],
+            cid[order],
+        )
 
-    def candidates(self, lo: float, hi: float, c_lo: float, c_hi: float) -> tuple[np.ndarray, np.ndarray]:
+    def candidates(
+        self, lo: float, hi: float, c_lo: float, c_hi: float
+    ) -> tuple[np.ndarray, np.ndarray]:
         """(indices into the sorted arrays, colour ids) of segments positioned in [lo, hi] that span [c_lo, c_hi]."""
         if not len(self.pos):
             return np.zeros(0, dtype=int), np.zeros(0, dtype=int)
@@ -197,8 +205,10 @@ def attach_frames(blocks: list[Block], vec: Vectors, h: float) -> list[Block]:
         y0 = top.y0 if top else t.y0 - 0.3 * h
         y1 = bottom.y0 if bottom else t.y1 + 0.3 * h
         frame = Box(x0, y0, x1, y1)
-        if frame.w > MAX_FRAME_H * 8 * h or frame.h > MAX_FRAME_H * h or not _closed(
-            frame, top, bottom, left, right, h
+        if (
+            frame.w > MAX_FRAME_H * 8 * h
+            or frame.h > MAX_FRAME_H * h
+            or not _closed(frame, top, bottom, left, right, h)
         ):
             out.append(b)
             continue

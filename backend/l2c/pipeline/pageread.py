@@ -12,7 +12,13 @@ import pymupdf
 
 from l2c.extract.config import DEFAULT_CONFIG, Config
 from l2c.free.vectors import Vectors, vectors_from_drawings
-from l2c.ingest.pages import PageData, Word, classify_layer, title_block_sheet, vertical_text_fraction
+from l2c.ingest.pages import (
+    PageData,
+    Word,
+    classify_layer,
+    title_block_sheet,
+    vertical_text_fraction,
+)
 
 
 def native_words(page: pymupdf.Page) -> list[Word]:
@@ -96,7 +102,9 @@ def read_text_page(
     )
 
 
-RASTER_SHARE_MIN = 0.3  # a page whose images cover this share of its area has content the text layer cannot hold
+RASTER_SHARE_MIN = (
+    0.3  # a page whose images cover this share of its area has content the text layer cannot hold
+)
 
 
 def raster_share(page: pymupdf.Page) -> float:
@@ -119,7 +127,12 @@ def merge_ocr_words(native: list[Word], ocr: list[Word]) -> list[Word]:
     boxes = np.array([[w.x0, w.y0, w.x1, w.y1] for w in native])
     extra = []
     for w in ocr:
-        inside = ((boxes[:, 0] - 2 <= w.cx) & (w.cx <= boxes[:, 2] + 2) & (boxes[:, 1] - 2 <= w.cy) & (w.cy <= boxes[:, 3] + 2)).any()
+        inside = (
+            (boxes[:, 0] - 2 <= w.cx)
+            & (w.cx <= boxes[:, 2] + 2)
+            & (boxes[:, 1] - 2 <= w.cy)
+            & (w.cy <= boxes[:, 3] + 2)
+        ).any()
         if not inside:
             extra.append(w)
     return sorted([*native, *extra], key=lambda w: (round(w.y0, 1), w.x0, w.text))

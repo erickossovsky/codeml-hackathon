@@ -35,7 +35,11 @@ STATUS_COLOR = {
     "uncertain": colors.HexColor("#5f6368"),
     "conforms": colors.HexColor("#1e7e34"),
 }
-EXPLAIN_SCHEMA = {"type": "object", "properties": {"sentence": {"type": "string"}}, "required": ["sentence"]}
+EXPLAIN_SCHEMA = {
+    "type": "object",
+    "properties": {"sentence": {"type": "string"}},
+    "required": ["sentence"],
+}
 
 
 def _fmt(v) -> str:
@@ -84,7 +88,9 @@ class Explainer:
                     if self._needs_model(f):
                         wanted.setdefault(self._prompt(f), None)
         prompts = list(wanted)
-        answers = ask_many(self.client, P.EXPLAIN_SYSTEM, prompts, EXPLAIN_SCHEMA, version=P.EXPLAIN_VERSION)
+        answers = ask_many(
+            self.client, P.EXPLAIN_SYSTEM, prompts, EXPLAIN_SCHEMA, version=P.EXPLAIN_VERSION
+        )
         self.calls = len(prompts)
         for prompt, ans in zip(prompts, answers, strict=True):
             text = str(ans.data.get("sentence", "")).strip()
@@ -123,7 +129,7 @@ def _review_items(rec: dict) -> list[dict]:
     return rec["flags"] or [i for i in rec["info"] if i.get("result") == "possible_difference"]
 
 
-def _flag_text(explainer: "Explainer", rec: dict) -> str:
+def _flag_text(explainer: Explainer, rec: dict) -> str:
     lines = [escape(explainer.sentence(f, rec)) for f in _review_items(rec)[:4]]
     if rec["notes"]:
         lines.append(f"<i>{escape(rec['notes'])}</i>")
@@ -146,13 +152,28 @@ def _table(data: list[list], widths: list[float], header_color) -> Table:
     return t
 
 
-def build_project_report(findings: dict, out: Path, explainer: "Explainer", project: str = "project", notes: list[str] | None = None) -> Path:
+def build_project_report(
+    findings: dict,
+    out: Path,
+    explainer: Explainer,
+    project: str = "project",
+    notes: list[str] | None = None,
+    banner: str | None = None,
+) -> Path:
     """One PDF for the whole project, organised by plan sheet: for each sheet the number of
     conformities and non-conformities, then the detailed list of discrepancies with the page and
     X, Y position on both documents."""
     styles = getSampleStyleSheet()
     small = ParagraphStyle("small", parent=styles["BodyText"], fontSize=7.5, leading=9)
-    doc = SimpleDocTemplate(str(out), pagesize=landscape(A4), leftMargin=12 * mm, rightMargin=12 * mm, topMargin=12 * mm, bottomMargin=12 * mm, title=f"Plan and shop drawing verification: {project}")
+    doc = SimpleDocTemplate(
+        str(out),
+        pagesize=landscape(A4),
+        leftMargin=12 * mm,
+        rightMargin=12 * mm,
+        topMargin=12 * mm,
+        bottomMargin=12 * mm,
+        title=f"Plan and shop drawing verification: {project}",
+    )
     recs = findings["entities"]
     plan_recs = [r for r in recs if r["members"]["plan"]]
     shop_only = [r for r in recs if not r["members"]["plan"]]
@@ -174,7 +195,18 @@ def build_project_report(findings: dict, out: Path, explainer: "Explainer", proj
         return c
 
     total = counts(plan_recs)
-    story: list = [Paragraph(f"Plan and shop drawing verification: {escape(project)}", styles["Title"])]
+    story: list = [
+        Paragraph(f"Plan and shop drawing verification: {escape(project)}", styles["Title"])
+    ]
+    if banner:
+        story.append(
+            Paragraph(
+                f"<b>{escape(banner)}</b>",
+                ParagraphStyle(
+                    "banner", parent=styles["BodyText"], textColor=colors.HexColor("#8a6d00")
+                ),
+            )
+        )
     story.append(
         Paragraph(
             "Each plan element was matched with its equivalent in the shop drawings and its reinforcement "
@@ -187,50 +219,191 @@ def build_project_report(findings: dict, out: Path, explainer: "Explainer", proj
         head,
         ["Compliant", total["compliant"]],
         ["Non-compliant", total["non"]],
-        ["Possible non-compliance, to verify (the pairing or the agreeing values are too weak to be sure)", total["verify"]],
+        [
+            "Possible non-compliance, to verify (the pairing or the agreeing values are too weak to be sure)",
+            total["verify"],
+        ],
+        [
+            "  of which in systematic differences (the same difference at several places, listed once)",
+            sum(1 for r in plan_recs if r.get("group")),
+        ],
         ["Matched, nothing comparable", total["unclear"]],
         ["Missing from the shop drawings (on the plan, no equivalent found)", total["missing"]],
         ["Added in the shop drawings (no plan equivalent found)", len(shop_only)],
     ]
     t = Table(summary, colWidths=[150 * mm, 25 * mm])
-    t.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.25, colors.grey), ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#eeeeee")), ("FONTSIZE", (0, 0), (-1, -1), 8.5)]))
-    story += [Spacer(1, 4 * mm), t, Spacer(1, 6 * mm), Paragraph("Per plan sheet", styles["Heading2"])]
-    rows = [["Plan sheet", "Plan file", "Compliant", "Non-compliant", "To verify", "Nothing comparable", "Missing from shop drawings"]]
+    t.setStyle(
+        TableStyle(
+            [
+                ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#eeeeee")),
+                ("FONTSIZE", (0, 0), (-1, -1), 8.5),
+            ]
+        )
+    )
+    story += [
+        Spacer(1, 4 * mm),
+        t,
+        Spacer(1, 6 * mm),
+        Paragraph("Per plan sheet", styles["Heading2"]),
+    ]
+    rows = [
+        [
+            "Plan sheet",
+            "Plan file",
+            "Compliant",
+            "Non-compliant",
+            "To verify",
+            "Nothing comparable",
+            "Missing from shop drawings",
+        ]
+    ]
     for (sheet, file), items in sorted(by_sheet.items(), key=lambda kv: (_nat(kv[0][0]), kv[0][1])):
         c = counts(items)
-        rows.append([sheet, Paragraph(escape(Path(file).name), small), c["compliant"], c["non"], c["verify"], c["unclear"], c["missing"]])
-    story.append(_table(rows, [28 * mm, 70 * mm, 24 * mm, 28 * mm, 22 * mm, 30 * mm, 38 * mm], colors.HexColor("#37474f")))
+        rows.append(
+            [
+                sheet,
+                Paragraph(escape(Path(file).name), small),
+                c["compliant"],
+                c["non"],
+                c["verify"],
+                c["unclear"],
+                c["missing"],
+            ]
+        )
+    story.append(
+        _table(
+            rows,
+            [28 * mm, 70 * mm, 24 * mm, 28 * mm, 22 * mm, 30 * mm, 38 * mm],
+            colors.HexColor("#37474f"),
+        )
+    )
 
-    for (sheet, file), items in sorted(by_sheet.items(), key=lambda kv: (_nat(kv[0][0]), kv[0][1])):
+    for (sheet, _file), items in sorted(
+        by_sheet.items(), key=lambda kv: (_nat(kv[0][0]), kv[0][1])
+    ):
         bad = [r for r in items if r["status"] == "differs"]
-        verify = [r for r in items if r["status"] == "uncertain" and _review_items(r)]
+        verify = [
+            r
+            for r in items
+            if r["status"] == "uncertain" and _review_items(r) and not r.get("group")
+        ]  # groups are listed once, below
         if not (bad or verify):
             continue
-        story += [Spacer(1, 6 * mm), Paragraph(f"Sheet {escape(sheet)}: discrepancies", styles["Heading2"])]
+        story += [
+            Spacer(1, 6 * mm),
+            Paragraph(f"Sheet {escape(sheet)}: discrepancies", styles["Heading2"]),
+        ]
         data = [["Element", "Level", "Plan position", "Shop drawing position", "Discrepancy"]]
         for label, group in (("Non-compliant", bad), ("To verify", verify)):
             for r in group:
                 pm = r["members"]["plan"][0]
-                sm = r["members"]["shop"][0] if r["members"]["shop"] else None
+                # the sheet the difference was found on, when the member is printed on several
+                sm = next((f["shop_ref"] for f in _review_items(r) if f.get("shop_ref")), None) or (
+                    r["members"]["shop"][0] if r["members"]["shop"] else None
+                )
                 ident = f"{escape(str(r.get('kind') or 'element'))} {escape(str(r['location'].get('grid') or ''))}<br/><b>{label}</b>"
-                data.append([Paragraph(ident, small), r.get("level") or "-", Paragraph(escape(_where(pm)), small), Paragraph(escape(_where(sm)) if sm else "-", small), Paragraph(_flag_text(explainer, r), small)])
-        story.append(_table(data, [38 * mm, 16 * mm, 52 * mm, 56 * mm, 100 * mm], colors.HexColor("#b3261e")))
+                data.append(
+                    [
+                        Paragraph(ident, small),
+                        r.get("level") or "-",
+                        Paragraph(escape(_where(pm)), small),
+                        Paragraph(escape(_where(sm)) if sm else "-", small),
+                        Paragraph(_flag_text(explainer, r), small),
+                    ]
+                )
+        story.append(
+            _table(data, [38 * mm, 16 * mm, 52 * mm, 56 * mm, 100 * mm], colors.HexColor("#b3261e"))
+        )
+
+    groups = findings.get("systematic") or []
+    if groups:
+        story += [
+            Spacer(1, 8 * mm),
+            Paragraph("Systematic differences", styles["Heading2"]),
+            Paragraph(
+                "The same difference found at several places. Real non-conformities are usually few and varied, so a repeated difference is more often a drawing convention or a reading artifact; it is listed once, with every place, for one check.",
+                small,
+            ),
+        ]
+        data = [["Group", "Difference", "Places", "Where (grid, level)"]]
+        for g in groups:
+            where = ", ".join(f"{p['grid'] or '?'} {p['level'] or ''}".strip() for p in g["places"])
+            data.append(
+                [
+                    g["group"],
+                    Paragraph(escape(f"{g['property']}: {g['relation']}"), small),
+                    g["count"],
+                    Paragraph(escape(where), small),
+                ]
+            )
+        story.append(
+            _table(data, [16 * mm, 80 * mm, 16 * mm, 150 * mm], colors.HexColor("#8a6d00"))
+        )
 
     missing_rows = [r for r in plan_recs if r["status"] == "not_in_shop"]
     if missing_rows:
-        story += [Spacer(1, 8 * mm), Paragraph("Missing from the shop drawings", styles["Heading2"]), Paragraph("Shop drawings do not cover every plan element, so an element listed here is not necessarily an error. The note says why no counterpart was paired.", small)]
+        story += [
+            Spacer(1, 8 * mm),
+            Paragraph("Missing from the shop drawings", styles["Heading2"]),
+            Paragraph(
+                "Shop drawings do not cover every plan element, so an element listed here is not necessarily an error. The note says why no counterpart was paired.",
+                small,
+            ),
+        ]
         data = [["Plan sheet", "Element", "Level", "Plan position", "Note"]]
-        for r in sorted(missing_rows, key=lambda r: (_nat(_sheet_of(r)[0]), r["members"]["plan"][0]["page"], r["members"]["plan"][0]["y"])):
+        for r in sorted(
+            missing_rows,
+            key=lambda r: (
+                _nat(_sheet_of(r)[0]),
+                r["members"]["plan"][0]["page"],
+                r["members"]["plan"][0]["y"],
+            ),
+        ):
             pm = r["members"]["plan"][0]
-            data.append([_sheet_of(r)[0], Paragraph(f"{escape(str(r.get('kind') or 'element'))} {escape(str(r['location'].get('grid') or ''))}", small), r.get("level") or "-", Paragraph(escape(_where(pm)), small), Paragraph(escape(r["notes"] or ""), small)])
-        story.append(_table(data, [24 * mm, 48 * mm, 18 * mm, 66 * mm, 106 * mm], colors.HexColor("#5f6368")))
+            data.append(
+                [
+                    _sheet_of(r)[0],
+                    Paragraph(
+                        f"{escape(str(r.get('kind') or 'element'))} {escape(str(r['location'].get('grid') or ''))}",
+                        small,
+                    ),
+                    r.get("level") or "-",
+                    Paragraph(escape(_where(pm)), small),
+                    Paragraph(escape(r["notes"] or ""), small),
+                ]
+            )
+        story.append(
+            _table(data, [24 * mm, 48 * mm, 18 * mm, 66 * mm, 106 * mm], colors.HexColor("#5f6368"))
+        )
 
     if shop_only:
-        story += [Spacer(1, 8 * mm), Paragraph("Added in the shop drawings", styles["Heading2"]), Paragraph("Elements found in the shop drawings with no equivalent on the plan.", small)]
+        story += [
+            Spacer(1, 8 * mm),
+            Paragraph("Added in the shop drawings", styles["Heading2"]),
+            Paragraph("Elements found in the shop drawings with no equivalent on the plan.", small),
+        ]
         data = [["Shop file", "Element", "Level", "Shop drawing position"]]
-        for r in sorted(shop_only, key=lambda r: (r["members"]["shop"][0]["file"], r["members"]["shop"][0]["page"], r["members"]["shop"][0]["y"])):
+        for r in sorted(
+            shop_only,
+            key=lambda r: (
+                r["members"]["shop"][0]["file"],
+                r["members"]["shop"][0]["page"],
+                r["members"]["shop"][0]["y"],
+            ),
+        ):
             sm = r["members"]["shop"][0]
-            data.append([Paragraph(escape(Path(sm["file"]).name), small), Paragraph(f"{escape(str(r.get('kind') or 'element'))} {escape(str(r['location'].get('grid') or ''))}", small), r.get("level") or "-", Paragraph(escape(_where(sm)), small)])
+            data.append(
+                [
+                    Paragraph(escape(Path(sm["file"]).name), small),
+                    Paragraph(
+                        f"{escape(str(r.get('kind') or 'element'))} {escape(str(r['location'].get('grid') or ''))}",
+                        small,
+                    ),
+                    r.get("level") or "-",
+                    Paragraph(escape(_where(sm)), small),
+                ]
+            )
         story.append(_table(data, [70 * mm, 60 * mm, 20 * mm, 94 * mm], colors.HexColor("#5f6368")))
 
     story += [Spacer(1, 8 * mm), Paragraph("Method and limits", styles["Heading2"])]

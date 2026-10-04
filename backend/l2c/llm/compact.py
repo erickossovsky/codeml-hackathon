@@ -19,13 +19,19 @@ def _clip(text: str, n: int = MAX_TEXT) -> str:
 
 
 def _dump(obj: dict[str, Any]) -> str:
-    return json.dumps({k: v for k, v in obj.items() if v not in (None, [], {}, "")}, ensure_ascii=False, separators=(",", ":"))
+    return json.dumps(
+        {k: v for k, v in obj.items() if v not in (None, [], {}, "")},
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
 
 
 def note_json(t: dict) -> str:
     """A text item as read from a page."""
     grid = (t.get("grid") or {}).get("cell")
-    return _dump({"text": _clip(t["text"]), "grid": grid, "title": _clip(t.get("drawing_title") or "", 50)})
+    return _dump(
+        {"text": _clip(t["text"]), "grid": grid, "title": _clip(t.get("drawing_title") or "", 50)}
+    )
 
 
 def drawing_json(d: dict, gap: float, leader: bool = False, inside: bool = False) -> str:
@@ -52,5 +58,17 @@ def element_json(e: dict) -> str:
         elif l["type"] == "level":
             loc["level"] = l["value"] + (f"..{l['to']}" if l.get("to") else "")
     bars = [b.get("source_text") for b in e.get("bars", [])][:3]
-    chars = {c["name"]: c.get("value_mm") or c.get("value") for c in e.get("characteristics", []) if c["name"] not in {"symbol_size_pt", "size_pt", "shape"}}
-    return _dump({"kind": e.get("kind"), "name": e.get("name"), **loc, "bars": bars, "chars": dict(list(chars.items())[:4])})
+    chars = {
+        c["name"]: c.get("value_mm") or c.get("value")
+        for c in e.get("characteristics", [])
+        if c["name"] not in {"symbol_size_pt", "size_pt", "shape"}
+    }
+    return _dump(
+        {
+            "kind": e.get("kind"),
+            "name": e.get("name"),
+            **loc,
+            "bars": bars,
+            "chars": dict(list(chars.items())[:4]),
+        }
+    )
