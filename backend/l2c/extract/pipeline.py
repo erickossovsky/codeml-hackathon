@@ -150,17 +150,6 @@ def needs_ocr(page: PageData, config: Config) -> bool:
     return not has_text(page, config) and page.layer in {"vector", "image"}
 
 
-def _ocr_job(args):
-    """One OCR page in a worker process; a failure is returned so the page can record it."""
-    pdf, number, config = args
-    try:
-        from l2c.ingest.ocr import ocr_pdf_page
-
-        return ocr_pdf_page(pdf, number, config)
-    except Exception as exc:
-        return exc
-
-
 def prepare_page(
     page: PageData, pdf: Path, use_ocr: bool, config: Config, ocr_done: dict | None = None
 ) -> PageData:
@@ -188,8 +177,8 @@ def extract_project(
     learn: bool = True,
     workers: int = 1,
 ) -> MetaBundle:
-    """Read every PDF of a project into a MetaBundle. `workers` > 1 reads pages and runs OCR in a
-    process pool; the result is identical to the sequential run."""
+    """Read every PDF of a project into a MetaBundle. `workers` > 1 reads pages in a process pool;
+    the result is identical to the sequential run."""
     if workers > 1:
         from concurrent.futures import ProcessPoolExecutor
 
@@ -228,17 +217,9 @@ def _extract(project_dir, project, config, use_ocr, learn, pool) -> MetaBundle:
 
     plan_loaded = [(pdf, *load(pdf)) for pdf in found.plans]
     shop_loaded = [(pdf, folder, *load(pdf)) for pdf, folder in found.shops]
+    # OCR runs one page at a time in this process: a process pool for OCR deadlocked, and the
+    # ONNX engine already uses every core for a single page
     ocr_done: dict = {}
-    if use_ocr:
-        jobs = [
-            (pdf, page.page, config)
-            for pdf, pages, _ in [*plan_loaded, *[(a, c, d) for a, _, c, d in shop_loaded]]
-            for page in pages or []
-            if needs_ocr(page, config)
-        ]
-        if pool is not None and len(jobs) > 1:
-            for job, result in zip(jobs, pool.map(_ocr_job, jobs), strict=True):
-                ocr_done[(job[0], job[1])] = result
 
     for pdf, pages, error in plan_loaded:
         if error is not None:

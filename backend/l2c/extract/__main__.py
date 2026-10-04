@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
         "--workers",
         type=int,
         default=0,
-        help="processes for page reading and OCR (default: all cores but one; 1 = sequential)",
+        help="processes for page reading, OCR stays sequential (default: cores - 1; 1 = off)",
     )
     args = ap.parse_args(argv)
     if not args.project_dir.is_dir():

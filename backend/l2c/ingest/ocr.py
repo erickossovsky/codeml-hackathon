@@ -30,11 +30,26 @@ GHOST_SWALLOWED = 2  # a word covering this many better words is a misreading of
 GHOST_SHARE = 0.4  # ... where each of them lies at least this much inside it
 
 
+_THREADS = -1  # ONNX threads per model; -1 = all cores. Pool workers pin this to 1.
+
+
+def set_engine_threads(n: int) -> None:
+    """Call in a worker before the first OCR call so parallel workers do not fight for cores."""
+    global _THREADS
+    _THREADS = n
+    engine.cache_clear()
+
+
 @lru_cache(maxsize=1)
 def engine():
     from rapidocr_onnxruntime import RapidOCR
 
-    return RapidOCR()
+    kwargs = {
+        f"{part}_{kind}_op_num_threads": _THREADS
+        for part in ("det", "cls", "rec")
+        for kind in ("intra", "inter")
+    }
+    return RapidOCR(**kwargs)
 
 
 @dataclass(frozen=True)
