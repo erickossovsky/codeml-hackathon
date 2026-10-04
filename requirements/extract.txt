@@ -1,0 +1,4 @@
+-r base.txt
+pymupdf>=1.24
+scipy>=1.12
+rapidocr-onnxruntime>=1.3

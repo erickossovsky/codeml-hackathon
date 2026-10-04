@@ -1,0 +1,26 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "counts": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Counts",
+      "type": "object"
+    },
+    "project": {
+      "title": "Project",
+      "type": "string"
+    }
+  },
+  "required": [
+    "contract_version",
+    "project"
+  ],
+  "title": "Manifest",
+  "type": "object"
+}

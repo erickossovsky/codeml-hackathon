@@ -1,0 +1,17 @@
+[
+  {
+    "elevation_mm": 0.0,
+    "level": "N2",
+    "name": "N2"
+  },
+  {
+    "elevation_mm": 3500.0,
+    "level": "N3",
+    "name": "N3"
+  },
+  {
+    "elevation_mm": 7000.0,
+    "level": "N4",
+    "name": "N4"
+  }
+]

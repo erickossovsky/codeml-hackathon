@@ -1,0 +1,262 @@
+[
+  {
+    "element_id": "S-517_K-3_plan",
+    "global_id": "2jB4kfFijSxfTAKiFhY73h",
+    "match_key": "colonne|N2|K|3"
+  },
+  {
+    "element_id": "S-517_K-4_plan",
+    "global_id": "1rfJVTF$fVsuXvz9opf$Vr",
+    "match_key": "colonne|N2|K|4"
+  },
+  {
+    "element_id": "S-517_K-5_plan",
+    "global_id": "1L7TUAwt9OJeWqlV64AlIy",
+    "match_key": "colonne|N2|K|5"
+  },
+  {
+    "element_id": "S-517_K-6_plan",
+    "global_id": "3N5WEaIBHMohTR6pnCR51N",
+    "match_key": "colonne|N2|K|6"
+  },
+  {
+    "element_id": "S-517_K-7_plan",
+    "global_id": "2NcgM1D3LPb9GVvj8Yg88I",
+    "match_key": "colonne|N2|K|7"
+  },
+  {
+    "element_id": "S-517_K-8_plan",
+    "global_id": "2823FBWUfQSfvzHCOfBh37",
+    "match_key": "colonne|N2|K|8"
+  },
+  {
+    "element_id": "S-517_L-3_plan",
+    "global_id": "2XH0tg6cHJKx19REbTwa5z",
+    "match_key": "colonne|N2|L|3"
+  },
+  {
+    "element_id": "S-517_L-4_plan",
+    "global_id": "0RPwtYjHHVQwQbw2LaDfGd",
+    "match_key": "colonne|N2|L|4"
+  },
+  {
+    "element_id": "S-517_L-5_plan",
+    "global_id": "3$X3RRJI5Mpf14LXc9vLNG",
+    "match_key": "colonne|N2|L|5"
+  },
+  {
+    "element_id": "S-517_L-6_plan",
+    "global_id": "074TIufmHKwuva2NY6LXVi",
+    "match_key": "colonne|N2|L|6"
+  },
+  {
+    "element_id": "S-517_L-7_plan",
+    "global_id": "09giCykbTSzONGGXHdDnbj",
+    "match_key": "colonne|N2|L|7"
+  },
+  {
+    "element_id": "S-517_L-8_plan",
+    "global_id": "1Z1qdRhGzKDuhe_9uwPQvx",
+    "match_key": "colonne|N2|L|8"
+  },
+  {
+    "element_id": "S-518_K-3_plan",
+    "global_id": "1ELowtyrrNNPd4V4k0Wh4c",
+    "match_key": "colonne|N3|K|3"
+  },
+  {
+    "element_id": "S-518_K-4_plan",
+    "global_id": "3t3_80jaLSxh6___20Pca$",
+    "match_key": "colonne|N3|K|4"
+  },
+  {
+    "element_id": "S-518_K-5_plan",
+    "global_id": "3oNFLZdUnUnxwUYbaVOjSf",
+    "match_key": "colonne|N3|K|5"
+  },
+  {
+    "element_id": "S-518_K-6_plan",
+    "global_id": "1gNGmsS2XVTvQ2DQTjLGLo",
+    "match_key": "colonne|N3|K|6"
+  },
+  {
+    "element_id": "S-518_K-7_plan",
+    "global_id": "1j7fNPDDfOfxU5xZ03eTtF",
+    "match_key": "colonne|N3|K|7"
+  },
+  {
+    "element_id": "S-518_K-8_plan",
+    "global_id": "3lILA$amjV$gUmIATZFTHM",
+    "match_key": "colonne|N3|K|8"
+  },
+  {
+    "element_id": "S-518_L-3_plan",
+    "global_id": "3LkqVrYGPILRr0ysSTyzvQ",
+    "match_key": "colonne|N3|L|3"
+  },
+  {
+    "element_id": "S-518_L-4_plan",
+    "global_id": "101R2tl7fO8AMGy3XCH4_$",
+    "match_key": "colonne|N3|L|4"
+  },
+  {
+    "element_id": "S-518_L-5_plan",
+    "global_id": "2VZ$RZorDSf8lyd5eZ_U6y",
+    "match_key": "colonne|N3|L|5"
+  },
+  {
+    "element_id": "S-518_L-6_plan",
+    "global_id": "0SQPvswlfIMuQEsZQgim72",
+    "match_key": "colonne|N3|L|6"
+  },
+  {
+    "element_id": "S-518_L-7_plan",
+    "global_id": "1PzZp1KJrT8xsLA_DGM6Tc",
+    "match_key": "colonne|N3|L|7"
+  },
+  {
+    "element_id": "S-518_L-8_plan",
+    "global_id": "3oUvhZZVzGI9RG7ak9s4D4",
+    "match_key": "colonne|N3|L|8"
+  },
+  {
+    "element_id": "S-518_U900_plan",
+    "global_id": "01POfcuXLJQfZelCqyiZdJ",
+    "match_key": "colonne|N3||"
+  },
+  {
+    "element_id": "PART1_p1_K-3_FDN_shop",
+    "global_id": "3$tS_357fIGACpcxwOEn9w",
+    "match_key": "colonne|FDN|K|3"
+  },
+  {
+    "element_id": "PART1_p1_K-3_N2_shop",
+    "global_id": "2jB4kfFijSxfTAKiFhY73h",
+    "match_key": "colonne|N2|K|3"
+  },
+  {
+    "element_id": "PART1_p1_K-3_N3_shop",
+    "global_id": "1ELowtyrrNNPd4V4k0Wh4c",
+    "match_key": "colonne|N3|K|3"
+  },
+  {
+    "element_id": "PART1_p1_K-4_N2_shop",
+    "global_id": "1rfJVTF$fVsuXvz9opf$Vr",
+    "match_key": "colonne|N2|K|4"
+  },
+  {
+    "element_id": "PART1_p1_K-4_N3_shop",
+    "global_id": "3t3_80jaLSxh6___20Pca$",
+    "match_key": "colonne|N3|K|4"
+  },
+  {
+    "element_id": "PART1_p1_K-5_N2_shop",
+    "global_id": "1L7TUAwt9OJeWqlV64AlIy",
+    "match_key": "colonne|N2|K|5"
+  },
+  {
+    "element_id": "PART1_p1_K-5_N3_shop",
+    "global_id": "3oNFLZdUnUnxwUYbaVOjSf",
+    "match_key": "colonne|N3|K|5"
+  },
+  {
+    "element_id": "PART1_p1_K-6_N2_shop",
+    "global_id": "3N5WEaIBHMohTR6pnCR51N",
+    "match_key": "colonne|N2|K|6"
+  },
+  {
+    "element_id": "PART1_p1_K-6_N3_shop",
+    "global_id": "1gNGmsS2XVTvQ2DQTjLGLo",
+    "match_key": "colonne|N3|K|6"
+  },
+  {
+    "element_id": "PART1_p1_K-7_N2_shop",
+    "global_id": "2NcgM1D3LPb9GVvj8Yg88I",
+    "match_key": "colonne|N2|K|7"
+  },
+  {
+    "element_id": "PART1_p1_K-7_N3_shop",
+    "global_id": "1j7fNPDDfOfxU5xZ03eTtF",
+    "match_key": "colonne|N3|K|7"
+  },
+  {
+    "element_id": "PART1_p1_K-8_N2_shop",
+    "global_id": "2823FBWUfQSfvzHCOfBh37",
+    "match_key": "colonne|N2|K|8"
+  },
+  {
+    "element_id": "PART1_p1_K-8_N3_shop",
+    "global_id": "3lILA$amjV$gUmIATZFTHM",
+    "match_key": "colonne|N3|K|8"
+  },
+  {
+    "element_id": "PART1_p1_K-9_N3_shop",
+    "global_id": "2Yew7w74nJ5eGyZXCoxYab",
+    "match_key": "colonne|N3|K|9"
+  },
+  {
+    "element_id": "PART2_p1_L-3_N2_shop",
+    "global_id": "2XH0tg6cHJKx19REbTwa5z",
+    "match_key": "colonne|N2|L|3"
+  },
+  {
+    "element_id": "PART2_p1_L-3_N3_shop",
+    "global_id": "3LkqVrYGPILRr0ysSTyzvQ",
+    "match_key": "colonne|N3|L|3"
+  },
+  {
+    "element_id": "PART2_p1_L-4_N2_shop",
+    "global_id": "0RPwtYjHHVQwQbw2LaDfGd",
+    "match_key": "colonne|N2|L|4"
+  },
+  {
+    "element_id": "PART2_p1_L-4_N3_shop",
+    "global_id": "101R2tl7fO8AMGy3XCH4_$",
+    "match_key": "colonne|N3|L|4"
+  },
+  {
+    "element_id": "PART2_p1_L-5_N2_shop",
+    "global_id": "3$X3RRJI5Mpf14LXc9vLNG",
+    "match_key": "colonne|N2|L|5"
+  },
+  {
+    "element_id": "PART2_p1_L-5_N3_shop",
+    "global_id": "2VZ$RZorDSf8lyd5eZ_U6y",
+    "match_key": "colonne|N3|L|5"
+  },
+  {
+    "element_id": "PART2_p1_L-6_N2_shop",
+    "global_id": "074TIufmHKwuva2NY6LXVi",
+    "match_key": "colonne|N2|L|6"
+  },
+  {
+    "element_id": "PART2_p1_L-6_N3_shop",
+    "global_id": "0SQPvswlfIMuQEsZQgim72",
+    "match_key": "colonne|N3|L|6"
+  },
+  {
+    "element_id": "PART2_p1_L-7_N2_shop",
+    "global_id": "09giCykbTSzONGGXHdDnbj",
+    "match_key": "colonne|N2|L|7"
+  },
+  {
+    "element_id": "PART2_p1_L-7_N3_shop",
+    "global_id": "1PzZp1KJrT8xsLA_DGM6Tc",
+    "match_key": "colonne|N3|L|7"
+  },
+  {
+    "element_id": "PART2_p1_L-8_N3_shop",
+    "global_id": "3oUvhZZVzGI9RG7ak9s4D4",
+    "match_key": "colonne|N3|L|8"
+  },
+  {
+    "element_id": "PART2_p2_K-7_N3_shop",
+    "global_id": "1j7fNPDDfOfxU5xZ03eTtF",
+    "match_key": "colonne|N3|K|7"
+  },
+  {
+    "element_id": "PART2_p2_K-8_N3_shop",
+    "global_id": "3lILA$amjV$gUmIATZFTHM",
+    "match_key": "colonne|N3|K|8"
+  }
+]

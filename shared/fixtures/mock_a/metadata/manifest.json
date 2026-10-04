@@ -1,0 +1,9 @@
+{
+  "contract_version": "0.1.0",
+  "counts": {
+    "elements": 52,
+    "plan": 25,
+    "shop": 27
+  },
+  "project": "MOCK"
+}

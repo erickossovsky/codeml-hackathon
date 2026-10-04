@@ -1,0 +1,58 @@
+[
+  {
+    "feuillet": null,
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "height": 1700.0,
+    "kind": "shop",
+    "layer": "text",
+    "layout": null,
+    "level": null,
+    "page": 1,
+    "revision": null,
+    "rotation": 0,
+    "type_element": "colonne",
+    "width": 2500.0
+  },
+  {
+    "feuillet": null,
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "height": 1700.0,
+    "kind": "shop",
+    "layer": "text",
+    "layout": null,
+    "level": null,
+    "page": 1,
+    "revision": null,
+    "rotation": 0,
+    "type_element": "colonne",
+    "width": 2500.0
+  },
+  {
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "height": 2000.0,
+    "kind": "plan",
+    "layer": "text",
+    "layout": null,
+    "level": "N2",
+    "page": 1,
+    "revision": null,
+    "rotation": 0,
+    "type_element": "colonne",
+    "width": 3000.0
+  },
+  {
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "height": 2000.0,
+    "kind": "plan",
+    "layer": "text",
+    "layout": null,
+    "level": "N3",
+    "page": 2,
+    "revision": null,
+    "rotation": 0,
+    "type_element": "colonne",
+    "width": 3000.0
+  }
+]

@@ -1,0 +1,4 @@
+# Never edited after day 1: each lane edits only its own file under requirements/.
+-r requirements/extract.txt
+-r requirements/compare.txt
+-r requirements/dev.txt

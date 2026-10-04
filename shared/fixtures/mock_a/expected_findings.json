@@ -1,0 +1,79 @@
+[
+  {
+    "check_type": "cross.plan_vs_shop",
+    "grid": "K-4",
+    "level": "N2",
+    "note": "count",
+    "status": "non_compliant"
+  },
+  {
+    "check_type": "cross.plan_vs_shop",
+    "grid": "L-5",
+    "level": "N3",
+    "note": "spacing",
+    "status": "non_compliant"
+  },
+  {
+    "check_type": "cross.plan_vs_shop",
+    "grid": "L-8",
+    "level": "N2",
+    "note": "",
+    "status": "missing"
+  },
+  {
+    "check_type": "cross.plan_vs_shop",
+    "grid": "K-9",
+    "level": "N3",
+    "note": "",
+    "status": "added"
+  },
+  {
+    "check_type": "cross.plan_vs_shop",
+    "grid": "K-5",
+    "level": "N2",
+    "note": "size",
+    "status": "non_compliant"
+  },
+  {
+    "check_type": "self.peer_outlier",
+    "grid": "K-5",
+    "level": "N2",
+    "note": "size",
+    "status": "needs_review"
+  },
+  {
+    "check_type": "cross.plan_vs_shop",
+    "grid": "K-4",
+    "level": "N3",
+    "note": "low trust",
+    "status": "needs_review"
+  },
+  {
+    "check_type": "self.internal_consistency",
+    "grid": "L-3",
+    "level": "N2",
+    "note": "",
+    "status": "needs_review"
+  },
+  {
+    "check_type": "cross.shop_vs_shop",
+    "grid": "K-7",
+    "level": "N3",
+    "note": "",
+    "status": "needs_review"
+  },
+  {
+    "check_type": "cross.plan_vs_shop",
+    "grid": null,
+    "level": "N3",
+    "note": "unbound",
+    "status": "needs_review"
+  },
+  {
+    "check_type": "cross.plan_vs_shop",
+    "grid": "K-3",
+    "level": "FDN",
+    "note": "level",
+    "status": "needs_review"
+  }
+]

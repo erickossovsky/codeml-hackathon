@@ -1,0 +1,4530 @@
+[
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      210.0,
+      155.0,
+      230.0,
+      165.0
+    ],
+    "element": "K-3",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "K-3",
+    "id": "S-517_K-3_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 3.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-3",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 220.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      250.0,
+      155.0,
+      270.0,
+      165.0
+    ],
+    "element": "K-4",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "K-4",
+    "id": "S-517_K-4_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 4.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-4",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 260.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "35M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      290.0,
+      155.0,
+      310.0,
+      165.0
+    ],
+    "element": "K-5",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "K-5",
+    "id": "S-517_K-5_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 5.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "35M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-5",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 300.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      330.0,
+      155.0,
+      350.0,
+      165.0
+    ],
+    "element": "K-6",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "K-6",
+    "id": "S-517_K-6_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 6.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-6",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 340.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      370.0,
+      155.0,
+      390.0,
+      165.0
+    ],
+    "element": "K-7",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "K-7",
+    "id": "S-517_K-7_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 7.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-7",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 380.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      410.0,
+      155.0,
+      430.0,
+      165.0
+    ],
+    "element": "K-8",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "K-8",
+    "id": "S-517_K-8_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 8.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-8",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 420.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      210.0,
+      215.0,
+      230.0,
+      225.0
+    ],
+    "element": "L-3",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "L-3",
+    "id": "S-517_L-3_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 3.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-3",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 220.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      250.0,
+      215.0,
+      270.0,
+      225.0
+    ],
+    "element": "L-4",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "L-4",
+    "id": "S-517_L-4_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 4.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-4",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 260.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      290.0,
+      215.0,
+      310.0,
+      225.0
+    ],
+    "element": "L-5",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "L-5",
+    "id": "S-517_L-5_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 5.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-5",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 300.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      330.0,
+      215.0,
+      350.0,
+      225.0
+    ],
+    "element": "L-6",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "L-6",
+    "id": "S-517_L-6_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 6.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-6",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 340.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      370.0,
+      215.0,
+      390.0,
+      225.0
+    ],
+    "element": "L-7",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "L-7",
+    "id": "S-517_L-7_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 7.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-7",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 380.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      410.0,
+      215.0,
+      430.0,
+      225.0
+    ],
+    "element": "L-8",
+    "extraction_method": "mock",
+    "feuillet": "S-517",
+    "fichier": "plan.pdf",
+    "grid": "L-8",
+    "id": "S-517_L-8_plan",
+    "level": "N2",
+    "match_key": {
+      "col": 8.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-8",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 420.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      210.0,
+      155.0,
+      230.0,
+      165.0
+    ],
+    "element": "K-3",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "K-3",
+    "id": "S-518_K-3_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 3.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-3",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 220.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      250.0,
+      155.0,
+      270.0,
+      165.0
+    ],
+    "element": "K-4",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "K-4",
+    "id": "S-518_K-4_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 4.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-4",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 260.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      290.0,
+      155.0,
+      310.0,
+      165.0
+    ],
+    "element": "K-5",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "K-5",
+    "id": "S-518_K-5_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 5.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-5",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 300.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      330.0,
+      155.0,
+      350.0,
+      165.0
+    ],
+    "element": "K-6",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "K-6",
+    "id": "S-518_K-6_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 6.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-6",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 340.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      370.0,
+      155.0,
+      390.0,
+      165.0
+    ],
+    "element": "K-7",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "K-7",
+    "id": "S-518_K-7_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 7.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-7",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 380.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      410.0,
+      155.0,
+      430.0,
+      165.0
+    ],
+    "element": "K-8",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "K-8",
+    "id": "S-518_K-8_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 8.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-8",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 420.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      210.0,
+      215.0,
+      230.0,
+      225.0
+    ],
+    "element": "L-3",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "L-3",
+    "id": "S-518_L-3_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 3.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-3",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 220.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      250.0,
+      215.0,
+      270.0,
+      225.0
+    ],
+    "element": "L-4",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "L-4",
+    "id": "S-518_L-4_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 4.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-4",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 260.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      290.0,
+      215.0,
+      310.0,
+      225.0
+    ],
+    "element": "L-5",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "L-5",
+    "id": "S-518_L-5_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 5.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-5",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 300.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      330.0,
+      215.0,
+      350.0,
+      225.0
+    ],
+    "element": "L-6",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "L-6",
+    "id": "S-518_L-6_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 6.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-6",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 340.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      370.0,
+      215.0,
+      390.0,
+      225.0
+    ],
+    "element": "L-7",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "L-7",
+    "id": "S-518_L-7_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 7.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-7",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 380.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      410.0,
+      215.0,
+      430.0,
+      225.0
+    ],
+    "element": "L-8",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": "L-8",
+    "id": "S-518_L-8_plan",
+    "level": "N3",
+    "match_key": {
+      "col": 8.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-8",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 420.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      890.0,
+      895.0,
+      910.0,
+      905.0
+    ],
+    "element": "S-518_U900_plan",
+    "extraction_method": "mock",
+    "feuillet": "S-518",
+    "fichier": "plan.pdf",
+    "grid": null,
+    "id": "S-518_U900_plan",
+    "level": "N3",
+    "match_key": {
+      "col": null,
+      "level": "N3",
+      "row": null,
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.1,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.1,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [
+        "unbound_block"
+      ],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "outline",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": null,
+        "grid_conf": 0.1,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.1,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "plan",
+    "type_element": "colonne",
+    "x": 900.0,
+    "y": 900.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": null,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      130.0,
+      695.0,
+      150.0,
+      705.0
+    ],
+    "element": "K-3",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-3",
+    "id": "PART1_p1_K-3_FDN_shop",
+    "level": "FDN",
+    "match_key": {
+      "col": 3.0,
+      "level": "FDN",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-3",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 140.0,
+    "y": 700.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      210.0,
+      155.0,
+      230.0,
+      165.0
+    ],
+    "element": "K-3",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-3",
+    "id": "PART1_p1_K-3_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 3.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-3",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 220.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      210.0,
+      155.0,
+      230.0,
+      165.0
+    ],
+    "element": "K-3",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-3",
+    "id": "PART1_p1_K-3_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 3.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-3",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 220.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 6,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      250.0,
+      155.0,
+      270.0,
+      165.0
+    ],
+    "element": "K-4",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-4",
+    "id": "PART1_p1_K-4_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 4.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 6
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-4",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 260.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 5,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      250.0,
+      155.0,
+      270.0,
+      165.0
+    ],
+    "element": "K-4",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-4",
+    "id": "PART1_p1_K-4_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 4.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.4,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 5
+        },
+        "size": {
+          "conf": 0.4,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [
+        "weak_strip_assignment"
+      ],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-4",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.4,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 260.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      290.0,
+      155.0,
+      310.0,
+      165.0
+    ],
+    "element": "K-5",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-5",
+    "id": "PART1_p1_K-5_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 5.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-5",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 300.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      290.0,
+      155.0,
+      310.0,
+      165.0
+    ],
+    "element": "K-5",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-5",
+    "id": "PART1_p1_K-5_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 5.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-5",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 300.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      330.0,
+      155.0,
+      350.0,
+      165.0
+    ],
+    "element": "K-6",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-6",
+    "id": "PART1_p1_K-6_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 6.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-6",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 340.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      330.0,
+      155.0,
+      350.0,
+      165.0
+    ],
+    "element": "K-6",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-6",
+    "id": "PART1_p1_K-6_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 6.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-6",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 340.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      370.0,
+      155.0,
+      390.0,
+      165.0
+    ],
+    "element": "K-7",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-7",
+    "id": "PART1_p1_K-7_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 7.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-7",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 380.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      370.0,
+      155.0,
+      390.0,
+      165.0
+    ],
+    "element": "K-7",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-7",
+    "id": "PART1_p1_K-7_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 7.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-7",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 380.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      410.0,
+      155.0,
+      430.0,
+      165.0
+    ],
+    "element": "K-8",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-8",
+    "id": "PART1_p1_K-8_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 8.0,
+      "level": "N2",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-8",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 420.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      410.0,
+      155.0,
+      430.0,
+      165.0
+    ],
+    "element": "K-8",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-8",
+    "id": "PART1_p1_K-8_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 8.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-8",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 420.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      450.0,
+      155.0,
+      470.0,
+      165.0
+    ],
+    "element": "K-9",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART1.pdf",
+    "grid": "K-9",
+    "id": "PART1_p1_K-9_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 9.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-9",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 460.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 34,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      210.0,
+      215.0,
+      230.0,
+      225.0
+    ],
+    "element": "L-3",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-3",
+    "id": "PART2_p1_L-3_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 3.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-3",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 220.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      210.0,
+      215.0,
+      230.0,
+      225.0
+    ],
+    "element": "L-3",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-3",
+    "id": "PART2_p1_L-3_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 3.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-3",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 220.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      250.0,
+      215.0,
+      270.0,
+      225.0
+    ],
+    "element": "L-4",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-4",
+    "id": "PART2_p1_L-4_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 4.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-4",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 260.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      250.0,
+      215.0,
+      270.0,
+      225.0
+    ],
+    "element": "L-4",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-4",
+    "id": "PART2_p1_L-4_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 4.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-4",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 260.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      290.0,
+      215.0,
+      310.0,
+      225.0
+    ],
+    "element": "L-5",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-5",
+    "id": "PART2_p1_L-5_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 5.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-5",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 300.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 304.8,
+        "longueur_mm": null,
+        "quantite": 11,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      290.0,
+      215.0,
+      310.0,
+      225.0
+    ],
+    "element": "L-5",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-5",
+    "id": "PART2_p1_L-5_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 5.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-5",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 300.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      330.0,
+      215.0,
+      350.0,
+      225.0
+    ],
+    "element": "L-6",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-6",
+    "id": "PART2_p1_L-6_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 6.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-6",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 340.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      330.0,
+      215.0,
+      350.0,
+      225.0
+    ],
+    "element": "L-6",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-6",
+    "id": "PART2_p1_L-6_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 6.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-6",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 340.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      370.0,
+      215.0,
+      390.0,
+      225.0
+    ],
+    "element": "L-7",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-7",
+    "id": "PART2_p1_L-7_N2_shop",
+    "level": "N2",
+    "match_key": {
+      "col": 7.0,
+      "level": "N2",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-7",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 380.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      370.0,
+      215.0,
+      390.0,
+      225.0
+    ],
+    "element": "L-7",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-7",
+    "id": "PART2_p1_L-7_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 7.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-7",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 380.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      410.0,
+      215.0,
+      430.0,
+      225.0
+    ],
+    "element": "L-8",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "L-8",
+    "id": "PART2_p1_L-8_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 8.0,
+      "level": "N3",
+      "row": "L",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 1,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "L-8",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 420.0,
+    "y": 220.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 8,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      370.0,
+      155.0,
+      390.0,
+      165.0
+    ],
+    "element": "K-7",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "K-7",
+    "id": "PART2_p2_K-7_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 7.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 2,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 8
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-7",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 380.0,
+    "y": 160.0
+  },
+  {
+    "armature": [
+      {
+        "diametre": "25M",
+        "espacement_mm": null,
+        "longueur_mm": null,
+        "quantite": 4,
+        "repere": "V"
+      },
+      {
+        "diametre": "10M",
+        "espacement_mm": 152.4,
+        "longueur_mm": null,
+        "quantite": 23,
+        "repere": "T"
+      }
+    ],
+    "bbox": [
+      410.0,
+      155.0,
+      430.0,
+      165.0
+    ],
+    "element": "K-8",
+    "extraction_method": "mock",
+    "feuillet": "PART1",
+    "fichier": "DA/Colonnes/PART2.pdf",
+    "grid": "K-8",
+    "id": "PART2_p2_K-8_N3_shop",
+    "level": "N3",
+    "match_key": {
+      "col": 8.0,
+      "level": "N3",
+      "row": "K",
+      "span_from": null,
+      "span_to": null,
+      "type": "colonne"
+    },
+    "page": 2,
+    "provenance": {
+      "synthetic": 1
+    },
+    "quality": {
+      "attributes": {
+        "count": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": 4
+        },
+        "size": {
+          "conf": 0.95,
+          "ocr_conf": null,
+          "original_text": null,
+          "snapped": false,
+          "status": "parsed",
+          "text_source": "native",
+          "value": "25M"
+        }
+      },
+      "consistency_failed": [],
+      "consistency_passed": [],
+      "flags": [],
+      "level_conf": 1.0,
+      "location": {
+        "anchor": "label",
+        "anchor_dist_pt": null,
+        "assignment_cost": null,
+        "binding_method": "none",
+        "grid_cell": "K-8",
+        "grid_conf": 1.0,
+        "margin_to_runner_up": null,
+        "page_xy_conf": 1.0
+      },
+      "overall": 0.95,
+      "type_conf": 1.0
+    },
+    "raw_text": null,
+    "section_mm": null,
+    "source": "shop",
+    "type_element": "colonne",
+    "x": 420.0,
+    "y": 160.0
+  }
+]

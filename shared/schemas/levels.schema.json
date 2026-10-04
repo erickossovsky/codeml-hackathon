@@ -1,0 +1,39 @@
+{
+  "$defs": {
+    "LevelInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "elevation_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Elevation Mm"
+        },
+        "level": {
+          "title": "Level",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "level",
+        "name"
+      ],
+      "title": "LevelInfo",
+      "type": "object"
+    }
+  },
+  "items": {
+    "$ref": "#/$defs/LevelInfo"
+  },
+  "type": "array"
+}
