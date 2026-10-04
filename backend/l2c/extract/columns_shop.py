@@ -8,6 +8,7 @@ below; in each band every column strip holds a `VERT: <n> <size> <mark>` run and
 
 from __future__ import annotations
 
+import re
 import statistics
 from collections import Counter
 from dataclasses import dataclass
@@ -31,6 +32,18 @@ MIN_LABELS = 2
 FALLBACK_STRIP_TOL_H = 7.5  # used only when there are too few labels to measure their spacing
 
 
+def _is_elevation_run(text: str, config: Config) -> bool:
+    """`EL.: 131' - 9"`, and what OCR leaves of it (`EL:131-9`, `EL88-`): the label may lose its
+    punctuation and spaces, so a label word followed directly by a digit also counts."""
+    if config.starts(text, config.elevation_line):
+        return True
+    for word in config.elevation_line:
+        bare = word.strip(" .:").upper()
+        if bare and re.match(rf"^{re.escape(bare)}[\s.:]*\d", text.strip().upper()):
+            return True
+    return False
+
+
 @dataclass(frozen=True)
 class LevelLine:
     level: str
@@ -44,7 +57,7 @@ def find_level_lines(
 ) -> list[LevelLine]:
     lines: list[LevelLine] = []
     for r in runs:
-        if not config.starts(r.text, config.elevation_line):
+        if not _is_elevation_run(r.text, config):
             continue
         if r.x0 > config.level_x_fraction * page.width:
             continue

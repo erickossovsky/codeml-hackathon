@@ -106,3 +106,14 @@ def test_blocks_below_the_lowest_level_line_are_foundation_dowels(tmp_path):
     els, _ = extract_shop_columns(p)
     assert len(els) == 2 and all("below_lowest_level" in e.quality.flags for e in els)
     assert all(e.level == "FDN" and e.quality.overall <= 0.8 for e in els)
+
+
+def test_elevation_line_is_found_when_ocr_drops_the_punctuation(tmp_path):
+    doc, page = new_doc()
+    put(page, 60, 100, "EL88-")  # OCR dropped the colon and the space
+    put(page, 60, 107, "SOUS-SOL")
+    put(page, 60, 300, 'EL:122-0"')
+    put(page, 60, 307, "NIVEAU 3")
+    (p,) = load_pdf(save(doc, tmp_path / "ocrish.pdf"))
+    lines = find_level_lines(p, text_runs(p.words))
+    assert [line.level for line in lines] == ["SS", "N3"]
