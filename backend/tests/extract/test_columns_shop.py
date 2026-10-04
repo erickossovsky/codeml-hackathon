@@ -117,3 +117,22 @@ def test_elevation_line_is_found_when_ocr_drops_the_punctuation(tmp_path):
     (p,) = load_pdf(save(doc, tmp_path / "ocrish.pdf"))
     lines = find_level_lines(p, text_runs(p.words))
     assert [line.level for line in lines] == ["SS", "N3"]
+
+
+def test_labels_in_two_rows_are_both_used(tmp_path):
+    """Grid labels printed at two heights (stacked views): strips under either row count."""
+    doc, page = new_doc(1200, 1000)
+    for y, el, name in [(100, "118' - 4\"", "NIVEAU 4"), (300, "108' - 6\"", "NIVEAU 3")]:
+        put(page, 60, y, f"EL.: {el}")
+        put(page, 60, y + 7, name)
+    row_a = {"D-6": 200.0, "D-7": 320.0, "E-7": 440.0, "E-8": 560.0}
+    row_b = {"G-1": 700.0, "G-2": 820.0, "G-3": 940.0}
+    for labels, y in ((row_a, 800), (row_b, 900)):
+        for label, x in labels.items():
+            put(page, x, y, label)
+    for x in [*row_a.values(), *row_b.values()]:
+        put(page, x, 130, "VERT: 4 25M B7-01")
+        put(page, x, 139, 'ÉTRI: 6 10M T4X21 @6"')
+    (p,) = load_pdf(save(doc, tmp_path / "tworows.pdf"))
+    els, _ = extract_shop_columns(p)
+    assert sorted(e.grid for e in els) == sorted([*row_a, *row_b])

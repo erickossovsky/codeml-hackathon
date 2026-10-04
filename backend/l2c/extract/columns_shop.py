@@ -121,18 +121,37 @@ def assign_level(views: list[list[LevelLine]], y: float) -> tuple[str, list[str]
     return "FDN", ["below_lowest_level"]
 
 
-def find_labels(
+def find_label_rows(
     words: list[Word], config: Config = DEFAULT_CONFIG, word_h: float = 8.0
-) -> list[tuple[str, float, Word]]:
+) -> list[list[tuple[str, float, Word]]]:
+    """Grid labels grouped by the line they sit on, fullest line first.
+
+    A sheet can print its labels at more than one height (stacked views, one row per view). A line
+    counts when it holds at least half as many labels as the fullest one.
+    """
     cand = [(parse_grid_label(w.text, config), w) for w in words]
     cand = [(p, w) for p, w in cand if p is not None]
     if len(cand) < MIN_LABELS:
         return []
     tol = max(0.5, config.grid_align_word_heights * word_h)
-    groups = cluster_1d([w.y0 for _, w in cand], tol)
-    best = max(groups, key=lambda g: (len(g), -min(cand[i][1].y0 for i in g)))
-    labels = [(f"{cand[i][0][0]}-{cand[i][0][1]:g}", cand[i][0][1], cand[i][1]) for i in best]
-    return sorted(labels, key=lambda t: t[2].x0)
+    groups = sorted(
+        cluster_1d([w.y0 for _, w in cand], tol),
+        key=lambda g: (-len(g), min(cand[i][1].y0 for i in g)),
+    )
+    keep = [g for g in groups if len(g) >= max(MIN_LABELS, len(groups[0]) / 2)]
+    rows = []
+    for g in keep:
+        labels = [(f"{cand[i][0][0]}-{cand[i][0][1]:g}", cand[i][0][1], cand[i][1]) for i in g]
+        rows.append(sorted(labels, key=lambda t: t[2].x0))
+    return rows
+
+
+def find_labels(
+    words: list[Word], config: Config = DEFAULT_CONFIG, word_h: float = 8.0
+) -> list[tuple[str, float, Word]]:
+    """The fullest label row (kept for callers that only need to know labels exist)."""
+    rows = find_label_rows(words, config, word_h)
+    return rows[0] if rows else []
 
 
 def strip_tolerance(labels: list[tuple[str, float, Word]], config: Config, word_h: float) -> float:
@@ -162,10 +181,11 @@ def extract_shop_columns(
     lines = find_level_lines(page, runs, config, h)
     views = split_views(lines)
     levels = [LevelInfo(level=ln.level, name=ln.name, elevation_mm=ln.elevation_mm) for ln in lines]
-    labels = find_labels(page.words, config, h)
-    if not labels:
+    label_rows = find_label_rows(page.words, config, h)
+    if not label_rows:
         return [], levels
-    tol = strip_tolerance(labels, config, h)
+    row_tols = [strip_tolerance(row, config, h) for row in label_rows]
+    row_ys = [statistics.median(w.y0 for _, _, w in row) for row in label_rows]
     stem = PurePath(page.fichier).stem
     verts = [
         r
@@ -180,10 +200,17 @@ def extract_shop_columns(
     seen: Counter[str] = Counter()
     out: list[ElementExt] = []
     for v in sorted(verts, key=lambda r: (r.x0, r.y0)):
-        strip = _strip_for(v, labels, tol)
-        if strip is None:
+        best = None
+        for row, row_tol, row_y in zip(label_rows, row_tols, row_ys, strict=True):
+            hit = _strip_for(v, row, row_tol)
+            if hit is None:
+                continue
+            rank = (round(abs(hit[0][2].x0 - v.x0), 1), abs(row_y - v.y0))
+            if best is None or rank < best[0]:
+                best = (rank, hit)
+        if best is None:
             continue
-        (grid_cell, col_num, label_word), margin = strip
+        (grid_cell, col_num, label_word), margin = best[1]
         row = grid_cell.split("-", 1)[0]
         vert = parse_shop_vert(v.text, config)
         near = [
