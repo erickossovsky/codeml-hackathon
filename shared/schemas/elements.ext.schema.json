@@ -1,0 +1,564 @@
+{
+  "$defs": {
+    "Armature": {
+      "additionalProperties": false,
+      "properties": {
+        "diametre": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Diametre"
+        },
+        "espacement_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Espacement Mm"
+        },
+        "longueur_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Longueur Mm"
+        },
+        "quantite": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantite"
+        },
+        "repere": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repere"
+        }
+      },
+      "title": "Armature",
+      "type": "object"
+    },
+    "AttrQuality": {
+      "additionalProperties": false,
+      "properties": {
+        "conf": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Conf",
+          "type": "number"
+        },
+        "ocr_conf": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ocr Conf"
+        },
+        "original_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Text"
+        },
+        "snapped": {
+          "default": false,
+          "title": "Snapped",
+          "type": "boolean"
+        },
+        "status": {
+          "default": "parsed",
+          "enum": [
+            "parsed",
+            "derived",
+            "inferred",
+            "missing"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "text_source": {
+          "default": "native",
+          "enum": [
+            "native",
+            "ocr",
+            "vlm"
+          ],
+          "title": "Text Source",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "conf"
+      ],
+      "title": "AttrQuality",
+      "type": "object"
+    },
+    "ElementExt": {
+      "additionalProperties": false,
+      "properties": {
+        "armature": {
+          "items": {
+            "$ref": "#/$defs/Armature"
+          },
+          "title": "Armature",
+          "type": "array"
+        },
+        "bbox": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Bbox",
+          "type": "array"
+        },
+        "element": {
+          "title": "Element",
+          "type": "string"
+        },
+        "extraction_method": {
+          "title": "Extraction Method",
+          "type": "string"
+        },
+        "feuillet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Feuillet"
+        },
+        "fichier": {
+          "title": "Fichier",
+          "type": "string"
+        },
+        "grid": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grid"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "level": {
+          "title": "Level",
+          "type": "string"
+        },
+        "match_key": {
+          "$ref": "#/$defs/MatchKey"
+        },
+        "page": {
+          "title": "Page",
+          "type": "integer"
+        },
+        "provenance": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "title": "Provenance",
+          "type": "object"
+        },
+        "quality": {
+          "$ref": "#/$defs/Quality"
+        },
+        "raw_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Text"
+        },
+        "section_mm": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Mm"
+        },
+        "source": {
+          "enum": [
+            "plan",
+            "shop"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "type_element": {
+          "enum": [
+            "fondation",
+            "poutre",
+            "mur_refend",
+            "colonne",
+            "dalle"
+          ],
+          "title": "Type Element",
+          "type": "string"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "fichier",
+        "feuillet",
+        "page",
+        "x",
+        "y",
+        "type_element",
+        "element",
+        "armature",
+        "match_key",
+        "level",
+        "bbox",
+        "quality",
+        "extraction_method"
+      ],
+      "title": "ElementExt",
+      "type": "object"
+    },
+    "LocationQuality": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "enum": [
+            "outline",
+            "label",
+            "mark_axis",
+            "text_only"
+          ],
+          "title": "Anchor",
+          "type": "string"
+        },
+        "anchor_dist_pt": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor Dist Pt"
+        },
+        "assignment_cost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assignment Cost"
+        },
+        "binding_method": {
+          "default": "none",
+          "title": "Binding Method",
+          "type": "string"
+        },
+        "grid_cell": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grid Cell"
+        },
+        "grid_conf": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Grid Conf",
+          "type": "number"
+        },
+        "margin_to_runner_up": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Margin To Runner Up"
+        },
+        "page_xy_conf": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Page Xy Conf",
+          "type": "number"
+        }
+      },
+      "required": [
+        "page_xy_conf",
+        "anchor",
+        "grid_conf"
+      ],
+      "title": "LocationQuality",
+      "type": "object"
+    },
+    "MatchKey": {
+      "additionalProperties": false,
+      "properties": {
+        "col": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Col"
+        },
+        "level": {
+          "title": "Level",
+          "type": "string"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row"
+        },
+        "span_from": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Span From"
+        },
+        "span_to": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Span To"
+        },
+        "type": {
+          "enum": [
+            "fondation",
+            "poutre",
+            "mur_refend",
+            "colonne",
+            "dalle"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "level"
+      ],
+      "title": "MatchKey",
+      "type": "object"
+    },
+    "Quality": {
+      "additionalProperties": false,
+      "properties": {
+        "attributes": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AttrQuality"
+          },
+          "title": "Attributes",
+          "type": "object"
+        },
+        "consistency_failed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Consistency Failed",
+          "type": "array"
+        },
+        "consistency_passed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Consistency Passed",
+          "type": "array"
+        },
+        "flags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
+        },
+        "level_conf": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Level Conf",
+          "type": "number"
+        },
+        "location": {
+          "$ref": "#/$defs/LocationQuality"
+        },
+        "overall": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Overall",
+          "type": "number"
+        },
+        "type_conf": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Type Conf",
+          "type": "number"
+        }
+      },
+      "required": [
+        "overall",
+        "type_conf",
+        "level_conf",
+        "location"
+      ],
+      "title": "Quality",
+      "type": "object"
+    }
+  },
+  "items": {
+    "$ref": "#/$defs/ElementExt"
+  },
+  "type": "array"
+}

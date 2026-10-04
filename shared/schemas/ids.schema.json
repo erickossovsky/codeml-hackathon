@@ -1,0 +1,32 @@
+{
+  "$defs": {
+    "IdRow": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "title": "Element Id",
+          "type": "string"
+        },
+        "global_id": {
+          "title": "Global Id",
+          "type": "string"
+        },
+        "match_key": {
+          "title": "Match Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "element_id",
+        "match_key",
+        "global_id"
+      ],
+      "title": "IdRow",
+      "type": "object"
+    }
+  },
+  "items": {
+    "$ref": "#/$defs/IdRow"
+  },
+  "type": "array"
+}

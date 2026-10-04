@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "SheetInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "feuillet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Feuillet"
+        },
+        "fichier": {
+          "title": "Fichier",
+          "type": "string"
+        },
+        "height": {
+          "title": "Height",
+          "type": "number"
+        },
+        "kind": {
+          "enum": [
+            "plan",
+            "shop"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "layer": {
+          "enum": [
+            "text",
+            "vector",
+            "image",
+            "empty"
+          ],
+          "title": "Layer",
+          "type": "string"
+        },
+        "layout": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Layout"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Level"
+        },
+        "page": {
+          "title": "Page",
+          "type": "integer"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "rotation": {
+          "title": "Rotation",
+          "type": "integer"
+        },
+        "type_element": {
+          "anyOf": [
+            {
+              "enum": [
+                "fondation",
+                "poutre",
+                "mur_refend",
+                "colonne",
+                "dalle"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Type Element"
+        },
+        "width": {
+          "title": "Width",
+          "type": "number"
+        }
+      },
+      "required": [
+        "fichier",
+        "page",
+        "feuillet",
+        "kind",
+        "type_element",
+        "level",
+        "layer",
+        "width",
+        "height",
+        "rotation"
+      ],
+      "title": "SheetInfo",
+      "type": "object"
+    }
+  },
+  "items": {
+    "$ref": "#/$defs/SheetInfo"
+  },
+  "type": "array"
+}

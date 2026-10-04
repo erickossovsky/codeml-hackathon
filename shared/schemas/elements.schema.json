@@ -1,0 +1,156 @@
+{
+  "$defs": {
+    "Armature": {
+      "additionalProperties": false,
+      "properties": {
+        "diametre": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Diametre"
+        },
+        "espacement_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Espacement Mm"
+        },
+        "longueur_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Longueur Mm"
+        },
+        "quantite": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantite"
+        },
+        "repere": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repere"
+        }
+      },
+      "title": "Armature",
+      "type": "object"
+    },
+    "ElementStrict": {
+      "additionalProperties": false,
+      "description": "Exactly the Appendix A record. Nothing else may be added.",
+      "properties": {
+        "armature": {
+          "items": {
+            "$ref": "#/$defs/Armature"
+          },
+          "title": "Armature",
+          "type": "array"
+        },
+        "element": {
+          "title": "Element",
+          "type": "string"
+        },
+        "feuillet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Feuillet"
+        },
+        "fichier": {
+          "title": "Fichier",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "page": {
+          "title": "Page",
+          "type": "integer"
+        },
+        "source": {
+          "enum": [
+            "plan",
+            "shop"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "type_element": {
+          "enum": [
+            "fondation",
+            "poutre",
+            "mur_refend",
+            "colonne",
+            "dalle"
+          ],
+          "title": "Type Element",
+          "type": "string"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "fichier",
+        "feuillet",
+        "page",
+        "x",
+        "y",
+        "type_element",
+        "element",
+        "armature"
+      ],
+      "title": "ElementStrict",
+      "type": "object"
+    }
+  },
+  "items": {
+    "$ref": "#/$defs/ElementStrict"
+  },
+  "type": "array"
+}
