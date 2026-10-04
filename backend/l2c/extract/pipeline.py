@@ -8,7 +8,7 @@ an exception on one page never stops the run.
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path, PurePosixPath
 
 from l2c.contract.io import MetaBundle
@@ -22,7 +22,7 @@ from l2c.extract.columns_schedule import (
 )
 from l2c.extract.columns_shop import extract_shop_columns, find_labels, find_level_lines
 from l2c.extract.config import DEFAULT_CONFIG, Config
-from l2c.extract.generic import collapse_duplicates, extract_generic
+from l2c.extract.generic import collapse_duplicates, extract_footing_blocks, extract_generic
 from l2c.extract.grid import Grid, fit_grid
 from l2c.extract.learn import learn_config
 from l2c.extract.notation import (
@@ -35,6 +35,7 @@ from l2c.extract.notation import (
     sheet_type,
 )
 from l2c.extract.ocr_quality import mark_ocr
+from l2c.extract.regions import drawing_regions
 from l2c.extract.runs import text_runs
 from l2c.ingest.pages import PageData, load_pdf
 
@@ -201,7 +202,7 @@ def _level_for(etype: str, *texts: str, config: Config) -> tuple[str, float]:
     return UNKNOWN_LEVEL, 0.3
 
 
-def _extract_other_plan(page: PageData, text: str, grid, config: Config):
+def _extract_other_plan(page: PageData, text: str, grid, config: Config, whole: PageData | None = None):
     """A plan page that is not a column plan: typical details, or beams, walls, slabs and
     foundations read with the generic extractor. Returns (layout, type, level, elements)."""
     title = sheet_title(text, config)
@@ -218,7 +219,7 @@ def _extract_other_plan(page: PageData, text: str, grid, config: Config):
     if etype == "fondation":
         from l2c.extract.generic import extract_footings
 
-        els = extract_footings(page, level, grid, "plan", config)
+        els = extract_footings(page, level, grid, "plan", config, schedule=whole or page)
         if els:
             return "generic_fondation", etype, level, els
     els = extract_generic(page, etype, level, grid, "plan", config, type_conf, level_conf)
@@ -303,7 +304,8 @@ def _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_ca
         if error is not None:
             sheets.append(_open_failed(_rel(project_dir, pdf), "plan", None, error))
             continue
-        for page in pages:
+        drawings = [(w, d, len(parts) > 1) for w in pages for parts in [drawing_regions(w)] for d in parts]
+        for whole, page, drawn in drawings:
             level = None
             layout = "unknown"
             etype = None
@@ -311,12 +313,15 @@ def _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_ca
             try:
                 page = prepare_page(page, pdf, use_ocr, config, ocr_done, ocr_cache)
                 cfg = learn_config(page.words, config) if learn else config
-                text = " ".join(w.text for w in page.words)
+                # type and level come from the whole sheet; a drawing may not hold the title block
+                text = " ".join(w.text for w in whole.words)
                 level = plan_column_level(text, cfg)
-                grid = fit_grid(page.words, cfg) if has_text(page, cfg) else None
+                # a drawing on a multi-drawing sheet may show a single row letter (a one-row plan)
+                grid_cfg = replace(cfg, grid_min_labels=1) if drawn else cfg
+                grid = fit_grid(page.words, grid_cfg) if has_text(page, cfg) else None
                 layout = plan_layout(page, level, grid, cfg)
                 if layout == "not_a_column_plan":
-                    layout, etype, level, els = _extract_other_plan(page, text, grid, cfg)
+                    layout, etype, level, els = _extract_other_plan(page, text, grid, cfg, whole)
                     if els:
                         if level != UNKNOWN_LEVEL:
                             levels.setdefault(level, LevelInfo(level=level, name=level))
@@ -353,6 +358,17 @@ def _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_ca
                 page = prepare_page(page, pdf, use_ocr, config, ocr_done, ocr_cache)
                 cfg = learn_config(page.words, config) if learn else config
                 layout = shop_layout(page, folder, cfg)
+                if folder == "fondation":
+                    stem = PurePosixPath(page.fichier).stem
+                    text = " ".join(w.text for w in page.words)
+                    level, level_conf = _level_for(folder, stem, sheet_title(text, cfg), config=cfg)
+                    grid = fit_grid(page.words, cfg)
+                    els = extract_footing_blocks(page, level, grid, "shop", cfg)
+                    if els:
+                        levels.setdefault(level, LevelInfo(level=level, name=level))
+                        elements.extend(mark_ocr(els, page.words, cfg) if page.source == "ocr" else els)
+                        sheets.append(sheet(page, "shop", folder, level, "shop_footing_blocks"))
+                        continue
                 if layout.startswith("generic_"):
                     stem = PurePosixPath(page.fichier).stem
                     text = " ".join(w.text for w in page.words)

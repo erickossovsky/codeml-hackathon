@@ -18,6 +18,8 @@ from l2c.extract.config import DEFAULT_CONFIG, Config
 # size is then learned per sheet (anchor.find_outlines), so no fixed point size is assumed.
 SHAPE_MIN_PAGE_FRACTION = 0.001
 SHAPE_MAX_PAGE_FRACTION = 0.05
+BAR_MIN_PT = 20.0  # shorter segments are hatching or leader ticks
+BAR_MAX_PT = 400.0  # longer ones are grid lines and frames
 MAX_SHAPE_PATH_ITEMS = 8  # a closed rectangle-like path has only a few segments
 BOX_MIN_PAGE_FRACTION = 0.01  # footing and slab outlines: larger than column outlines
 BOX_MAX_PAGE_FRACTION = 0.08
@@ -79,6 +81,7 @@ class PageData:
     words: list[Word] = field(default_factory=list)
     shapes: list[Shape] = field(default_factory=list)
     boxes: list[Shape] = field(default_factory=list)  # larger rectangles: footing and slab outlines
+    bars: list[Shape] = field(default_factory=list)  # straight drawn segments: bar lines a callout labels
     n_paths: int = 0
     n_images: int = 0
     layer: str = "empty"  # text | vector | image | empty
@@ -155,8 +158,21 @@ def _read_page(page: pymupdf.Page, fichier: str, number: int, config: Config) ->
         ):
             t = _rect_through(m, pymupdf.Rect(x0, y0, x1, y1))
             boxes.append(Shape(t.x0, t.y0, t.x1, t.y1))
+    bars: list[Shape] = []
+    for d in drawings:
+        for it in d["items"]:
+            if it[0] != "l":
+                continue
+            (ax, ay), (bx, by) = (it[1][0], it[1][1]), (it[2][0], it[2][1])
+            length = ((ax - bx) ** 2 + (ay - by) ** 2) ** 0.5
+            if BAR_MIN_PT <= length <= BAR_MAX_PT:
+                t = _rect_through(
+                    m, pymupdf.Rect(min(ax, bx), min(ay, by), max(ax, bx), max(ay, by))
+                )
+                bars.append(Shape(t.x0, t.y0, t.x1, t.y1))
     n_images = len(page.get_images())
     return PageData(
+        bars=bars,
         boxes=boxes,
         fichier=fichier,
         page=number,

@@ -78,14 +78,19 @@ def generic_diffs(plan: ElementExt, shop: ElementExt) -> list[Diff]:
         if size not in pg:
             out.append(Diff(field=f"bar group {size}", plan=None, shop=_describe(sg[size])))
             continue
+        # a shop block prints two directions (long and transverse) of one size; the plan may print
+        # one line. A plan count found among the shop counts of that size is not a difference.
+        plan_counts = {pc for pc, _ in pg[size] if pc is not None}
+        shop_counts = {sc for sc, _ in sg[size] if sc is not None}
+        counts_found = bool(plan_counts) and plan_counts <= shop_counts
         for (pc, ps), (sc, ss) in zip(pg[size], sg[size], strict=False):
-            if pc is not None and sc is not None and pc != sc:
+            if not counts_found and pc is not None and sc is not None and pc != sc:
                 out.append(Diff(field=f"{size} count", plan=pc, shop=sc, delta=sc - pc))
             if ps is not None and ss is not None and abs(ss - ps) > C.SPACING_TOL_MM:
                 out.append(
                     Diff(field=f"{size} spacing_mm", plan=ps, shop=ss, delta=round(ss - ps, 3))
                 )
-        if len(pg[size]) != len(sg[size]):
+        if len(pg[size]) != len(sg[size]) and not counts_found:
             out.append(
                 Diff(
                     field=f"{size} group count",

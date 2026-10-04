@@ -33,11 +33,18 @@ def _axis_positions(grid: Grid) -> tuple[list[float], list[float]]:
     return sorted(grid.rows.values()), sorted(float(v) for v in grid.cols.values())
 
 
-def _inside_axis(pos: float, axis: list[float]) -> bool:
-    """On the grid: within half a gridline spacing of the outermost lines."""
+def _half_spacing(axis: list[float]) -> float | None:
     if len(axis) < 2:
-        return False
-    half = 0.5 * (axis[-1] - axis[0]) / (len(axis) - 1)
+        return None
+    return 0.5 * (axis[-1] - axis[0]) / (len(axis) - 1)
+
+
+def _inside_axis(pos: float, axis: list[float], single_half: float | None = None) -> bool:
+    """On the grid: within half a gridline spacing of the outermost lines. An axis with one line
+    (a one-row plan) has no spacing of its own: `single_half` (taken from the other axis) is used."""
+    if len(axis) < 2:
+        return single_half is not None and abs(pos - axis[0]) <= single_half
+    half = _half_spacing(axis)
     return axis[0] - half <= pos <= axis[-1] + half
 
 
@@ -45,7 +52,9 @@ def _bind(grid: Grid, run: Run) -> tuple[str, str, float, float] | None:
     """(row, col, grid confidence, distance to the cell centre) of the nearest cell, or None."""
     row_pos, col_pos = (run.cy, run.cx) if grid.letters_on == "y" else (run.cx, run.cy)
     rows, cols = _axis_positions(grid)
-    if not _inside_axis(row_pos, rows) or not _inside_axis(col_pos, cols):
+    if not _inside_axis(row_pos, rows, _half_spacing(cols)) or not _inside_axis(
+        col_pos, cols, _half_spacing(rows)
+    ):
         return None
     row, dr, dr2 = grid.nearest_row(row_pos)
     col, dc, dc2 = grid.nearest_col(col_pos)
@@ -60,6 +69,26 @@ def _bind(grid: Grid, run: Run) -> tuple[str, str, float, float] | None:
         round(max(MIN_GRID_CONF, margin), 3),
         round(((run.cx - cx) ** 2 + (run.cy - cy) ** 2) ** 0.5, 2),
     )
+
+
+BAR_REACH_PT = 25.0  # a callout labels the bar line within this distance of its text
+
+
+def _labelled_bar(bars, run: Run) -> Run | None:
+    """The drawn bar line a callout labels, placed at its midpoint; None when no bar is near.
+    A callout sits beside the bar it describes, so the bar's midpoint gives the cell it belongs to
+    even when the text itself sits closer to the neighbouring grid line."""
+    best, best_d = None, None
+    for b in bars:
+        dx = max(0.0, run.x0 - b.x1, b.x0 - run.x1)
+        dy = max(0.0, run.y0 - b.y1, b.y0 - run.y1)
+        d = (dx * dx + dy * dy) ** 0.5
+        if d <= BAR_REACH_PT and (best_d is None or d < best_d):
+            best, best_d = b, d
+    if best is None:
+        return None
+    mx, my = (best.x0 + best.x1) / 2, (best.y0 + best.y1) / 2
+    return Run(run.text, mx, my, mx, my, run.words)
 
 
 def _armature(statements: list[Statement]) -> list[Armature]:
@@ -102,7 +131,11 @@ def extract_generic(
         statements = parse_statements(run.text, config)
         if not statements:
             continue
-        hit = _bind(grid, run) if grid else None
+        # shop callouts sit beside the one bar they label; plan slabs are a dense mesh of lines, so
+        # plan callouts keep the text position
+        bar_anchor = source == "shop" and grid is not None and bool(page.bars)
+        anchor = _labelled_bar(page.bars, run) if bar_anchor else None
+        hit = _bind(grid, anchor or run) if grid else None
         if hit is None:
             loose.append((run, statements, "no_grid" if grid is None else "outside_grid"))
         else:
@@ -306,10 +339,12 @@ def extract_footings(
     grid: Grid | None,
     source: str,
     config: Config = DEFAULT_CONFIG,
+    schedule: PageData | None = None,
 ) -> list[ElementExt]:
     """Foundations: each footing is marked with its type letter on the plan; its bars are the
-    schedule row of that letter. A footing whose letter has no schedule row is kept and flagged."""
-    table = read_footing_schedule(page.words, config)
+    schedule row of that letter. A footing whose letter has no schedule row is kept and flagged.
+    The schedule may sit on the sheet outside this drawing (`schedule`, the whole sheet)."""
+    table = read_footing_schedule((schedule or page).words, config)
     if not table or grid is None:
         return []
     sheet = page.feuillet or f"{PurePath(page.fichier).stem}_p{page.page}"
@@ -377,4 +412,123 @@ def extract_footings(
                 },
             )
         )
+    return out
+
+
+FOOTING_BLOCK_HEAD = "EMPATTEMENT"
+COLUMN_LABEL = re.compile(r"^([A-Z](?:\.\d)?)-(\d+(?:\.\d+)?)[,:]?$")
+BLOCK_BARS = ("LONG", "TRAN")  # the two bar directions of a footing block; dowels and ties excluded
+BLOCK_REACH_PT = 170.0  # how far below a block's heading its bar lines and column labels sit
+BLOCK_WIDTH_PT = 120.0  # horizontal reach of a heading over its own bar lines and column labels
+
+
+def _owner_heading(headings, x: float, y: float) -> int | None:
+    """Index of the block heading that owns a point: the nearest heading above it, within reach."""
+    best, best_dy = None, None
+    for i, (hx, hy) in enumerate(headings):
+        dy, dx = y - hy, abs(x - hx)
+        if dy < -4 or dy > BLOCK_REACH_PT or dx > BLOCK_WIDTH_PT:
+            continue
+        if best_dy is None or dy < best_dy:
+            best, best_dy = i, dy
+    return best
+
+
+def extract_footing_blocks(
+    page: PageData,
+    level: str,
+    grid: Grid | None,
+    source: str,
+    config: Config = DEFAULT_CONFIG,
+) -> list[ElementExt]:
+    """Shop footing sheets: each block `EMPATTEMENT TYPE-x` prints its bars once and lists the
+    columns it serves (`COLONNE L-13, 16X24`). Every listed column gets the block's bars. Bars are
+    bound to their block, not to the nearest grid cell, so a neighbouring block cannot leak in.
+    Returns [] when the page has no such blocks."""
+    words = page.words
+    heads = []
+    for w in words:
+        if w.text.upper() != FOOTING_BLOCK_HEAD:
+            continue
+        if any(
+            v.text.upper().startswith("TYPE") and abs(v.cy - w.cy) < 2 * (w.y1 - w.y0)
+            and 0 < v.x0 - w.x1 < 80
+            for v in words
+        ):
+            heads.append(w)
+    if not heads:
+        return []
+    headings = [(w.cx, w.cy) for w in heads]
+    # columns served: "COLONNE <cell>," labels, each owned by the heading above it
+    served: dict[int, set[tuple[str, float]]] = defaultdict(set)
+    for i, w in enumerate(words):
+        if w.text.upper() != "COLONNE":
+            continue
+        for v in words:
+            m = COLUMN_LABEL.match(v.text)
+            if m and abs(v.cy - w.cy) < 2 * (w.y1 - w.y0) and 0 < v.x0 - w.x1 < 60:
+                owner = _owner_heading(headings, v.cx, v.cy)
+                if owner is not None:
+                    served[owner].add((m.group(1), float(m.group(2))))
+    # bars: LONG and TRAN lines, de-duplicated per block (the drawing prints each line twice)
+    bars: dict[int, list[Statement]] = defaultdict(list)
+    for run in text_runs(words, gap=8.0):
+        if not run.text.upper().startswith(BLOCK_BARS):
+            continue
+        owner = _owner_heading(headings, run.cx, run.cy)
+        if owner is not None:
+            bars[owner].extend(parse_statements(run.text, config))
+    out: list[ElementExt] = []
+    sheet = page.feuillet or f"{PurePath(page.fichier).stem}_p{page.page}"
+    for owner, cells in sorted(served.items()):
+        seen, block = set(), []
+        for s in bars.get(owner, []):
+            key = (s.count, s.size)
+            if key not in seen:
+                seen.add(key)
+                block.append(s)
+        for row, col in sorted(cells, key=lambda t: (t[0], t[1])):
+            cell = f"{row}-{col:g}"
+            hx, hy = headings[owner]
+            out.append(
+                ElementExt(
+                    id=f"{sheet}_{cell}_fondation_{owner}",
+                    source=source,  # type: ignore[arg-type]
+                    fichier=page.fichier,
+                    feuillet=PurePath(page.fichier).stem,
+                    page=page.page,
+                    x=round(hx, 2),
+                    y=round(hy, 2),
+                    type_element="fondation",
+                    element=cell,
+                    armature=_armature(block),
+                    match_key=MatchKey(type="fondation", level=level, row=row, col=col),  # type: ignore[arg-type]
+                    grid=cell if grid is not None else None,
+                    level=level,
+                    bbox=(round(hx, 2), round(hy, 2), round(hx, 2), round(hy, 2)),
+                    quality=Q.build_quality(
+                        type_conf=1.0,
+                        level_conf=1.0,
+                        loc=Q.location(
+                            "label",
+                            1.0,
+                            anchor_dist_pt=0.0,
+                            grid_cell=cell,
+                            binding_method="block_heading",
+                        ),
+                        attrs={"bars": Q.attr(len(block))},
+                        passed=[],
+                        failed=[],
+                        flags=["footing_block"],
+                    ),
+                    extraction_method="rules",
+                    raw_text=" | ".join(r.text for r in text_runs(words, gap=8.0) if _owner_heading(headings, r.cx, r.cy) == owner),
+                    provenance={
+                        "file": page.fichier,
+                        "page": page.page,
+                        "adapter": "footing_block",
+                        "occurrences": 1,
+                    },
+                )
+            )
     return out
