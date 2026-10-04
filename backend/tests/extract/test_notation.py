@@ -158,3 +158,10 @@ def test_section_reads_every_configured_section_word():
     es = dataclasses.replace(N.DEFAULT_CONFIG, section_line=("COLUMNA ",))
     assert N.parse_section('COLUMNA 18"x20"', es) == (457.2, 508.0)
     assert N.parse_section('COL. 18"x20"', es) is None  # no longer a section word
+
+
+def test_a_basement_number_may_carry_an_s_prefix():
+    assert N.canon_level("SOUS-SOL S1") == "SS" and N.canon_level("SOUS-SOL S2") == "SS2"
+    assert N.plan_column_level("PLAN DES COLONNES - SOUS-SOL S2 N° CONTRAT") == "SS2"
+    assert N.plan_column_level("PLAN DES COLONNES - SOUS-SOL S1 C CL") == "SS"
+    assert N.plan_column_level("PLAN DES COLONNES - SOUS-SOL - A") == "SS"

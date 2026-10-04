@@ -128,7 +128,7 @@ class Config:
             )
         )
         numbered = "|".join(re.escape(n) for n in self.level_numbered)
-        level = rf"((?:{numbered})\s*\d+|(?:{names})(?:\s*\d{{1,2}}\b)?|REZ-DE-CHAUSS[ÉE]E)"
+        level = rf"((?:{numbered})\s*\d+|(?:{names})(?:\s*S?\d{{1,2}}\b)?|REZ-DE-CHAUSS[ÉE]E)"
         sep = r"\s*[-\u2013\u2014:]?\s*"
         return re.compile(rf"(?:{titles}){sep}{level}|{level}{sep}(?:{titles})", re.IGNORECASE)
 

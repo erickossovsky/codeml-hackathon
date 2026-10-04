@@ -134,3 +134,19 @@ def test_repeated_identical_letters_in_a_row_do_not_beat_the_real_axis(tmp_path)
     grid = fit_grid(p.words)
     assert grid is not None and grid.letters_on == "x"
     assert list(grid.rows) == letters
+
+
+def test_wider_centred_labels_stay_on_the_axis(tmp_path):
+    """Grid bubbles centre their text, so `A.5` starts further left than `A` on the same line."""
+    doc, page = new_doc(1100, 800)
+    rows = {"A": 100, "A.5": 160, "B": 240, "C": 330, "D": 420}
+    for r, y in rows.items():
+        x = 40 - 2.2 * (len(r) - 1)  # centred on x = 40 (Helvetica 8 pt is about 4.4 pt a letter)
+        put(page, x, y, r)
+        put(page, 1000 - 2.2 * (len(r) - 1), y, r)
+    for i in range(1, 6):
+        put(page, 100 * i, 40, str(i))
+        put(page, 100 * i, 740, str(i))
+    (p,) = load_pdf(save(doc, tmp_path / "centred.pdf"))
+    grid = fit_grid(p.words)
+    assert grid is not None and list(grid.rows) == list(rows)

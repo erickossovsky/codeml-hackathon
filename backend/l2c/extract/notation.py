@@ -170,7 +170,7 @@ def canon_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
     for name, canon in sorted(config.level_names, key=lambda kv: len(kv[0]), reverse=True):
         if t.startswith(_plain(name)):
             if canon == "SS":  # several basements: the first is plain SS, deeper ones keep a number
-                m = re.match(r"\s*-?\s*(\d{1,2})\b", t[len(_plain(name)) :])
+                m = re.match(r"\s*-?\s*S?(\d{1,2})\b", t[len(_plain(name)) :])
                 if m and int(m.group(1)) > 1:
                     return f"SS{int(m.group(1))}"
             return canon
