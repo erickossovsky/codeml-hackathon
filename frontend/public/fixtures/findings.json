@@ -1,0 +1,285 @@
+{
+  "counts": {
+    "added": 1,
+    "compliant": 19,
+    "missing": 1,
+    "needs_review": 6,
+    "non_compliant": 3
+  },
+  "findings": [
+    {
+      "check_type": "cross.plan_vs_shop",
+      "confidence": 0.95,
+      "diffs": [],
+      "grid": "K-3",
+      "id": "F-a80e1b0083a4",
+      "level": "FDN",
+      "notes": "level has no plan sheet in scope",
+      "shop_ref": {
+        "fichier": "DA/Colonnes/PART1.pdf",
+        "page": 1,
+        "x": 140.0,
+        "y": 700.0
+      },
+      "status": "needs_review",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "cross.plan_vs_shop",
+      "confidence": 0.95,
+      "diffs": [
+        {
+          "delta": 2.0,
+          "field": "count",
+          "plan": 4,
+          "shop": 6
+        }
+      ],
+      "grid": "K-4",
+      "id": "F-ed5cbcaa01c4",
+      "level": "N2",
+      "notes": "",
+      "plan_ref": {
+        "fichier": "plan.pdf",
+        "page": 1,
+        "x": 260.0,
+        "y": 160.0
+      },
+      "shop_ref": {
+        "fichier": "DA/Colonnes/PART1.pdf",
+        "page": 1,
+        "x": 260.0,
+        "y": 160.0
+      },
+      "status": "non_compliant",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "cross.plan_vs_shop",
+      "confidence": 0.95,
+      "diffs": [
+        {
+          "delta": null,
+          "field": "size",
+          "plan": "35M",
+          "shop": "25M"
+        }
+      ],
+      "grid": "K-5",
+      "id": "F-491bb42d53b7",
+      "level": "N2",
+      "notes": "",
+      "plan_ref": {
+        "fichier": "plan.pdf",
+        "page": 1,
+        "x": 300.0,
+        "y": 160.0
+      },
+      "shop_ref": {
+        "fichier": "DA/Colonnes/PART1.pdf",
+        "page": 1,
+        "x": 300.0,
+        "y": 160.0
+      },
+      "status": "non_compliant",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "self.peer_outlier",
+      "confidence": 0.798,
+      "diffs": [
+        {
+          "delta": null,
+          "field": "size (value vs peer mode)",
+          "plan": "35M",
+          "shop": "25M"
+        }
+      ],
+      "grid": "K-5",
+      "id": "F-2d830d296fce",
+      "level": "N2",
+      "notes": "size differs from '25M' used by most peers on this sheet",
+      "plan_ref": {
+        "fichier": "plan.pdf",
+        "page": 1,
+        "x": 300.0,
+        "y": 160.0
+      },
+      "status": "needs_review",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "self.internal_consistency",
+      "confidence": 0.95,
+      "diffs": [
+        {
+          "delta": null,
+          "field": "tie_count*spacing/height",
+          "plan": "0.70-1.30 (learned band)",
+          "shop": 1.48
+        }
+      ],
+      "grid": "L-3",
+      "id": "F-613653ea4eed",
+      "level": "N2",
+      "notes": "tie count and spacing do not fit the storey height",
+      "shop_ref": {
+        "fichier": "DA/Colonnes/PART2.pdf",
+        "page": 1,
+        "x": 220.0,
+        "y": 220.0
+      },
+      "status": "needs_review",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "cross.plan_vs_shop",
+      "confidence": 0.95,
+      "diffs": [],
+      "grid": "L-8",
+      "id": "F-f89fb5734ef9",
+      "level": "N2",
+      "notes": "",
+      "plan_ref": {
+        "fichier": "plan.pdf",
+        "page": 1,
+        "x": 420.0,
+        "y": 220.0
+      },
+      "status": "missing",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "cross.plan_vs_shop",
+      "confidence": 0.1,
+      "diffs": [],
+      "grid": null,
+      "id": "F-d335c40ff9dc",
+      "level": "N3",
+      "notes": "block not bound to a grid cell",
+      "plan_ref": {
+        "fichier": "plan.pdf",
+        "page": 1,
+        "x": 900.0,
+        "y": 900.0
+      },
+      "status": "needs_review",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "cross.plan_vs_shop",
+      "confidence": 0.4,
+      "diffs": [
+        {
+          "delta": 1.0,
+          "field": "count",
+          "plan": 4,
+          "shop": 5
+        }
+      ],
+      "grid": "K-4",
+      "id": "F-5ba9c288abe0",
+      "level": "N3",
+      "notes": "",
+      "plan_ref": {
+        "fichier": "plan.pdf",
+        "page": 1,
+        "x": 260.0,
+        "y": 160.0
+      },
+      "shop_ref": {
+        "fichier": "DA/Colonnes/PART1.pdf",
+        "page": 1,
+        "x": 260.0,
+        "y": 160.0
+      },
+      "status": "needs_review",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "cross.shop_vs_shop",
+      "confidence": 0.95,
+      "diffs": [
+        {
+          "delta": 4.0,
+          "field": "count",
+          "plan": 4,
+          "shop": 8
+        }
+      ],
+      "grid": "K-7",
+      "id": "F-02d0ef94d3ea",
+      "level": "N3",
+      "notes": "DA/Colonnes/PART1.pdf p1 and DA/Colonnes/PART2.pdf p2 disagree",
+      "shop_ref": {
+        "fichier": "DA/Colonnes/PART2.pdf",
+        "page": 2,
+        "x": 380.0,
+        "y": 160.0
+      },
+      "status": "needs_review",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "cross.plan_vs_shop",
+      "confidence": 0.95,
+      "diffs": [],
+      "grid": "K-9",
+      "id": "F-e12d12e63d38",
+      "level": "N3",
+      "notes": "",
+      "shop_ref": {
+        "fichier": "DA/Colonnes/PART1.pdf",
+        "page": 1,
+        "x": 460.0,
+        "y": 160.0
+      },
+      "status": "added",
+      "type_element": "colonne"
+    },
+    {
+      "check_type": "cross.plan_vs_shop",
+      "confidence": 0.95,
+      "diffs": [
+        {
+          "delta": 152.4,
+          "field": "spacing_mm",
+          "plan": 152.4,
+          "shop": 304.8
+        }
+      ],
+      "grid": "L-5",
+      "id": "F-00f4c167f569",
+      "level": "N3",
+      "notes": "",
+      "plan_ref": {
+        "fichier": "plan.pdf",
+        "page": 1,
+        "x": 300.0,
+        "y": 220.0
+      },
+      "shop_ref": {
+        "fichier": "DA/Colonnes/PART2.pdf",
+        "page": 1,
+        "x": 300.0,
+        "y": 220.0
+      },
+      "status": "non_compliant",
+      "type_element": "colonne"
+    }
+  ],
+  "plan": "plan.pdf",
+  "project": "MOCK",
+  "run_id": "mock-0001",
+  "shop_drawings": [
+    "DA/Colonnes"
+  ],
+  "stats": {
+    "matched": 23,
+    "plan_elements": 25,
+    "plan_pages": 2,
+    "shop_elements": 27,
+    "shop_pages": 2,
+    "to_review": 10
+  }
+}

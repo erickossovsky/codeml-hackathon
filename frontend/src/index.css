@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-bg: #0d0e10;
+  --color-panel: #121418;
+  --color-line: #252931;
+  --color-line-2: #3b414c;
+  --color-fg: #e8e9eb;
+  --color-mute: #9aa1ab;
+  --color-amber: #f2b33d;
+  --color-red: #ff5f4f;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Faint 24px grid behind the drawing, like a dashboard's panel grid. */
+.panel-grid {
+  background-image:
+    linear-gradient(to right, #ffffff08 1px, transparent 1px),
+    linear-gradient(to bottom, #ffffff08 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Keyboard users need a clear focus ring everywhere. */
+:focus-visible {
+  outline: 2px solid var(--color-fg);
+  outline-offset: 3px;
+}
+
+/* Pointer cursor on everything that acts; not-allowed where an action is unavailable. */
+button:not(:disabled),
+a[href],
+[role='button'],
+summary,
+label[for] {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}

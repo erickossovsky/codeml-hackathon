@@ -1,0 +1,486 @@
+{
+  "$defs": {
+    "Diff": {
+      "additionalProperties": false,
+      "properties": {
+        "delta": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delta"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Plan"
+        },
+        "shop": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Shop"
+        }
+      },
+      "required": [
+        "field",
+        "plan",
+        "shop"
+      ],
+      "title": "Diff",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "extraction": {
+          "$ref": "#/$defs/ExtractionEvidence"
+        },
+        "llm_rationale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Llm Rationale"
+        },
+        "match": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MatchEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ml": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MlEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rule": {
+          "$ref": "#/$defs/RuleEvidence"
+        }
+      },
+      "required": [
+        "rule",
+        "extraction"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "ExtractionEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "flags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
+        },
+        "plan_overall": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Overall"
+        },
+        "shop_overall": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shop Overall"
+        }
+      },
+      "title": "ExtractionEvidence",
+      "type": "object"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "properties": {
+        "check_type": {
+          "enum": [
+            "cross.plan_vs_shop",
+            "cross.shop_vs_shop",
+            "cross.plan_vs_plan",
+            "cross.revision",
+            "cross.project",
+            "self.peer_outlier",
+            "self.level_consistency",
+            "self.internal_consistency",
+            "self.plausibility",
+            "self.duplicate"
+          ],
+          "title": "Check Type",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "diffs": {
+          "items": {
+            "$ref": "#/$defs/Diff"
+          },
+          "title": "Diffs",
+          "type": "array"
+        },
+        "discrepancy_probability": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Discrepancy Probability",
+          "type": "number"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "grid": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Grid"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "level": {
+          "title": "Level",
+          "type": "string"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        },
+        "plan_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "shop_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "enum": [
+            "compliant",
+            "non_compliant",
+            "missing",
+            "added",
+            "needs_review"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "trust": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Trust",
+          "type": "number"
+        },
+        "type_element": {
+          "enum": [
+            "fondation",
+            "poutre",
+            "mur_refend",
+            "colonne",
+            "dalle"
+          ],
+          "title": "Type Element",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "check_type",
+        "status",
+        "type_element",
+        "level",
+        "grid",
+        "evidence",
+        "trust",
+        "discrepancy_probability",
+        "confidence"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "MatchEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "assignment_cost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assignment Cost"
+        },
+        "margin_to_runner_up": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Margin To Runner Up"
+        },
+        "method": {
+          "title": "Method",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "title": "MatchEvidence",
+      "type": "object"
+    },
+    "MlEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "model_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Version"
+        },
+        "pair_probability": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pair Probability"
+        },
+        "peer_anomaly": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Peer Anomaly"
+        }
+      },
+      "title": "MlEvidence",
+      "type": "object"
+    },
+    "Ref": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Element Id"
+        },
+        "fichier": {
+          "title": "Fichier",
+          "type": "string"
+        },
+        "page": {
+          "title": "Page",
+          "type": "integer"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "element_id",
+        "fichier",
+        "page",
+        "x",
+        "y"
+      ],
+      "title": "Ref",
+      "type": "object"
+    },
+    "RuleEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "diffs": {
+          "items": {
+            "$ref": "#/$defs/Diff"
+          },
+          "title": "Diffs",
+          "type": "array"
+        },
+        "fired": {
+          "title": "Fired",
+          "type": "boolean"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fired",
+        "kind"
+      ],
+      "title": "RuleEvidence",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "counts": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Counts",
+      "type": "object"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/Finding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "plan_sheets": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Plan Sheets",
+      "type": "array"
+    },
+    "revision": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Revision"
+    },
+    "shop_file": {
+      "title": "Shop File",
+      "type": "string"
+    }
+  },
+  "required": [
+    "contract_version",
+    "shop_file",
+    "counts",
+    "findings"
+  ],
+  "title": "ComparisonFile",
+  "type": "object"
+}

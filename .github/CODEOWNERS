@@ -1,0 +1,12 @@
+# Each lane edits only its own folders; shared/ changes go through a contract PR reviewed by both.
+/backend/l2c/ingest/        @erickossovsky
+/backend/l2c/extract/       @erickossovsky
+/backend/tests/extract/     @erickossovsky
+/backend/l2c/compare/       @ApolloSon
+/backend/l2c/match/         @ApolloSon
+/backend/l2c/report/        @ApolloSon
+/backend/l2c/mock/          @ApolloSon
+/backend/tests/compare/     @ApolloSon
+/frontend/                  @ApolloSon
+/shared/                    @erickossovsky @ApolloSon
+/backend/l2c/contract/      @erickossovsky @ApolloSon

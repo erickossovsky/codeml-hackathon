@@ -31,3 +31,28 @@ models/
 
 # Claude Code local-only
 .claude/settings.local.json
+
+# Local-only analysis notes that contain data-derived specifics (never committed)
+docs/private/
+
+# ---- L2C: confidential data and generated outputs never reach git (spec 10.21)
+deliverables/
+demo/
+metrics/gold/
+*.pdf
+!shared/fixtures/**/*.pdf
+*.dxf
+*.dwg
+*.ifc
+*.bcf
+*.bcfzip
+*.xlsx
+*.xls
+*.zip
+*.onnx
+*.pkl
+*.joblib
+*.egg-info/
+
+# superpowers executor scratch
+.superpowers/

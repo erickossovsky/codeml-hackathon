@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "GridSheet": {
+      "additionalProperties": false,
+      "properties": {
+        "cols": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Cols",
+          "type": "object"
+        },
+        "feuillet": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Feuillet"
+        },
+        "fichier": {
+          "title": "Fichier",
+          "type": "string"
+        },
+        "letters_on": {
+          "default": "y",
+          "enum": [
+            "x",
+            "y"
+          ],
+          "title": "Letters On",
+          "type": "string"
+        },
+        "page": {
+          "title": "Page",
+          "type": "integer"
+        },
+        "rows": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Rows",
+          "type": "object"
+        }
+      },
+      "required": [
+        "fichier",
+        "page",
+        "feuillet",
+        "rows",
+        "cols"
+      ],
+      "title": "GridSheet",
+      "type": "object"
+    }
+  },
+  "items": {
+    "$ref": "#/$defs/GridSheet"
+  },
+  "type": "array"
+}

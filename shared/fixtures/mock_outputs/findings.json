@@ -1,0 +1,434 @@
+{
+  "counts": {
+    "conforms": 1,
+    "differs": 1,
+    "not_in_plan": 4,
+    "not_in_shop": 1,
+    "uncertain": 1
+  },
+  "entities": [
+    {
+      "checks": [
+        {
+          "by": "rule",
+          "plan": 4,
+          "plan_text": "ARM.: 4-25M",
+          "property": "counted bars count",
+          "result": "equal",
+          "shop": 4,
+          "shop_text": "VERT: 4 25M 25Z9-06"
+        },
+        {
+          "by": "rule",
+          "plan": "25M",
+          "plan_text": "ARM.: 4-25M",
+          "property": "counted bars size",
+          "result": "equal",
+          "shop": "25M",
+          "shop_text": "VERT: 4 25M 25Z9-06"
+        },
+        {
+          "by": "rule",
+          "plan": "10M",
+          "plan_text": "LIG.: 10M@12\" c/c",
+          "property": "spaced bars size",
+          "result": "equal",
+          "shop": "10M",
+          "shop_text": "ETRI: 22 10M 10ET13X21 @12\""
+        },
+        {
+          "by": "rule",
+          "plan": 304.8,
+          "plan_text": "LIG.: 10M@12\" c/c",
+          "property": "spaced bars spacing mm",
+          "result": "equal",
+          "shop": 304.8,
+          "shop_text": "ETRI: 22 10M 10ET13X21 @12\""
+        }
+      ],
+      "entity_id": "F-00001",
+      "flags": [],
+      "info": [],
+      "kind": "column",
+      "level": "N2",
+      "location": {
+        "grid": "B-2",
+        "shop_cell": "B-2"
+      },
+      "match": {
+        "cost": -0.35,
+        "identity": 5,
+        "llm_certainty": null,
+        "method": "hungarian"
+      },
+      "members": {
+        "plan": [
+          {
+            "element_id": "MOCK_PLAN_STR_e00002",
+            "file": "MOCK_PLAN_STR.pdf",
+            "page": 1,
+            "sheet": "S-201",
+            "x": 776.36,
+            "y": 701.73
+          }
+        ],
+        "shop": [
+          {
+            "element_id": "MOCK_COLONNES NIV 2_e00001",
+            "file": "DA/Colonnes/MOCK_COLONNES NIV 2.pdf",
+            "page": 1,
+            "sheet": null,
+            "x": 809.68,
+            "y": 701.73
+          }
+        ]
+      },
+      "notes": "",
+      "order": 1,
+      "status": "conforms"
+    },
+    {
+      "checks": [
+        {
+          "by": "rule",
+          "plan": "20M",
+          "plan_text": "ARM.: 6-20M",
+          "property": "counted bars size",
+          "result": "equal",
+          "shop": "20M",
+          "shop_text": "VERT: 4 20M 20Z9-06"
+        },
+        {
+          "by": "rule",
+          "plan": "10M",
+          "plan_text": "LIG.: 10M@10\" c/c",
+          "property": "spaced bars size",
+          "result": "equal",
+          "shop": "10M",
+          "shop_text": "ETRI: 26 10M 10ET13X21 @10\""
+        },
+        {
+          "by": "rule",
+          "plan": 254.0,
+          "plan_text": "LIG.: 10M@10\" c/c",
+          "property": "spaced bars spacing mm",
+          "result": "equal",
+          "shop": 254.0,
+          "shop_text": "ETRI: 26 10M 10ET13X21 @10\""
+        }
+      ],
+      "entity_id": "F-00002",
+      "flags": [
+        {
+          "by": "rule",
+          "plan": 6,
+          "plan_text": "ARM.: 6-20M",
+          "property": "counted bars count",
+          "result": "different",
+          "shop": 4,
+          "shop_ref": {
+            "element_id": "MOCK_COLONNES NIV 2_e00002",
+            "file": "DA/Colonnes/MOCK_COLONNES NIV 2.pdf",
+            "page": 1,
+            "sheet": null,
+            "x": 1209.68,
+            "y": 1101.73
+          },
+          "shop_text": "VERT: 4 20M 20Z9-06"
+        }
+      ],
+      "info": [],
+      "kind": "column",
+      "level": "N2",
+      "location": {
+        "grid": "C-3",
+        "shop_cell": "C-3"
+      },
+      "match": {
+        "cost": -0.35,
+        "identity": 5,
+        "llm_certainty": null,
+        "method": "hungarian"
+      },
+      "members": {
+        "plan": [
+          {
+            "element_id": "MOCK_PLAN_STR_e00003",
+            "file": "MOCK_PLAN_STR.pdf",
+            "page": 1,
+            "sheet": "S-201",
+            "x": 1176.36,
+            "y": 1101.73
+          }
+        ],
+        "shop": [
+          {
+            "element_id": "MOCK_COLONNES NIV 2_e00002",
+            "file": "DA/Colonnes/MOCK_COLONNES NIV 2.pdf",
+            "page": 1,
+            "sheet": null,
+            "x": 1209.68,
+            "y": 1101.73
+          }
+        ]
+      },
+      "notes": "",
+      "order": 2,
+      "status": "differs"
+    },
+    {
+      "checks": [
+        {
+          "by": "rule",
+          "plan": "15M",
+          "plan_text": "15M@300 c/c",
+          "property": "spaced bars size",
+          "result": "equal",
+          "shop": "15M",
+          "shop_text": "15M@350"
+        }
+      ],
+      "entity_id": "F-00003",
+      "flags": [],
+      "info": [
+        {
+          "by": "rule",
+          "plan": 300.0,
+          "plan_text": "15M@300 c/c",
+          "property": "spaced bars spacing mm",
+          "result": "possible_difference",
+          "shop": 350.0,
+          "shop_ref": {
+            "element_id": "MOCK_DALLE NIV 2_e00001",
+            "file": "DA/Dalles/MOCK_DALLE NIV 2.pdf",
+            "page": 1,
+            "sheet": null,
+            "x": 1155.45,
+            "y": 693.73
+          },
+          "shop_text": "15M@350"
+        }
+      ],
+      "kind": "slab",
+      "level": "N2",
+      "location": {
+        "grid": "B-3",
+        "shop_cell": "B-3"
+      },
+      "match": {
+        "cost": -0.098,
+        "identity": 4,
+        "llm_certainty": null,
+        "method": "hungarian"
+      },
+      "members": {
+        "plan": [
+          {
+            "element_id": "MOCK_PLAN_STR_e00001",
+            "file": "MOCK_PLAN_STR.pdf",
+            "page": 1,
+            "sheet": "S-201",
+            "x": 1164.01,
+            "y": 693.73
+          }
+        ],
+        "shop": [
+          {
+            "element_id": "MOCK_DALLE NIV 2_e00001",
+            "file": "DA/Dalles/MOCK_DALLE NIV 2.pdf",
+            "page": 1,
+            "sheet": null,
+            "x": 1155.45,
+            "y": 693.73
+          }
+        ]
+      },
+      "notes": "",
+      "order": 3,
+      "status": "uncertain"
+    },
+    {
+      "checks": [],
+      "entity_id": "F-00004",
+      "flags": [],
+      "info": [
+        {
+          "by": "rule",
+          "plan": "on plan",
+          "property": "presence",
+          "result": "unmatched",
+          "shop": "no shop counterpart found"
+        }
+      ],
+      "kind": "notes generales",
+      "level": "N2",
+      "location": {
+        "grid": "D-2"
+      },
+      "match": {},
+      "members": {
+        "plan": [
+          {
+            "element_id": "MOCK_PLAN_STR_e00004",
+            "file": "MOCK_PLAN_STR.pdf",
+            "page": 1,
+            "sheet": "S-201",
+            "x": 600.08,
+            "y": 1595.34
+          }
+        ],
+        "shop": []
+      },
+      "notes": "shop drawings do not cover this element, or no counterpart was found",
+      "severity": "info",
+      "status": "not_in_shop"
+    },
+    {
+      "checks": [],
+      "entity_id": "F-00005",
+      "flags": [],
+      "info": [
+        {
+          "by": "rule",
+          "plan": "no plan counterpart found",
+          "property": "presence",
+          "result": "unmatched",
+          "shop": "in shop drawings"
+        }
+      ],
+      "kind": "column",
+      "level": "N2",
+      "location": {
+        "grid": "D-2"
+      },
+      "match": {},
+      "members": {
+        "plan": [],
+        "shop": [
+          {
+            "element_id": "MOCK_COLONNES NIV 2_e00003",
+            "file": "DA/Colonnes/MOCK_COLONNES NIV 2.pdf",
+            "page": 1,
+            "sheet": null,
+            "x": 600.08,
+            "y": 1595.34
+          }
+        ]
+      },
+      "notes": "shop element with no plan counterpart found",
+      "severity": "info",
+      "status": "not_in_plan"
+    },
+    {
+      "checks": [],
+      "entity_id": "F-00006",
+      "flags": [],
+      "info": [
+        {
+          "by": "rule",
+          "plan": "no plan counterpart found",
+          "property": "presence",
+          "result": "unmatched",
+          "shop": "in shop drawings"
+        }
+      ],
+      "kind": "slab",
+      "level": "N2",
+      "location": {
+        "grid": "D-2"
+      },
+      "match": {},
+      "members": {
+        "plan": [],
+        "shop": [
+          {
+            "element_id": "MOCK_DALLE NIV 2_e00002",
+            "file": "DA/Dalles/MOCK_DALLE NIV 2.pdf",
+            "page": 1,
+            "sheet": null,
+            "x": 600.08,
+            "y": 1595.34
+          }
+        ]
+      },
+      "notes": "shop element with no plan counterpart found",
+      "severity": "info",
+      "status": "not_in_plan"
+    },
+    {
+      "checks": [],
+      "entity_id": "F-00007",
+      "flags": [],
+      "info": [
+        {
+          "by": "rule",
+          "plan": "no plan counterpart found",
+          "property": "presence",
+          "result": "unmatched",
+          "shop": "in shop drawings"
+        }
+      ],
+      "kind": "beam",
+      "level": "N2",
+      "location": {
+        "grid": "P-1"
+      },
+      "match": {},
+      "members": {
+        "plan": [],
+        "shop": [
+          {
+            "element_id": "MOCK_POUTRES NIV 2_e00001",
+            "file": "DA/Poutres/MOCK_POUTRES NIV 2.pdf",
+            "page": 1,
+            "sheet": null,
+            "x": 363.01,
+            "y": 1493.73
+          }
+        ]
+      },
+      "notes": "shop element with no plan counterpart found",
+      "severity": "info",
+      "status": "not_in_plan"
+    },
+    {
+      "checks": [],
+      "entity_id": "F-00008",
+      "flags": [],
+      "info": [
+        {
+          "by": "rule",
+          "plan": "no plan counterpart found",
+          "property": "presence",
+          "result": "unmatched",
+          "shop": "in shop drawings"
+        }
+      ],
+      "kind": "beam",
+      "level": "N2",
+      "location": {
+        "grid": "D-2"
+      },
+      "match": {},
+      "members": {
+        "plan": [],
+        "shop": [
+          {
+            "element_id": "MOCK_POUTRES NIV 2_e00002",
+            "file": "DA/Poutres/MOCK_POUTRES NIV 2.pdf",
+            "page": 1,
+            "sheet": null,
+            "x": 600.08,
+            "y": 1595.34
+          }
+        ]
+      },
+      "notes": "shop element with no plan counterpart found",
+      "severity": "info",
+      "status": "not_in_plan"
+    }
+  ],
+  "llm_calls": 0,
+  "model": "none",
+  "systematic": []
+}
