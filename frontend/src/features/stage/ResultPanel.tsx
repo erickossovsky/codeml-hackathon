@@ -3,6 +3,8 @@ import { X } from 'lucide-react'
 import type { Finding, FindingStatus, RunResult, SheetRef } from '../../shared/types'
 import { btn, btnGhost, label } from '../../shared/ui'
 import { usePdfPages } from '../sheet/pdf'
+import { PdfViewer, type ViewTarget } from '../viewer/PdfViewer'
+import { API_URL } from '../../shared/api'
 
 // Review sheet: laid out like an engineering title block. Each finding is one register line:
 // where it is (grid and level), what differs (plan value vs shop value), and where to look.
@@ -27,10 +29,19 @@ const TONE: Record<FindingStatus, string> = {
 const CELL = 'relative border-r border-b border-line-2 px-6 pb-6 pt-9'
 const LABEL = `absolute left-6 top-3.5 ${label}`
 
-export function ResultPanel({ result, file, onReset }: { result: RunResult; file: File | null; onReset: () => void }) {
+export function ResultPanel({ result, file, files = [], onReset, resetLabel = 'New run' }: { result: RunResult; file: File | null; files?: File[]; onReset: () => void; resetLabel?: string }) {
   const [open, setOpen] = useState<Finding | null>(null)
+  const [viewing, setViewing] = useState<ViewTarget[] | null>(null)
+  // the PDF the user dropped, or the API's copy when the browser no longer holds it
+  const target = (title: string, r: SheetRef): ViewTarget => ({
+    title,
+    ref: r,
+    src: files.find((f) => f.name === r.fichier) ?? `${API_URL}/api/pdf/${result.run_id}/${encodeURIComponent(r.fichier)}`,
+  })
+  const both = (f: Finding) => [f.plan_ref && target('Plan', f.plan_ref), f.shop_ref && target('Shop drawing', f.shop_ref)].filter((t): t is ViewTarget => !!t)
   const json = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`
-  const review = result.counts.non_compliant + result.counts.missing + result.counts.needs_review
+  // missing elements are listed apart: shop drawings do not cover every plan element
+  const review = result.counts.non_compliant + result.counts.needs_review
   const planPages = usePdfPages(file)
 
   return (
@@ -38,11 +49,11 @@ export function ResultPanel({ result, file, onReset }: { result: RunResult; file
       <div className="mx-auto max-w-6xl px-6 pb-12 pt-8 md:px-10">
         {/* Actions sit left, so the finding drawer on the right never covers them. */}
         <div className="mb-6 flex flex-col gap-4">
-          <p className={label}>Review sheet · {result.run_id} · {result.project}</p>
+          <p className={label}>Review sheet · {result.run_id} · {result.project}{result.partial ? ` · partial: ${result.partial.shop_files_read} of ${result.partial.shop_files} shop files read` : ''}</p>
           <div className="flex flex-wrap gap-3">
             <a href={json} download={`${result.run_id}-findings.json`} className={btn}>findings.json</a>
             <a href={`http://localhost:8000/api/report/${result.run_id}`} download={`${result.run_id}-report.pdf`} className={btn}>report.pdf</a>
-            <button type="button" onClick={onReset} className={btnGhost}>New run</button>
+            <button type="button" onClick={onReset} className={btnGhost}>{resetLabel}</button>
           </div>
         </div>
 
@@ -79,12 +90,13 @@ export function ResultPanel({ result, file, onReset }: { result: RunResult; file
                   <th className="border-r border-line-2 px-6 py-3.5 font-normal">Element · grid · level</th>
                   <th className="border-r border-line-2 px-6 py-3.5 font-normal">Plan value</th>
                   <th className="border-r border-line-2 px-6 py-3.5 font-normal">Shop value</th>
-                  <th className="px-6 py-3.5 font-normal">Status</th>
+                  <th className="border-r border-line-2 px-6 py-3.5 font-normal">Status</th>
+                  <th className="px-4 py-3.5 font-normal">Drawings</th>
                 </tr>
               </thead>
               <tbody>
                 {result.findings.map((f) => (
-                  <FindingRow key={f.id} f={f} onOpen={() => setOpen(f)} />
+                  <FindingRow key={f.id} f={f} onOpen={() => setOpen(f)} onView={() => setViewing(both(f))} />
                 ))}
               </tbody>
             </table>
@@ -117,26 +129,39 @@ export function ResultPanel({ result, file, onReset }: { result: RunResult; file
               ))}
             </dl>
           )}
-          <RefLine label="Plan reference" r={open.plan_ref} />
-          <RefLine label="Shop reference" r={open.shop_ref} />
+          {(open.plan_ref || open.shop_ref) && (
+            <button type="button" onClick={() => setViewing(both(open))} className={btn}>View on both drawings</button>
+          )}
+          <RefLine label="Plan reference" r={open.plan_ref} onView={(r) => setViewing([target('Plan', r)])} />
+          <RefLine label="Shop reference" r={open.shop_ref} onView={(r) => setViewing([target('Shop drawing', r)])} />
           {open.confidence !== undefined && <p className="font-mono text-sm text-mute">Confidence {(open.confidence * 100).toFixed(0)}%</p>}
         </aside>
       )}
+      {viewing && <PdfViewer targets={viewing} onClose={() => setViewing(null)} />}
     </div>
   )
 }
 
-function RefLine({ label: name, r }: { label: string; r?: SheetRef }) {
+function RefLine({ label: name, r, onView }: { label: string; r?: SheetRef; onView: (r: SheetRef) => void }) {
   if (!r) return null
   return (
     <div className="border-t border-line-2 pt-4">
       <p className={label}>{name}</p>
-      <p className="mt-1 font-mono text-sm">{r.fichier} · page {r.page} · x {r.x.toFixed(1)} y {r.y.toFixed(1)}</p>
+      <div className="mt-1 flex items-center justify-between gap-3">
+        <p className="font-mono text-sm">{r.fichier} · page {r.page} · x {r.x.toFixed(1)} y {r.y.toFixed(1)}</p>
+        <button type="button" onClick={() => onView(r)} className={`${btnGhost} shrink-0`}>View</button>
+      </div>
     </div>
   )
 }
 
-function FindingRow({ f, onOpen }: { f: Finding; onOpen: () => void }) {
+// where a finding sits on one document: page and X, Y in PDF points
+function Where({ r }: { r?: SheetRef }) {
+  if (!r) return null
+  return <span className="mt-1 block text-[13px] text-mute">p{r.page} · x {r.x.toFixed(0)} y {r.y.toFixed(0)}</span>
+}
+
+function FindingRow({ f, onOpen, onView }: { f: Finding; onOpen: () => void; onView: () => void }) {
   const d = f.diffs[0]
   return (
     <tr onClick={onOpen} className="cursor-pointer border-b border-line-2 hover:bg-panel">
@@ -145,13 +170,18 @@ function FindingRow({ f, onOpen }: { f: Finding; onOpen: () => void }) {
         <span className="block text-xl">{f.type_element.replace('_', ' ')} <span className="font-mono text-base text-mute">{f.grid ?? 'no grid'}</span></span>
         <span className="block font-mono text-[13px] text-mute">{f.level} · {f.notes || f.check_type}</span>
       </td>
-      <td className="border-r border-line-2 px-6 py-5 font-mono text-base">{d ? `${d.field} ${d.plan ?? '—'}` : '—'}</td>
-      <td className="border-r border-line-2 px-6 py-5 font-mono text-base">{d ? `${d.field} ${d.shop ?? '—'}` : '—'}</td>
+      <td className="border-r border-line-2 px-6 py-5 font-mono text-base">{d ? `${d.field} ${d.plan ?? '—'}` : '—'}<Where r={f.plan_ref} /></td>
+      <td className="border-r border-line-2 px-6 py-5 font-mono text-base">{d ? `${d.field} ${d.shop ?? '—'}` : '—'}<Where r={f.shop_ref} /></td>
       <td className="px-6 py-5">
         <span className={`inline-flex items-center gap-3 whitespace-nowrap font-mono text-base uppercase tracking-wider ${TONE[f.status]}`}>
           <span className={`grid size-9 place-items-center border font-semibold ${f.status === 'needs_review' ? 'border-dashed border-current' : 'border-current'}`}>{CODE[f.status]}</span>
           {WORD[f.status]}
         </span>
+      </td>
+      <td className="px-4 py-5">
+        {(f.plan_ref || f.shop_ref) && (
+          <button type="button" onClick={(e) => { e.stopPropagation(); onView() }} className={btnGhost} aria-label={`View ${f.id} on the drawings`}>View</button>
+        )}
       </td>
     </tr>
   )

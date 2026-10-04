@@ -41,6 +41,20 @@ local open-source model for the close calls, and writes free-form element JSON, 
 one `findings.pdf` per project. See `docs/lean-pipeline.md` for the stages, the model setup and the
 known limits.
 
+## Web app (upload, live progress, findings while loading, final report)
+
+```
+cd backend && uvicorn l2c.api:app --port 8000     # API; each run lives in data/runs/<id>
+cd frontend && npm install && npm run dev         # UI on http://localhost:5173
+python scripts/api_run.py <project_dir>           # the same flow from a terminal
+python -m l2c.pipeline.stream <project_dir> --out data/out/<project>   # the same run without the API
+```
+
+Drop the plan PDFs and the shop drawings in the UI and run the check. Each file's metadata
+(`elements/elements.<file>.json`) is written as soon as that file is read; partial findings (JSON
+and PDF) follow while the rest is still loading, and the final report replaces them at the end.
+The API serves `/api/findings/<id>`, `/api/elements/<id>` and `/api/report/<id>` at any time.
+
 ## Lanes
 
 - `backend/l2c/{ingest,extract}`: PDF to metadata (Eric). Deterministic rules; OCR only for pages

@@ -29,7 +29,7 @@ export function StackedFlow({ plans, shops, state, onFiles, onRetry, onNewRun }:
   if (done && state.result) {
     return (
       <div className="relative min-h-[80vh]">
-        <ResultPanel result={state.result} file={plans[0] ?? null} onReset={onNewRun} />
+        <ResultPanel result={state.result} file={plans[0] ?? null} files={[...plans, ...shops]} onReset={onNewRun} />
       </div>
     )
   }

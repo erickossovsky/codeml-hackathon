@@ -1,6 +1,5 @@
 import type { RunClient } from './client'
-import type { ProgressEvent, RunResult } from '../shared/types'
-import { STEPS } from '../shared/steps'
+import type { ProgressEvent } from '../shared/types'
 
 export function createLiveClient(): RunClient {
   const runs = new Map<string, { listeners: Set<(e: ProgressEvent) => void> }>()

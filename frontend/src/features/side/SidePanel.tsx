@@ -12,9 +12,10 @@ const fmt = (ms: number) => `${(ms / 1000).toFixed(1).padStart(4, '0')}s`
 // Right column: the sheet being read (page by page), fixed indicators, and the run log.
 export function SidePanel({ state, elapsed, plans, shops }: { state: RunState; elapsed: number; plans: File[]; shops: File[] }) {
   const st = state.stepStatus
-  const r = state.result
-  // Same count as the report's "To review": non-compliant, missing and needs review.
-  const review = r ? r.counts.non_compliant + r.counts.missing + r.counts.needs_review : null
+  // the final result, or the partial findings while the project is still loading
+  const r = state.result ?? state.partial
+  // Same count as the report's discrepancies: non-compliant and to verify (missing elements are listed apart)
+  const review = r ? r.counts.non_compliant + r.counts.needs_review : null
   const onShops = st.extract_shop !== 'pending'
   const previewFile = onShops ? shops[0] ?? null : plans[0] ?? null
   const pages = usePdfPages(previewFile)

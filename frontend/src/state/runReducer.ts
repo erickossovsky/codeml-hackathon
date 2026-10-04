@@ -18,6 +18,7 @@ export interface RunState {
   log: LogLine[]
   startedAt?: number
   result?: RunResult
+  partial?: RunResult // findings while the project is still loading
   error?: string
 }
 
@@ -50,6 +51,16 @@ export function runReducer(state: RunState, action: RunAction): RunState {
           details,
           log: [...state.log, { t: action.t, step: e.step, text, tone: 'info' }],
         }
+      }
+      if (e.kind === 'note') {
+        const details = e.detail ? { ...state.details, [e.step]: e.detail } : state.details
+        return { ...state, details, log: [...state.log, { t: action.t, step: e.step, text: e.text, tone: 'info' }] }
+      }
+      if (e.kind === 'partial') {
+        const p = e.result.partial
+        const c = e.result.counts
+        const text = `Partial findings${p ? ` (${p.shop_files_read}/${p.shop_files} shop files)` : ''}: ${c.non_compliant} non-compliant · ${c.needs_review} to verify`
+        return { ...state, partial: e.result, log: [...state.log, { t: action.t, step: 'compare', text, tone: 'info' }] }
       }
       if (e.kind === 'result') {
         const done = Object.fromEntries(STEPS.map((s) => [s.id, 'done'])) as Record<StepId, StepStatus>

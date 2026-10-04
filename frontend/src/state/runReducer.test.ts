@@ -32,6 +32,27 @@ describe('runReducer', () => {
     expect(s.log.at(-1)?.tone).toBe('bad')
   })
 
+  it('logs a note and keeps its readout without closing the step', () => {
+    let s = runReducer(initialRunState, { type: 'start', startedAt: 0 })
+    s = runReducer(s, step('extract_shop', 'active'))
+    s = runReducer(s, { type: 'progress', event: { kind: 'note', step: 'extract_shop', text: 'a.pdf read', detail: '40 elements · 1/3 files' }, t: 7 })
+    expect(s.stepStatus.extract_shop).toBe('active')
+    expect(s.details.extract_shop).toBe('40 elements · 1/3 files')
+    expect(s.log.at(-1)?.text).toBe('a.pdf read')
+  })
+
+  it('keeps partial findings while running, then the result replaces them', () => {
+    const counts = { compliant: 3, non_compliant: 1, missing: 0, added: 0, needs_review: 2 }
+    const partial = { run_id: 'x', project: 'p', plan: 'p', shop_drawings: [], counts, findings: [], partial: { shop_files_read: 1, shop_files: 3, seconds: 9 } }
+    let s = runReducer(initialRunState, { type: 'start', startedAt: 0 })
+    s = runReducer(s, { type: 'progress', event: { kind: 'partial', result: partial }, t: 9 })
+    expect(s.phase).toBe('running')
+    expect(s.partial?.counts.non_compliant).toBe(1)
+    expect(s.log.at(-1)?.text).toBe('Partial findings (1/3 shop files): 1 non-compliant · 2 to verify')
+    s = runReducer(s, { type: 'progress', event: { kind: 'result', result: { ...partial, partial: undefined } }, t: 20 })
+    expect(s.phase).toBe('done')
+  })
+
   it('finishes every step on result', () => {
     const result = { run_id: 'x', project: 'p', plan: 'p', shop_drawings: [], counts: { compliant: 0, non_compliant: 0, missing: 0, added: 0, needs_review: 0 }, findings: [] }
     const s = runReducer(initialRunState, { type: 'progress', event: { kind: 'result', result }, t: 9 })

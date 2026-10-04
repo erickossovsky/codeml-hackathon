@@ -6,6 +6,8 @@ import { Core } from './Core'
 import { OutputBox, Source, Station, Token } from './Nodes'
 import { CANVAS, CORE, FIND, REPORT, ROW, SRC, STN, TRUNK_X, routeFor } from './geometry'
 import { ResultPanel } from './ResultPanel'
+import { btn } from '../../shared/ui'
+import { filesFromDrop, splitProject } from '../../shared/dropFiles'
 
 interface Props {
   plans: File[]
@@ -40,6 +42,8 @@ export function Stage({ plans, shops, state, onFiles, onClear, onRemove, onRetry
   const folderInput = useRef<HTMLInputElement>(null)
   const [rejected, setRejected] = useState<'plan' | 'shop' | null>(null)
   const [dragging, setDragging] = useState(false)
+  // the run (by its start time) whose partial findings are open, so the view never carries over to the next run
+  const [partialFor, setPartialFor] = useState<number | null>(null)
   const st = state.stepStatus
   const idle = state.phase === 'idle'
   const running = state.phase === 'running'
@@ -47,6 +51,7 @@ export function Stage({ plans, shops, state, onFiles, onClear, onRemove, onRetry
   const doneCount = STEPS.filter((s) => st[s.id] === 'done').length
   const activeId = STEPS.find((s) => st[s.id] === 'active')?.id
   const plan = plans[0] ?? null
+  const showPartial = partialFor !== null && partialFor === state.startedAt
   const hasFiles = plans.length > 0 || shops.length > 0
   const summary = hasFiles ? `${plans.length} plan file${plans.length === 1 ? '' : 's'} · ${shops.length} shop file${shops.length === 1 ? '' : 's'}` : ''
 
@@ -66,16 +71,17 @@ export function Stage({ plans, shops, state, onFiles, onClear, onRemove, onRetry
     if (bad || any) setRejected(kind)
   }
 
-  // Dropping anywhere on the stage sorts each file by its name: names with "plan" are plan sheets, the rest are shop drawings.
+  // Dropping anywhere on the stage: a project folder splits into its plans (top) and its shop
+  // drawings (under DA/); loose files are sorted by name ("plan" in the name is a plan sheet).
   function onDrop(e: React.DragEvent) {
     e.preventDefault()
     setDragging(false)
     if (!idle) return
-    const files = pdfs(e.dataTransfer.files)
-    const planFiles = files.filter((f) => /plan/i.test(f.name))
-    const shopFiles = files.filter((f) => !/plan/i.test(f.name))
-    if (planFiles.length) add('plan', planFiles)
-    if (shopFiles.length) add('shop', shopFiles)
+    void filesFromDrop(e.dataTransfer).then((files) => {
+      const { plans: planFiles, shops: shopFiles } = splitProject(files.filter((f) => f.name.toLowerCase().endsWith('.pdf')))
+      if (planFiles.length) add('plan', planFiles)
+      if (shopFiles.length) add('shop', shopFiles)
+    })
   }
 
   const wire = (s: StepStatus) => (s === 'pending' ? 'stroke-line-2' : s === 'active' ? 'stroke-amber' : 'stroke-fg')
@@ -90,7 +96,9 @@ export function Stage({ plans, shops, state, onFiles, onClear, onRemove, onRetry
       onDrop={onDrop}
     >
       {done && state.result ? (
-        <ResultPanel result={state.result} file={plan} onReset={onNewRun} />
+        <ResultPanel result={state.result} file={plan} files={[...plans, ...shops]} onReset={onNewRun} />
+      ) : running && showPartial && state.partial ? (
+        <ResultPanel result={state.partial} file={plan} files={[...plans, ...shops]} onReset={() => setPartialFor(null)} resetLabel="Back to the run" />
       ) : (
         <Canvas>
           {COLUMNS.map((c) => (
@@ -146,6 +154,12 @@ export function Stage({ plans, shops, state, onFiles, onClear, onRemove, onRetry
             <p className="absolute bottom-3 left-3 font-mono text-[13px] text-red">Only PDF files can be added.</p>
           )}
         </Canvas>
+      )}
+      {running && state.partial && !showPartial && (
+        <button type="button" onClick={() => setPartialFor(state.startedAt ?? null)} className={`absolute bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 ${btn}`}>
+          Partial findings · {state.partial.counts.non_compliant} non-compliant · {state.partial.counts.needs_review} to verify
+          {state.partial.partial ? ` · ${state.partial.partial.shop_files_read}/${state.partial.partial.shop_files} shop files read` : ''} · open
+        </button>
       )}
     </div>
   )

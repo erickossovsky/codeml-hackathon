@@ -4,6 +4,7 @@ import type { StepStatus } from '../../state/runReducer'
 import { ROW, SRC, STATE_FROM_ROUTE, STATE_TO_ROUTE, STN, type Point } from './geometry'
 import { label as label_, link } from '../../shared/ui'
 import { summarizeFolders } from '../../shared/folders'
+import { filesFromDrop } from '../../shared/dropFiles'
 import { SheetThumb } from '../sheet/SheetThumb'
 
 const KEY = 'font-mono text-xs uppercase tracking-[0.14em]'
@@ -12,7 +13,7 @@ const KEY = 'font-mono text-xs uppercase tracking-[0.14em]'
 // opens a scrollable list where single files can be removed, so 70 files stay manageable.
 export function Source({ row, label, names, file, rejected, reading, onPick, onClear, onRemove, onDrop, onFolder, folders }: {
   row: number; label: string; names: string[]; file: File | null; rejected: boolean; reading: boolean
-  onPick: () => void; onClear: () => void; onRemove: (index: number) => void; onDrop: (files: FileList) => void
+  onPick: () => void; onClear: () => void; onRemove: (index: number) => void; onDrop: (files: File[]) => void
   onFolder?: () => void; folders?: File[]
 }) {
   const [reviewing, setReviewing] = useState(false)
@@ -29,7 +30,8 @@ export function Source({ row, label, names, file, rejected, reading, onPick, onC
       style={{ left: SRC.x, width: SRC.w }}
       onClick={!filled ? onPick : undefined}
       onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => { e.preventDefault(); onDrop(e.dataTransfer.files) }}
+      // a dropped folder is walked into; the drop stops here so the stage does not add the files again
+      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); void filesFromDrop(e.dataTransfer).then(onDrop) }}
       className={`absolute overflow-hidden border bg-panel transition-colors duration-300 ${
         filled ? 'border-line-2' : 'cursor-pointer border-dashed border-line-2 hover:border-mute'
       }`}
