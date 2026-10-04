@@ -33,3 +33,12 @@ def test_column_checks():
     assert failed == []
     _, failed = Q.column_checks(0, "26M", 5.0)
     assert set(failed) == {"count_plausible", "size_in_vocabulary", "spacing_plausible"}
+
+
+def test_a_zero_margin_binding_still_reaches_the_trust_level():
+    """Measured on a real project: bindings with no margin to the runner-up agree with the other
+    document as often as the rest, so a thin margin alone must not push an element below 0.7."""
+    loc = Q.location("outline", 1.0, margin=0.0)
+    assert 0.7 <= Q.location_score(loc) < 1.0
+    off_grid = Q.location("outline", 0.6, margin=0.0)  # relaxed snap: still below the bar
+    assert Q.location_score(off_grid) < 0.7

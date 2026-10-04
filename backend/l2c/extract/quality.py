@@ -62,8 +62,15 @@ def location(
     )
 
 
+# A thin margin to the runner-up outline is weak evidence of a wrong binding: measured on a real
+# project, zero-margin bindings agreed with the other document as often as the rest. The floor keeps
+# them above the trust bar; genuinely doubtful placements are penalised by grid confidence instead.
+BINDING_FLOOR = 0.75
+
+
 def location_score(loc: LocationQuality) -> float:
-    binding = 1.0 if loc.margin_to_runner_up is None else 0.6 + 0.4 * loc.margin_to_runner_up
+    margin = loc.margin_to_runner_up
+    binding = 1.0 if margin is None else BINDING_FLOOR + (1.0 - BINDING_FLOOR) * margin
     return round(loc.page_xy_conf * loc.grid_conf * C.ANCHOR_FACTOR[loc.anchor] * binding, 3)
 
 
