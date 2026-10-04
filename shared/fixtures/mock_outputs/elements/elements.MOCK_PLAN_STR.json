@@ -1,0 +1,452 @@
+{
+  "elements": [
+    {
+      "bars": [
+        {
+          "qualifiers": [
+            "c/c"
+          ],
+          "size": "15M",
+          "source_text": "15M@300 c/c",
+          "spacing": 300.0,
+          "spacing_mm": 300.0
+        }
+      ],
+      "bbox": [
+        1130.0,
+        678.17,
+        1198.02,
+        709.29
+      ],
+      "characteristics": [],
+      "descriptions": [
+        {
+          "source_text": "DALLE",
+          "text": "DALLE"
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            1130.0,
+            678.17,
+            1198.02,
+            709.29
+          ],
+          "page": 1,
+          "text": [
+            "DALLE",
+            "15M@300 c/c"
+          ]
+        }
+      ],
+      "file": "MOCK_PLAN_STR.pdf",
+      "id": "MOCK_PLAN_STR_e00001",
+      "kind": "slab",
+      "locations": [
+        {
+          "cell": "B-3",
+          "inside_grid": true,
+          "rc": [
+            2.113,
+            3.158
+          ],
+          "type": "grid"
+        },
+        {
+          "basis": "drawing_title",
+          "type": "level",
+          "value": "N2"
+        },
+        {
+          "title": "PLAN DE STRUCTURE NIVEAU 2",
+          "type": "drawing"
+        }
+      ],
+      "match": {
+        "method": "text_block"
+      },
+      "name": null,
+      "page": 1,
+      "quality": {
+        "has_facts": true,
+        "kind_basis": [
+          "DALLE"
+        ],
+        "ocr_conf": null,
+        "text_source": "native"
+      },
+      "sheet": "S-201",
+      "source": "plan",
+      "x": 1164.01,
+      "y": 693.73
+    },
+    {
+      "bars": [
+        {
+          "count": 4,
+          "role": "arm",
+          "role_hint": "main",
+          "size": "25M",
+          "source_text": "ARM.: 4-25M"
+        },
+        {
+          "qualifiers": [
+            "c/c"
+          ],
+          "role": "lig",
+          "role_hint": "ties",
+          "size": "10M",
+          "source_text": "LIG.: 10M@12\" c/c",
+          "spacing": 12.0,
+          "spacing_mm": 304.8,
+          "spacing_unit": "\""
+        }
+      ],
+      "bbox": [
+        730.0,
+        678.17,
+        822.72,
+        725.29
+      ],
+      "characteristics": [],
+      "descriptions": [
+        {
+          "source_text": "COLONNE B-2",
+          "text": "COLONNE B-2"
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            730.0,
+            678.17,
+            822.72,
+            725.29
+          ],
+          "page": 1,
+          "text": [
+            "COLONNE B-2",
+            "ARM.: 4-25M",
+            "LIG.: 10M@12\" c/c"
+          ]
+        }
+      ],
+      "file": "MOCK_PLAN_STR.pdf",
+      "id": "MOCK_PLAN_STR_e00002",
+      "kind": "column",
+      "locations": [
+        {
+          "basis": "named_in_text",
+          "cells": [
+            "B-2"
+          ],
+          "type": "grid_cells"
+        },
+        {
+          "basis": "drawing_title",
+          "type": "level",
+          "value": "N2"
+        },
+        {
+          "title": "PLAN DE STRUCTURE NIVEAU 2",
+          "type": "drawing"
+        }
+      ],
+      "match": {
+        "method": "text_block"
+      },
+      "name": "B-2",
+      "page": 1,
+      "quality": {
+        "has_facts": true,
+        "kind_basis": [
+          "COLONNE"
+        ],
+        "ocr_conf": null,
+        "text_source": "native"
+      },
+      "sheet": "S-201",
+      "source": "plan",
+      "x": 776.36,
+      "y": 701.73
+    },
+    {
+      "bars": [
+        {
+          "count": 6,
+          "role": "arm",
+          "role_hint": "main",
+          "size": "20M",
+          "source_text": "ARM.: 6-20M"
+        },
+        {
+          "qualifiers": [
+            "c/c"
+          ],
+          "role": "lig",
+          "role_hint": "ties",
+          "size": "10M",
+          "source_text": "LIG.: 10M@10\" c/c",
+          "spacing": 10.0,
+          "spacing_mm": 254.0,
+          "spacing_unit": "\""
+        }
+      ],
+      "bbox": [
+        1130.0,
+        1078.18,
+        1222.72,
+        1125.29
+      ],
+      "characteristics": [],
+      "descriptions": [
+        {
+          "source_text": "COLONNE C-3",
+          "text": "COLONNE C-3"
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            1130.0,
+            1078.18,
+            1222.72,
+            1125.29
+          ],
+          "page": 1,
+          "text": [
+            "COLONNE C-3",
+            "ARM.: 6-20M",
+            "LIG.: 10M@10\" c/c"
+          ]
+        }
+      ],
+      "file": "MOCK_PLAN_STR.pdf",
+      "id": "MOCK_PLAN_STR_e00003",
+      "kind": "column",
+      "locations": [
+        {
+          "basis": "named_in_text",
+          "cells": [
+            "C-3"
+          ],
+          "type": "grid_cells"
+        },
+        {
+          "basis": "drawing_title",
+          "type": "level",
+          "value": "N2"
+        },
+        {
+          "title": "PLAN DE STRUCTURE NIVEAU 2",
+          "type": "drawing"
+        }
+      ],
+      "match": {
+        "method": "text_block"
+      },
+      "name": "C-3",
+      "page": 1,
+      "quality": {
+        "has_facts": true,
+        "kind_basis": [
+          "COLONNE"
+        ],
+        "ocr_conf": null,
+        "text_source": "native"
+      },
+      "sheet": "S-201",
+      "source": "plan",
+      "x": 1176.36,
+      "y": 1101.73
+    },
+    {
+      "bars": [],
+      "bbox": [
+        300.0,
+        1587.1,
+        900.16,
+        1603.59
+      ],
+      "characteristics": [
+        {
+          "name": "concrete_strength",
+          "source_text": "30 MPA",
+          "unit": "MPa",
+          "value": 30
+        }
+      ],
+      "descriptions": [
+        {
+          "source_text": "NOTES GENERALES: BETON 30 MPA, ACIER 400W, RECOUVREMENT SELON DEVIS, ENROBAGE 40 MM.",
+          "text": "BETON , ACIER 400W, RECOUVREMENT SELON DEVIS, ENROBAGE 40 MM."
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            300.0,
+            1587.1,
+            900.16,
+            1603.59
+          ],
+          "page": 1,
+          "text": [
+            "NOTES GENERALES: BETON 30 MPA, ACIER 400W, RECOUVREMENT SELON DEVIS, ENROBAGE 40 MM."
+          ]
+        }
+      ],
+      "file": "MOCK_PLAN_STR.pdf",
+      "id": "MOCK_PLAN_STR_e00004",
+      "kind": "notes generales",
+      "locations": [
+        {
+          "alt_cells": [
+            "D-1"
+          ],
+          "cell": "D-2",
+          "inside_grid": false,
+          "rc": [
+            4.0,
+            1.749
+          ],
+          "type": "grid"
+        },
+        {
+          "basis": "drawing_title",
+          "type": "level",
+          "value": "N2"
+        },
+        {
+          "title": "PLAN DE STRUCTURE NIVEAU 2",
+          "type": "drawing"
+        }
+      ],
+      "match": {
+        "method": "text_block"
+      },
+      "name": null,
+      "page": 1,
+      "quality": {
+        "has_facts": true,
+        "kind_basis": [
+          "own_text"
+        ],
+        "ocr_conf": null,
+        "text_source": "native"
+      },
+      "sheet": "S-201",
+      "source": "plan",
+      "x": 600.08,
+      "y": 1595.34
+    },
+    {
+      "bars": [],
+      "bbox": [
+        2100.0,
+        1582.8,
+        2474.7,
+        1688.37
+      ],
+      "characteristics": [],
+      "descriptions": [
+        {
+          "text": "PLAN DE STRUCTURE NIVEAU 2"
+        },
+        {
+          "text": "FEUILLET S-201"
+        },
+        {
+          "text": "S-201"
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            2100.0,
+            1582.8,
+            2474.7,
+            1688.37
+          ],
+          "page": 1,
+          "text": [
+            "PLAN DE STRUCTURE NIVEAU 2",
+            "FEUILLET S-201",
+            "S-201"
+          ]
+        }
+      ],
+      "file": "MOCK_PLAN_STR.pdf",
+      "id": "MOCK_PLAN_STR_e00005",
+      "kind": null,
+      "locations": [
+        {
+          "title": "PLAN DE STRUCTURE NIVEAU 2",
+          "type": "drawing"
+        },
+        {
+          "basis": "drawing_title",
+          "text": "NIVEAU 2",
+          "type": "level",
+          "value": "N2"
+        }
+      ],
+      "match": {
+        "method": "detail_title"
+      },
+      "name": "PLAN DE STRUCTURE NIVEAU 2",
+      "page": 1,
+      "quality": {
+        "has_facts": false,
+        "kind_basis": null
+      },
+      "role": "detail",
+      "sheet": "S-201",
+      "source": "plan",
+      "x": 2274.24,
+      "y": 1632.24
+    }
+  ],
+  "file": {
+    "file": "MOCK_PLAN_STR.pdf",
+    "pages": 1,
+    "size_bytes": 5053,
+    "stem": "MOCK_PLAN_STR"
+  },
+  "pages": [
+    {
+      "kind_hints": [],
+      "layer": "empty",
+      "level_hints": {
+        "from_file_name": [],
+        "from_page_title": [],
+        "from_titles": [
+          "N2"
+        ]
+      },
+      "n_words": 46,
+      "page": 1,
+      "page_title": null,
+      "scale_text": [],
+      "sheet": "S-201",
+      "text_height": 16.49,
+      "text_source": "native",
+      "titles": [
+        {
+          "level": "N2",
+          "text": "PLAN DE STRUCTURE NIVEAU 2",
+          "x": 2224.5,
+          "y": 1593.8
+        }
+      ]
+    }
+  ],
+  "source": "plan",
+  "stats": {
+    "elements": 5,
+    "group_questions": 0,
+    "model": "none",
+    "with_facts": 4
+  }
+}

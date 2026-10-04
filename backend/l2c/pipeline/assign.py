@@ -118,12 +118,13 @@ def build_entities(plan: list[dict]) -> list[Entity]:
         if not eligible(e):
             continue
         grid = _loc(e, "grid")
+        named = _loc(e, "grid_cells")  # cells written in the note itself ("COLONNE B-2")
+        cells = [grid["cell"]] if grid else (list(named["cells"]) if named else [])
         level = _loc(e, "level")
-        key = (grid["cell"] if grid else None, level["value"] if level else None, e.get("kind"))
-        if key[0] is None:
+        if not cells:
             loose.append(e)
-        else:
-            groups[key].append(e)
+        for cell in cells:  # a note naming several cells describes the member at each of them
+            groups[(cell, level["value"] if level else None, e.get("kind"))].append(e)
     out = []
     for (cell, level, kind), members in sorted(groups.items(), key=lambda kv: str(kv[0])):
         members.sort(key=_quality_rank)

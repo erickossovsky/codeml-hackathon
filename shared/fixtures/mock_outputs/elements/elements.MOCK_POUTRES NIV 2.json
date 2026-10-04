@@ -1,0 +1,191 @@
+{
+  "elements": [
+    {
+      "bars": [
+        {
+          "count": 4,
+          "size": "20M",
+          "source_text": "4 20M 20-06"
+        }
+      ],
+      "bbox": [
+        330.0,
+        1478.18,
+        396.01,
+        1509.29
+      ],
+      "characteristics": [],
+      "descriptions": [
+        {
+          "source_text": "POUTRE P-1",
+          "text": "POUTRE P-1"
+        },
+        {
+          "source_text": "4 20M 20-06",
+          "text": "20-06"
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            330.0,
+            1478.18,
+            396.01,
+            1509.29
+          ],
+          "page": 1,
+          "text": [
+            "POUTRE P-1",
+            "4 20M 20-06"
+          ]
+        }
+      ],
+      "file": "DA/Poutres/MOCK_POUTRES NIV 2.pdf",
+      "id": "MOCK_POUTRES NIV 2_e00001",
+      "kind": "beam",
+      "locations": [
+        {
+          "basis": "named_in_text",
+          "cells": [
+            "P-1"
+          ],
+          "type": "grid_cells"
+        },
+        {
+          "basis": "file_or_page_title",
+          "type": "level",
+          "value": "N2"
+        }
+      ],
+      "match": {
+        "method": "text_block"
+      },
+      "name": "P-1",
+      "page": 1,
+      "quality": {
+        "has_facts": true,
+        "kind_basis": [
+          "POUTRE"
+        ],
+        "ocr_conf": null,
+        "text_source": "native"
+      },
+      "sheet": null,
+      "source": "shop",
+      "x": 363.01,
+      "y": 1493.73
+    },
+    {
+      "bars": [],
+      "bbox": [
+        300.0,
+        1587.1,
+        900.16,
+        1603.59
+      ],
+      "characteristics": [
+        {
+          "name": "concrete_strength",
+          "source_text": "30 MPA",
+          "unit": "MPa",
+          "value": 30
+        }
+      ],
+      "descriptions": [
+        {
+          "source_text": "NOTES GENERALES: BETON 30 MPA, ACIER 400W, RECOUVREMENT SELON DEVIS, ENROBAGE 40 MM.",
+          "text": "BETON , ACIER 400W, RECOUVREMENT SELON DEVIS, ENROBAGE 40 MM."
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            300.0,
+            1587.1,
+            900.16,
+            1603.59
+          ],
+          "page": 1,
+          "text": [
+            "NOTES GENERALES: BETON 30 MPA, ACIER 400W, RECOUVREMENT SELON DEVIS, ENROBAGE 40 MM."
+          ]
+        }
+      ],
+      "file": "DA/Poutres/MOCK_POUTRES NIV 2.pdf",
+      "id": "MOCK_POUTRES NIV 2_e00002",
+      "kind": "beam",
+      "locations": [
+        {
+          "alt_cells": [
+            "D-1"
+          ],
+          "cell": "D-2",
+          "inside_grid": false,
+          "rc": [
+            4.0,
+            1.749
+          ],
+          "type": "grid"
+        },
+        {
+          "basis": "file_or_page_title",
+          "type": "level",
+          "value": "N2"
+        }
+      ],
+      "match": {
+        "method": "text_block"
+      },
+      "name": null,
+      "page": 1,
+      "quality": {
+        "has_facts": true,
+        "kind_basis": [
+          "page_hint"
+        ],
+        "ocr_conf": null,
+        "text_source": "native"
+      },
+      "sheet": null,
+      "source": "shop",
+      "x": 600.08,
+      "y": 1595.34
+    }
+  ],
+  "file": {
+    "file": "DA/Poutres/MOCK_POUTRES NIV 2.pdf",
+    "pages": 1,
+    "size_bytes": 3881,
+    "stem": "MOCK_POUTRES NIV 2"
+  },
+  "pages": [
+    {
+      "kind_hints": [
+        "beam"
+      ],
+      "layer": "empty",
+      "level_hints": {
+        "from_file_name": [
+          "N2"
+        ],
+        "from_page_title": [],
+        "from_titles": []
+      },
+      "n_words": 32,
+      "page": 1,
+      "page_title": null,
+      "scale_text": [],
+      "sheet": null,
+      "text_height": 16.49,
+      "text_source": "native",
+      "titles": []
+    }
+  ],
+  "source": "shop",
+  "stats": {
+    "elements": 2,
+    "group_questions": 0,
+    "model": "none",
+    "with_facts": 2
+  }
+}

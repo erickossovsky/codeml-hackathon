@@ -1,0 +1,300 @@
+{
+  "elements": [
+    {
+      "bars": [
+        {
+          "count": 4,
+          "role": "vert",
+          "role_hint": "main",
+          "size": "25M",
+          "source_text": "VERT: 4 25M 25Z9-06"
+        },
+        {
+          "count": 22,
+          "role": "etri",
+          "role_hint": "ties",
+          "size": "10M",
+          "source_text": "ETRI: 22 10M 10ET13X21 @12\"",
+          "spacing": 12.0,
+          "spacing_mm": 304.8,
+          "spacing_unit": "\""
+        }
+      ],
+      "bbox": [
+        730.0,
+        678.17,
+        889.37,
+        725.29
+      ],
+      "characteristics": [],
+      "descriptions": [
+        {
+          "source_text": "COLONNE B-2",
+          "text": "COLONNE B-2"
+        },
+        {
+          "source_text": "VERT: 4 25M 25Z9-06",
+          "text": "25Z9-06"
+        },
+        {
+          "source_text": "ETRI: 22 10M 10ET13X21 @12\"",
+          "text": "10ET13X21"
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            730.0,
+            678.17,
+            889.37,
+            725.29
+          ],
+          "page": 1,
+          "text": [
+            "COLONNE B-2",
+            "VERT: 4 25M 25Z9-06",
+            "ETRI: 22 10M 10ET13X21 @12\""
+          ]
+        }
+      ],
+      "file": "DA/Colonnes/MOCK_COLONNES NIV 2.pdf",
+      "id": "MOCK_COLONNES NIV 2_e00001",
+      "kind": "column",
+      "locations": [
+        {
+          "basis": "named_in_text",
+          "cells": [
+            "B-2"
+          ],
+          "type": "grid_cells"
+        },
+        {
+          "basis": "file_or_page_title",
+          "type": "level",
+          "value": "N2"
+        }
+      ],
+      "match": {
+        "method": "text_block"
+      },
+      "name": "B-2",
+      "page": 1,
+      "quality": {
+        "has_facts": true,
+        "kind_basis": [
+          "COLONNE"
+        ],
+        "ocr_conf": null,
+        "text_source": "native"
+      },
+      "sheet": null,
+      "source": "shop",
+      "x": 809.68,
+      "y": 701.73
+    },
+    {
+      "bars": [
+        {
+          "count": 4,
+          "role": "vert",
+          "role_hint": "main",
+          "size": "20M",
+          "source_text": "VERT: 4 20M 20Z9-06"
+        },
+        {
+          "count": 26,
+          "role": "etri",
+          "role_hint": "ties",
+          "size": "10M",
+          "source_text": "ETRI: 26 10M 10ET13X21 @10\"",
+          "spacing": 10.0,
+          "spacing_mm": 254.0,
+          "spacing_unit": "\""
+        }
+      ],
+      "bbox": [
+        1130.0,
+        1078.18,
+        1289.37,
+        1125.29
+      ],
+      "characteristics": [],
+      "descriptions": [
+        {
+          "source_text": "COLONNE C-3",
+          "text": "COLONNE C-3"
+        },
+        {
+          "source_text": "VERT: 4 20M 20Z9-06",
+          "text": "20Z9-06"
+        },
+        {
+          "source_text": "ETRI: 26 10M 10ET13X21 @10\"",
+          "text": "10ET13X21"
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            1130.0,
+            1078.18,
+            1289.37,
+            1125.29
+          ],
+          "page": 1,
+          "text": [
+            "COLONNE C-3",
+            "VERT: 4 20M 20Z9-06",
+            "ETRI: 26 10M 10ET13X21 @10\""
+          ]
+        }
+      ],
+      "file": "DA/Colonnes/MOCK_COLONNES NIV 2.pdf",
+      "id": "MOCK_COLONNES NIV 2_e00002",
+      "kind": "column",
+      "locations": [
+        {
+          "basis": "named_in_text",
+          "cells": [
+            "C-3"
+          ],
+          "type": "grid_cells"
+        },
+        {
+          "basis": "file_or_page_title",
+          "type": "level",
+          "value": "N2"
+        }
+      ],
+      "match": {
+        "method": "text_block"
+      },
+      "name": "C-3",
+      "page": 1,
+      "quality": {
+        "has_facts": true,
+        "kind_basis": [
+          "COLONNE"
+        ],
+        "ocr_conf": null,
+        "text_source": "native"
+      },
+      "sheet": null,
+      "source": "shop",
+      "x": 1209.68,
+      "y": 1101.73
+    },
+    {
+      "bars": [],
+      "bbox": [
+        300.0,
+        1587.1,
+        900.16,
+        1603.59
+      ],
+      "characteristics": [
+        {
+          "name": "concrete_strength",
+          "source_text": "30 MPA",
+          "unit": "MPa",
+          "value": 30
+        }
+      ],
+      "descriptions": [
+        {
+          "source_text": "NOTES GENERALES: BETON 30 MPA, ACIER 400W, RECOUVREMENT SELON DEVIS, ENROBAGE 40 MM.",
+          "text": "BETON , ACIER 400W, RECOUVREMENT SELON DEVIS, ENROBAGE 40 MM."
+        }
+      ],
+      "evidence": [
+        {
+          "bbox": [
+            300.0,
+            1587.1,
+            900.16,
+            1603.59
+          ],
+          "page": 1,
+          "text": [
+            "NOTES GENERALES: BETON 30 MPA, ACIER 400W, RECOUVREMENT SELON DEVIS, ENROBAGE 40 MM."
+          ]
+        }
+      ],
+      "file": "DA/Colonnes/MOCK_COLONNES NIV 2.pdf",
+      "id": "MOCK_COLONNES NIV 2_e00003",
+      "kind": "column",
+      "locations": [
+        {
+          "alt_cells": [
+            "D-1"
+          ],
+          "cell": "D-2",
+          "inside_grid": false,
+          "rc": [
+            4.0,
+            1.749
+          ],
+          "type": "grid"
+        },
+        {
+          "basis": "file_or_page_title",
+          "type": "level",
+          "value": "N2"
+        }
+      ],
+      "match": {
+        "method": "text_block"
+      },
+      "name": null,
+      "page": 1,
+      "quality": {
+        "has_facts": true,
+        "kind_basis": [
+          "page_hint"
+        ],
+        "ocr_conf": null,
+        "text_source": "native"
+      },
+      "sheet": null,
+      "source": "shop",
+      "x": 600.08,
+      "y": 1595.34
+    }
+  ],
+  "file": {
+    "file": "DA/Colonnes/MOCK_COLONNES NIV 2.pdf",
+    "pages": 1,
+    "size_bytes": 4747,
+    "stem": "MOCK_COLONNES NIV 2"
+  },
+  "pages": [
+    {
+      "kind_hints": [
+        "column"
+      ],
+      "layer": "empty",
+      "level_hints": {
+        "from_file_name": [
+          "N2"
+        ],
+        "from_page_title": [],
+        "from_titles": []
+      },
+      "n_words": 48,
+      "page": 1,
+      "page_title": null,
+      "scale_text": [],
+      "sheet": null,
+      "text_height": 15.11,
+      "text_source": "native",
+      "titles": []
+    }
+  ],
+  "source": "shop",
+  "stats": {
+    "elements": 3,
+    "group_questions": 0,
+    "model": "none",
+    "with_facts": 3
+  }
+}

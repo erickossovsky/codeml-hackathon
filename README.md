@@ -15,6 +15,9 @@ confidential drawings never leave the machine.
 | Demonstration notebook | `pipeline_demo.ipynb` (set `PROJECT` or `L2C_PROJECT`) |
 | Planted-change evaluation | `python -m l2c.pipeline.evaluate <project_dir> --out data/out/eval_<project>` |
 
+Example outputs on a made-up project (the real projects' outputs hold drawing data and are handed in
+separately): `shared/fixtures/mock_outputs/`, regenerated with `python scripts/make_mock_outputs.py`.
+
 `<project_dir>` holds the plan PDF(s) at its top and the shop drawings anywhere under a `DA/`
 folder. The command line and the API write, under the output folder: `elements/elements.<file>.json`
 (one per PDF, as soon as it is read), `findings.partial.json` / `.pdf` while files are still loading,

@@ -1,0 +1,58 @@
+{
+  "pairs": [
+    {
+      "cost": -0.35,
+      "llm_certainty": null,
+      "method": "hungarian",
+      "near_cell": false,
+      "plan_element_used": "MOCK_PLAN_STR_e00002",
+      "plan_elements": [
+        "MOCK_PLAN_STR_e00002"
+      ],
+      "plan_entity": "P00001",
+      "shop_cell": "B-2",
+      "shop_element": "MOCK_COLONNES NIV 2_e00001",
+      "shop_elements": [
+        "MOCK_COLONNES NIV 2_e00001"
+      ]
+    },
+    {
+      "cost": -0.35,
+      "llm_certainty": null,
+      "method": "hungarian",
+      "near_cell": false,
+      "plan_element_used": "MOCK_PLAN_STR_e00003",
+      "plan_elements": [
+        "MOCK_PLAN_STR_e00003"
+      ],
+      "plan_entity": "P00003",
+      "shop_cell": "C-3",
+      "shop_element": "MOCK_COLONNES NIV 2_e00002",
+      "shop_elements": [
+        "MOCK_COLONNES NIV 2_e00002"
+      ]
+    },
+    {
+      "cost": -0.098,
+      "llm_certainty": null,
+      "method": "hungarian",
+      "near_cell": false,
+      "plan_element_used": "MOCK_PLAN_STR_e00001",
+      "plan_elements": [
+        "MOCK_PLAN_STR_e00001"
+      ],
+      "plan_entity": "P00002",
+      "shop_cell": "B-3",
+      "shop_element": "MOCK_DALLE NIV 2_e00001",
+      "shop_elements": [
+        "MOCK_DALLE NIV 2_e00001"
+      ]
+    }
+  ],
+  "summary": {
+    "llm_calls": 0,
+    "pairs": 3,
+    "plan_unmatched": 1,
+    "shop_unmatched": 4
+  }
+}
