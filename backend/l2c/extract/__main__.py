@@ -32,8 +32,15 @@ def main(argv: list[str] | None = None) -> int:
         "--workers",
         type=int,
         default=0,
-        help="processes for page reading, OCR stays sequential (default: cores - 1; 1 = off)",
+        help="worker processes for page reading and OCR (default: cores - 1; 1 = sequential)",
     )
+    ap.add_argument(
+        "--ocr-cache",
+        type=Path,
+        default=Path("data/cache/ocr"),
+        help="folder where OCR readings are kept so a page is read once (default: data/cache/ocr)",
+    )
+    ap.add_argument("--no-ocr-cache", action="store_true", help="read every page again")
     args = ap.parse_args(argv)
     if not args.project_dir.is_dir():
         print(f"not a directory: {args.project_dir}", file=sys.stderr)
@@ -45,6 +52,7 @@ def main(argv: list[str] | None = None) -> int:
         use_ocr=args.ocr,
         learn=not args.no_learn,
         workers=args.workers or max(1, (os.cpu_count() or 2) - 1),
+        ocr_cache=None if args.no_ocr_cache else args.ocr_cache,
     )
     write_bundle(args.out, bundle)
     flags = Counter(f for e in bundle.elements for f in e.quality.flags)
@@ -61,4 +69,9 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    code = main()
+    # Everything is written and closed. Leave at once: the ONNX runtime can abort in its native
+    # shutdown code after OCR, which would turn a finished run into a failing exit code.
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(code)

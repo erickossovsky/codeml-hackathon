@@ -151,18 +151,23 @@ def needs_ocr(page: PageData, config: Config) -> bool:
 
 
 def prepare_page(
-    page: PageData, pdf: Path, use_ocr: bool, config: Config, ocr_done: dict | None = None
+    page: PageData,
+    pdf: Path,
+    use_ocr: bool,
+    config: Config,
+    ocr_done: dict | None = None,
+    ocr_cache: Path | None = None,
 ) -> PageData:
     """Replace a text-less page's words with OCR words when OCR is enabled.
 
     `ocr_done` holds results already computed in parallel, keyed by (file, page number).
     """
     if use_ocr and needs_ocr(page, config):
-        from l2c.ingest.ocr import ocr_pdf_page, with_ocr_words
+        from l2c.ingest.ocr import cached_ocr_page, with_ocr_words
 
         result = (ocr_done or {}).get((pdf, page.page))
         if result is None:
-            result = ocr_pdf_page(pdf, page.page, config)
+            result = cached_ocr_page(pdf, page.page, config, ocr_cache)
         if isinstance(result, Exception):
             raise result
         return with_ocr_words(page, result, config)
@@ -176,18 +181,23 @@ def extract_project(
     use_ocr: bool = False,
     learn: bool = True,
     workers: int = 1,
+    ocr_cache: Path | None = None,
 ) -> MetaBundle:
-    """Read every PDF of a project into a MetaBundle. `workers` > 1 reads pages in a process pool;
-    the result is identical to the sequential run."""
+    """Read every PDF of a project into a MetaBundle.
+
+    `workers` > 1 reads pages in a process pool and OCRs pages in worker processes; the result is
+    identical to the sequential run. `ocr_cache` is a folder where OCR readings are kept, so a page
+    is read once per file and settings.
+    """
     if workers > 1:
         from concurrent.futures import ProcessPoolExecutor
 
         with ProcessPoolExecutor(workers) as pool:
-            return _extract(project_dir, project, config, use_ocr, learn, pool)
-    return _extract(project_dir, project, config, use_ocr, learn, None)
+            return _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_cache)
+    return _extract(project_dir, project, config, use_ocr, learn, None, 1, ocr_cache)
 
 
-def _extract(project_dir, project, config, use_ocr, learn, pool) -> MetaBundle:
+def _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_cache) -> MetaBundle:
     found = discover(project_dir, config)
     elements: list[ElementExt] = []
     grids: list[GridSheet] = []
@@ -217,9 +227,20 @@ def _extract(project_dir, project, config, use_ocr, learn, pool) -> MetaBundle:
 
     plan_loaded = [(pdf, *load(pdf)) for pdf in found.plans]
     shop_loaded = [(pdf, folder, *load(pdf)) for pdf, folder in found.shops]
-    # OCR runs one page at a time in this process: a process pool for OCR deadlocked, and the
-    # ONNX engine already uses every core for a single page
+    # OCR: pages are read by worker processes (each its own interpreter, a few threads) and kept in
+    # the on-disk cache; whatever they could not read is read here, one page at a time
     ocr_done: dict = {}
+    if use_ocr and workers > 1:
+        jobs = [
+            (pdf, page.page)
+            for pdf, pages, _ in [*plan_loaded, *[(a, c, d) for a, _, c, d in shop_loaded]]
+            for page in pages or []
+            if needs_ocr(page, config)
+        ]
+        if len(jobs) > 1:
+            from l2c.ingest.ocr_workers import default_workers, ocr_pages
+
+            ocr_done = ocr_pages(jobs, config, min(workers, default_workers()), ocr_cache)
 
     for pdf, pages, error in plan_loaded:
         if error is not None:
@@ -231,7 +252,7 @@ def _extract(project_dir, project, config, use_ocr, learn, pool) -> MetaBundle:
             etype = None
             cfg = config
             try:
-                page = prepare_page(page, pdf, use_ocr, config, ocr_done)
+                page = prepare_page(page, pdf, use_ocr, config, ocr_done, ocr_cache)
                 cfg = learn_config(page.words, config) if learn else config
                 text = " ".join(w.text for w in page.words)
                 level = plan_column_level(text, cfg)
@@ -264,7 +285,7 @@ def _extract(project_dir, project, config, use_ocr, learn, pool) -> MetaBundle:
         for page in pages:
             layout = "unknown"
             try:
-                page = prepare_page(page, pdf, use_ocr, config, ocr_done)
+                page = prepare_page(page, pdf, use_ocr, config, ocr_done, ocr_cache)
                 cfg = learn_config(page.words, config) if learn else config
                 layout = shop_layout(page, folder, cfg)
                 if layout in {"shop_label_strip", "shop_schedule_table"}:

@@ -185,3 +185,33 @@ def test_the_sheet_id_is_read_again_from_ocr_words():
     page = PageData("x.pdf", 1, 1200, 900, 0, words=[], feuillet=None)
     res = ocr.OcrResult([Word("S-517", 1050, 850, 1100, 860, conf=0.9)], (0,), 0, 0.9)
     assert ocr.with_ocr_words(page, res).feuillet == "S-517"
+
+
+def test_ocr_results_are_cached_on_disk_and_reused(tmp_path):
+    path = raster_pdf(tmp_path, ["ARM.: 4-25M"])
+    cache = tmp_path / "cache"
+    first = ocr.cached_ocr_page(path, 1, DEFAULT_CONFIG, cache)
+    assert any(cache.iterdir())
+    again = ocr.cached_ocr_page(path, 1, DEFAULT_CONFIG, cache)
+    assert [w.text for w in again.words] == [w.text for w in first.words]
+    # a different configuration must not reuse the entry
+    import dataclasses
+
+    other = dataclasses.replace(DEFAULT_CONFIG, ocr_dpi=150)
+    assert ocr.cache_key(path, 1, other) != ocr.cache_key(path, 1, DEFAULT_CONFIG)
+
+
+def test_pages_read_by_worker_processes_equal_the_sequential_reading(tmp_path):
+    from l2c.ingest.ocr_workers import ocr_pages
+
+    paths = [raster_pdf(tmp_path, [f"ARM.: 4-25M {i}"], rotate=0) for i in range(1)]
+    other = tmp_path / "second"
+    other.mkdir()
+    paths.append(raster_pdf(other, ['LIG.: 10M@6" c/c']))
+    jobs = [(p, 1) for p in paths]
+    cache = tmp_path / "cache"
+    results = ocr_pages(jobs, DEFAULT_CONFIG, workers=2, cache_dir=cache)
+    assert set(results) == set(jobs)
+    for p in paths:
+        seq = ocr.ocr_pdf_page(p, 1, DEFAULT_CONFIG)
+        assert [w.text for w in results[(p, 1)].words] == [w.text for w in seq.words]

@@ -6,6 +6,7 @@ Prints counts and timings only, never drawing values.
 
 from __future__ import annotations
 
+import os
 import sys
 import time
 from pathlib import Path
@@ -47,4 +48,9 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    code = main()
+    # Everything is written and closed. Leave at once: the ONNX runtime can abort in its native
+    # shutdown code after OCR, which would turn a finished run into a failing exit code.
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(code)

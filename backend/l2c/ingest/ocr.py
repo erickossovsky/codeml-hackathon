@@ -8,6 +8,9 @@ vocabulary. Every size and threshold comes from the Config.
 
 from __future__ import annotations
 
+import hashlib
+import os
+import pickle
 import re
 from dataclasses import dataclass, replace
 from functools import lru_cache
@@ -30,14 +33,22 @@ GHOST_SWALLOWED = 2  # a word covering this many better words is a misreading of
 GHOST_SHARE = 0.4  # ... where each of them lies at least this much inside it
 
 
-_THREADS = -1  # ONNX threads per model; -1 = all cores. Pool workers pin this to 1.
+_THREADS = -1  # ONNX threads per model; -1 = all cores. Parallel workers use fewer.
+_USE_CLS = True  # the text-angle classifier; sheets are upright, so it can be skipped
+
+
+def set_engine_options(threads: int | None = None, use_cls: bool | None = None) -> None:
+    """Set before the first OCR call in a process (a worker shares the cores with its siblings)."""
+    global _THREADS, _USE_CLS
+    if threads is not None:
+        _THREADS = threads
+    if use_cls is not None:
+        _USE_CLS = use_cls
+    engine.cache_clear()
 
 
 def set_engine_threads(n: int) -> None:
-    """Call in a worker before the first OCR call so parallel workers do not fight for cores."""
-    global _THREADS
-    _THREADS = n
-    engine.cache_clear()
+    set_engine_options(threads=n)
 
 
 @lru_cache(maxsize=1)
@@ -49,7 +60,7 @@ def engine():
         for part in ("det", "cls", "rec")
         for kind in ("intra", "inter")
     }
-    return RapidOCR(**kwargs)
+    return RapidOCR(use_cls=_USE_CLS, **kwargs)
 
 
 @dataclass(frozen=True)
@@ -260,3 +271,50 @@ def load_with_ocr(path: Path, fichier: str, config: Config = DEFAULT_CONFIG) -> 
         else:
             out.append(p)
     return out
+
+
+CACHE_VERSION = "1"  # bump when the OCR pipeline changes what it returns for the same page
+
+
+def cache_key(path: Path, page_number: int, config: Config) -> str:
+    """Identity of one OCR reading: the file (path, size, modification time), the page and every
+    setting that changes the words that come out."""
+    st = Path(path).stat()
+    raw = "|".join(
+        str(x)
+        for x in (
+            Path(path).resolve(),
+            st.st_size,
+            st.st_mtime_ns,
+            page_number,
+            config.ocr_dpi,
+            config.ocr_tile_px,
+            config.ocr_overlap_fraction,
+            config.ocr_min_conf,
+            config.ocr_orientation_probe,
+            config.bar_sizes,
+            CACHE_VERSION,
+        )
+    )
+    return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:24]
+
+
+def cached_ocr_page(
+    path: Path, page_number: int, config: Config = DEFAULT_CONFIG, cache_dir: Path | None = None
+) -> OcrResult:
+    """`ocr_pdf_page` with an on-disk cache: a page is read once per (file, settings)."""
+    if cache_dir is None:
+        return ocr_pdf_page(path, page_number, config)
+    cache_dir = Path(cache_dir)
+    entry = cache_dir / f"{cache_key(path, page_number, config)}.pkl"
+    if entry.is_file():
+        try:
+            return pickle.loads(entry.read_bytes())
+        except Exception:  # a damaged entry is simply read again
+            pass
+    result = ocr_pdf_page(path, page_number, config)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    tmp = entry.with_suffix(f".{os.getpid()}.tmp")
+    tmp.write_bytes(pickle.dumps(result))
+    tmp.replace(entry)  # atomic: a reader never sees half a file
+    return result
