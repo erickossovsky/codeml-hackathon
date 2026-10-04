@@ -31,3 +31,6 @@ models/
 
 # Claude Code local-only
 .claude/settings.local.json
+
+# Local-only analysis notes that contain data-derived specifics (never committed)
+docs/private/

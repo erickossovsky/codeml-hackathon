@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.12, pydantic v2, SciPy (assignment), scikit-learn (second tier), ReportLab (PDF), openpyxl (XLSX).
 
-**Spec:** `docs/superpowers/specs/2026-10-03-l2c-design.md` (sections 4.3 to 4.5, 10.9, 10.17, 10.19, 10.22).
+**Spec:** `docs/superpowers/specs/2026-10-03-l2c-design.md` (sections 4.3 to 4.5, 10.9, 10.17, 10.19, 10.22, 10.23).
 
 **Prerequisite:** Plan 00 (`docs/superpowers/plans/2026-10-03-l2c-00-shared-foundation.md`) is merged on `dev` through Task F4 (contract, schemas, mock project, committed fixtures). Eric's extraction lane is **not** needed until Task I10.
 
@@ -25,6 +25,7 @@
 - `contract_version` is `"0.1.0"`; every metadata folder has a `manifest.json`; loaders fail loudly on a mismatch.
 - Same input must give byte-identical output (sorted keys, no randomness without a fixed seed).
 - **Nothing is hard-coded to one project**: distances are multiples of the page's own word height or gridline spacing (`calibrate.py`); language, notation, units and ratios live in `Config` and can be overridden with `--config file.json`.
+- **Analysis is allowed; hard-coding what analysis finds is not.** Code, tests, fixtures, the spec and the plans contain no project names, sheet ids, grid cells, marks, real values or real notation strings (only published standard forms such as bar sizes `10M`..`35M`). Data-derived numbers and examples live only in the git-ignored `docs/private/` notes, which `scripts/guard.py` refuses to commit. Every behaviour must work on a synthetic document built differently (scale, rotation, language, labels, grid orientation, bar-size system).
 - No document may be sent to any cloud service or external AI API; the pipeline imports no network library and runs offline. Confidential data (PDFs, derived JSON/XLSX/PDF outputs, models) is never committed: `data/`, `deliverables/`, `demo/` are git-ignored and `scripts/guard.py` blocks them in the pre-commit hook. Tests use synthetic data only.
 - No commercially licensed software; dependencies are open source (PyMuPDF is AGPL-3.0: the source ships with the submission). `THIRD_PARTY.md` lists every dependency and license.
 - Each lane edits only its own folders (`.github/CODEOWNERS`); `shared/` and `backend/l2c/contract/` change only through a contract PR reviewed by both people, which also regenerates `shared/schemas/` and `shared/fixtures/` in the same commit.
@@ -33,8 +34,8 @@
 ## Review Focus
 
 - A project that does not look like the development ones: different levels, grid size, number of shop files, bar sizes and spacings. Pinned by `test_fuzz.py` (Task I7): 60 random projects, every injected defect found, nothing else flagged.
-- Overlapping shop files with identical values (CLP Parts 2 and 3) or conflicting values: identical ones are harmless, conflicting ones become `cross.shop_vs_shop`; the matcher keeps the best quality element as primary. Pinned by `test_duplicates.py` (I5) and `test_matcher.py` (I1).
-- Real extractions have low trust almost everywhere: a difference seen at low trust is `needs_review`, never a firm verdict, and a pair with no difference keeps a meaningful confidence (never 0.0). Pinned by `test_fusion.py` (I2), `test_cross.py` (I3), `test_golden.py` (I6); measured on real CLP in Task I10.
+- Overlapping shop files with identical values (project A Parts 2 and 3) or conflicting values: identical ones are harmless, conflicting ones become `cross.shop_vs_shop`; the matcher keeps the best quality element as primary. Pinned by `test_duplicates.py` (I5) and `test_matcher.py` (I1).
+- Real extractions have low trust almost everywhere: a difference seen at low trust is `needs_review`, never a firm verdict, and a pair with no difference keeps a meaningful confidence (never 0.0). Pinned by `test_fusion.py` (I2), `test_cross.py` (I3), `test_golden.py` (I6); measured on real project A in Task I10.
 - Nothing found or nothing covered (empty project, element types without data): every output is still written and every report states what is `NOT COVERED`. Pinned by `test_outputs.py` (I8).
 - Shop files with the same name in different folders, names with spaces and accents, Windows paths: output names are unique and safe. Pinned by `test_outputs.py` (I8); Windows setup in Task I0.
 
@@ -141,9 +142,9 @@ def test_duplicates_pick_the_best_quality_primary_and_keep_the_rest():
 
 
 def test_near_column_fallback_for_fractional_gridlines():
-    pairs = match([plan("K", 6)], [shop("K", 5.6)])
+    pairs = match([plan("K", 4)], [shop("K", 3.6)])
     (p,) = pairs
-    assert p.method == "near_col" and p.shop.grid == "K-5.6" and p.cost == 0.4
+    assert p.method == "near_col" and p.shop.grid == "K-3.6" and p.cost == 0.4
 
 
 def test_near_fallback_respects_the_distance_limit_and_one_to_one():
@@ -184,7 +185,9 @@ from scipy.optimize import linear_sum_assignment
 
 from l2c.contract.models import ElementExt
 
-NEAR_COL_MAX = 0.5  # fractional gridlines: 5.6 vs 6 differ by 0.4
+NEAR_COL_MAX = (
+    0.5  # fractional gridlines: a decimal line and its neighbour differ by less than this
+)
 
 
 @dataclass
@@ -811,7 +814,7 @@ git merge --no-ff ian/i3-cross
 
 **Interfaces:**
 - Consumes: `profile`, `fusion` (I2), `finding_id`, `ref` (I3), `LevelInfo`, contract models.
-- Produces: `peer_outliers(elements) -> list[Outlier(element, field, value, mode, score)]` (per sheet and level; a value is an outlier when it is rare among peers while the peers agree: group of at least `PEER_MIN_GROUP`, mode share at least 0.6, own share at most 0.1; score `mode_share * (1 - share)`); `outlier_finding(o) -> Finding` (`self.peer_outlier`, `needs_review`, `evidence.ml.peer_anomaly`); `storey_heights(levels)`; `tie_ratios(elements, heights)`; `learned_band(ratios) -> (lo, hi, "learned"|"fallback")` (median plus or minus 6 robust sigmas of the project's own tie count times spacing over storey height, with a fixed fallback below 20 samples; measured 0.96 to 1.21 on the CLP development project); `internal_consistency_findings(elements, levels)`; `plausibility_findings(elements)` (elements whose extraction sanity checks failed).
+- Produces: `peer_outliers(elements) -> list[Outlier(element, field, value, mode, score)]` (per sheet and level; a value is an outlier when it is rare among peers while the peers agree: group of at least `PEER_MIN_GROUP`, mode share at least 0.6, own share at most 0.1; score `mode_share * (1 - share)`); `outlier_finding(o) -> Finding` (`self.peer_outlier`, `needs_review`, `evidence.ml.peer_anomaly`); `storey_heights(levels)`; `tie_ratios(elements, heights)`; `learned_band(ratios) -> (lo, hi, "learned"|"fallback")` (median plus or minus 6 robust sigmas of the project's own tie count times spacing over storey height, with a fixed fallback below 20 samples; measured 0.96 to 1.21 on the project A development project); `internal_consistency_findings(elements, levels)`; `plausibility_findings(elements)` (elements whose extraction sanity checks failed).
 
 - [ ] **Step 1: Branch and write the failing test**
 
@@ -1143,7 +1146,7 @@ git merge --no-ff ian/i4-self
 
 **Interfaces:**
 - Consumes: `profile`, `profile_diffs` (I2), `finding_id`, `ref` (I3).
-- Produces: `duplicate_findings(elements) -> list[Finding]`: the same element (same source and match key) annotated twice with different values gives `cross.shop_vs_shop` (two shop files) or `self.duplicate` (same file), status `needs_review`; identical duplicates (overlapping files such as Parts 2 and 3 on CLP) give nothing; unbound elements are ignored.
+- Produces: `duplicate_findings(elements) -> list[Finding]`: the same element (same source and match key) annotated twice with different values gives `cross.shop_vs_shop` (two shop files) or `self.duplicate` (same file), status `needs_review`; identical duplicates (overlapping files such as Parts 2 and 3 on project A) give nothing; unbound elements are ignored.
 
 - [ ] **Step 1: Branch and write the failing test**
 
@@ -1340,7 +1343,7 @@ def test_low_trust_difference_is_not_a_firm_verdict():
 
 def test_peer_outlier_and_cross_finding_agree_on_the_known_case():
     findings = run_comparison(mock_project().bundle)
-    here = [f for f in findings if f.grid == "K-6" and f.level == "N2"]
+    here = [f for f in findings if f.grid == "K-5" and f.level == "N2"]
     kinds = {(f.check_type, f.status) for f in here}
     assert ("cross.plan_vs_shop", "non_compliant") in kinds
     assert ("self.peer_outlier", "needs_review") in kinds
@@ -1848,9 +1851,9 @@ from l2c.mock.generate import FILE_A, FILE_B, mock_project
 
 
 def test_safe_name_is_filesystem_safe_and_unique_per_path():
-    a = safe_name("DA/Colonnes/CLP COLONNES Partie 1.pdf")
-    b = safe_name("DA/Dalles/CLP COLONNES Partie 1.pdf")
-    assert a != b and "/" not in a and " " not in a and a.startswith("CLP_COLONNES_Partie_1-")
+    a = safe_name("DA/Colonnes/Sample COLONNES Part 1.pdf")
+    b = safe_name("DA/Dalles/Sample COLONNES Part 1.pdf")
+    assert a != b and "/" not in a and " " not in a and a.startswith("Sample_COLONNES_Part_1-")
 
 
 def test_every_finding_lands_in_exactly_one_shop_file_or_unassigned():
@@ -1889,7 +1892,7 @@ def test_comparison_files_counts_add_up():
 def test_by_plan_sheet_groups_by_title_block_sheet():
     m = mock_project()
     sections = by_plan_sheet(run_comparison(m.bundle), m.bundle)
-    assert {"S-502", "S-503"} <= set(sections)
+    assert {"S-517", "S-518"} <= set(sections)
 
 
 def test_coverage_lines_state_what_is_not_covered():
@@ -1924,7 +1927,7 @@ def test_cli_writes_all_outputs_and_counts_agree(tmp_path):
     assert [c.value for c in ws[1]][:2] == ["Feuillet", "Localisation"]
     # PDF text contains the status counts and the coverage statement
     text = "".join(p.get_text() for p in pymupdf.open(out / "report" / "by_plan_sheet.pdf"))
-    assert "Sheet S-502" in text and "NOT COVERED" in text and "CONFIDENTIAL" in text
+    assert "Sheet S-517" in text and "NOT COVERED" in text and "CONFIDENTIAL" in text
     shop_pdf = next((out / "comparison").glob("*.pdf"))
     assert "Shop drawing comparison" in pymupdf.open(shop_pdf)[0].get_text()
 
@@ -2402,7 +2405,7 @@ git merge --no-ff ian/i8-outputs
 
 ### Task I9 (second tier): Learned pair probabilities, trained on the project itself
 
-Start after the core gate (I1 to I8 pass and Eric's real CLP bundle has run through the comparison, Task I10).
+Start after the core gate (I1 to I8 pass and Eric's real project A bundle has run through the comparison, Task I10).
 
 **Files:**
 - Create: `backend/l2c/compare/ml/__init__.py` (empty), `features.py`, `dataset.py`, `pair_model.py`, `evaluate.py`; `scripts/train_pair_model.py`
@@ -2914,7 +2917,7 @@ python scripts/train_pair_model.py --out models/pair_model.pkl
 
 Expected on the purely synthetic benchmark: the deterministic rule is already perfect (precision 1.000, recall 1.000, 0 false alarms), so the decision line says `DROP the model (rule is as good)`. That is the kill criterion working: do not claim ML value from a benchmark where the rule already wins.
 
-The meaningful test uses real pairs (needs Eric's bundle, Task I10): in a measured run on CLP, with the model trained on levels N2, N4, RDC and tested on N3, N5, SS using `build_dataset_from_bundle`, the rule reached precision 0.50 and recall 0.20 (because most real pairs fall below the 0.7 trust bar), while the model reached precision 0.96 and recall 1.00, ECE 0.018 (decision KEEP). Caveat to state in the pitch: the noise rows are sampled from the project's own weak elements, so this shows the model learns the project's noise pattern, not that it finds defects the rule cannot see. Report both numbers in the ablation table: deterministic only, plus the model.
+The meaningful test uses real pairs (needs Eric's bundle, Task I10): train on some levels with `build_dataset_from_bundle`, test on the others, and compare `rule_scores` with `model_scores` using `keep_model`. On the development project the rule had low recall (most real pairs fall below the trust bar) while the model had high precision and recall (exact numbers in `docs/private/baselines.md`). Caveat to state in the pitch: the noise rows are sampled from the project's own weak elements, so this shows the model learns the project's noise pattern, not that it finds defects the rule cannot see. Report both results in the ablation table: deterministic only, plus the model.
 
 - [ ] **Step 6: Commit and merge**
 
@@ -2995,8 +2998,8 @@ Create `scripts/findings_summary.py`:
 """Summarise a findings.json (local use; may print values when you ask for one cell).
 
 Usage:
-  python scripts/findings_summary.py data/out/CLP/findings.json
-  python scripts/findings_summary.py data/out/CLP/findings.json --grid K-6 --level N2
+  python scripts/findings_summary.py data/out/<project>/findings.json
+  python scripts/findings_summary.py data/out/<project>/findings.json --grid D-6 --level N2
 """
 
 from __future__ import annotations
@@ -3053,32 +3056,30 @@ Expected: 2 passed.
 
 - [ ] **Step 5: Receive Eric's real metadata (never through git or any cloud)**
 
-Eric sends the folder `data/out/CLP/metadata` (seven JSON files) by AirDrop or USB drive. Ian places it at `data/out/CLP/metadata`. Both `data/` folders are git-ignored; the hook refuses anything there.
+Eric sends the folder `data/out/project A/metadata` (seven JSON files) by AirDrop or USB drive. Ian places it at `data/out/project A/metadata`. Both `data/` folders are git-ignored; the hook refuses anything there.
 
 - [ ] **Step 6: Run the comparison on real data**
 
 ```powershell
-python -m l2c.compare data/out/CLP/metadata --out data/out/CLP
-python scripts/findings_summary.py data/out/CLP/findings.json
+python -m l2c.compare data/out/<project>/metadata --out data/out/<project>
+python scripts/findings_summary.py data/out/<project>/findings.json
 ```
 
-Baseline measured on the real CLP bundle (columns only; 394 plan and 858 shop elements): `findings=541 shop_files=12`, statuses `compliant 82, non_compliant 8, missing 4, added 22, needs_review 425`; by check: `cross.plan_vs_shop` 453, `self.peer_outlier` 83, `cross.shop_vs_shop` 4, `self.internal_consistency` 1. The same numbers come out with `--ml` (verdicts are never lowered). Whole run takes seconds.
+Compare the counts with `docs/private/baselines.md` (findings, shop files, statuses by check). The same numbers come out with `--ml` because verdicts are never lowered. The whole run takes seconds. Most findings will be `needs_review` today because the quality scores are conservative; that is expected until Eric's calibration (his Task E13).
 
-- [ ] **Step 7: Check the two known cases**
+- [ ] **Step 7: Check the known cases**
+
+The two known column discrepancies are recorded by sheet, grid cell and values in `docs/private/baselines.md`. For each:
 
 ```powershell
-python scripts/findings_summary.py data/out/CLP/findings.json --grid K-6 --level N2
-python scripts/findings_summary.py data/out/CLP/findings.json --grid I-13 --level N4
+python scripts/findings_summary.py data/out/<project>/findings.json --grid <cell> --level <level>
 ```
 
-Expected:
-
-- `K-6` at `N2`: `cross.plan_vs_shop`, `needs_review`, trust 0.60, `size: plan 35M / shop 25M` and a `self.peer_outlier` row for the same cell. The difference is found; it is not a firm `non_compliant` because the plan block's binding confidence is 0.60, below the 0.7 verdict bar (Eric's Task E13 calibration addresses this).
-- `I-13` at `N4`: `cross.plan_vs_shop`, `non_compliant`, trust 0.82, `spacing_mm: plan 304.8 / shop 152.4` (12 inch against 6 inch ties) and a `self.peer_outlier` row.
+Expected: a `cross.plan_vs_shop` finding listing the plan value and the shop value, and a `self.peer_outlier` row for the same cell. One is a firm `non_compliant`; the other is found but stays `needs_review` because its trust is below the 0.7 verdict bar. Both being listed with the right values is the pass criterion; do not lower the bar.
 
 - [ ] **Step 8: Read the reports like an engineer**
 
-Open `data/out/CLP/report/by_plan_sheet.pdf` and two files under `data/out/CLP/comparison/`. Check: per-sheet counts add up to the findings; each discrepancy row names level, grid cell, plan and shop values and a confidence; the coverage section says beams, slabs, foundations and walls are `NOT COVERED`; every shop file has its own JSON and PDF.
+Open `data/out/project A/report/by_plan_sheet.pdf` and two files under `data/out/project A/comparison/`. Check: per-sheet counts add up to the findings; each discrepancy row names level, grid cell, plan and shop values and a confidence; the coverage section says beams, slabs, foundations and walls are `NOT COVERED`; every shop file has its own JSON and PDF.
 
 - [ ] **Step 9: Time it and record the numbers**
 

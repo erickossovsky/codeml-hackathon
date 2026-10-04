@@ -8,11 +8,11 @@
 
 **Tech Stack:** Python 3.12, PyMuPDF, SciPy (Hungarian assignment), pydantic v2, RapidOCR (ONNX) for the second tier.
 
-**Spec:** `docs/superpowers/specs/2026-10-03-l2c-design.md` (sections 4.1 to 4.2, 9.1, 10.2, 10.10, 10.15 to 10.19, 10.21, 10.22).
+**Spec:** `docs/superpowers/specs/2026-10-03-l2c-design.md` (sections 4.1 to 4.2, 9.1, 10.2, 10.10, 10.15 to 10.19, 10.21 to 10.23).
 
-**Prerequisite:** Plan 00 (`docs/superpowers/plans/2026-10-03-l2c-00-shared-foundation.md`) tasks F1 to F3 are merged on `dev` (scaffold, guard, contract, schemas). Ian's Task F4 (mock fixtures) is not needed for this lane's tests.
+**Prerequisite:** Plan 00 (`docs/superpowers/plans/2026-10-03-l2c-00-shared-foundation.md`) tasks F1 to F3 are merged on `dev` (scaffold, guard, contract, schemas). Ian's Task F4 (mock elements) is needed only by Task E13's witness test.
 
-**Tiers and timing (starting about 9 PM):** E1 to E4 about 60 min; E5 to E8 about 90 min; E9 to E10 about 45 min; E11 about 30 min, at which point the first real CLP bundle exists for Ian. That is the core gate (target about midnight to 1 AM for plan columns, about 3 AM with Ian's integration). E12 and E13 are second tier and start only after the core gate.
+**Tiers and timing (starting about 9 PM):** E1 to E4 about 60 min; E5 to E8 about 90 min; E9 to E10 about 60 min (label learning is part of the core pipeline); E11 about 30 min, at which point the first real bundle of the fully-text project exists for Ian. That is the core gate (target about midnight to 1 AM for plan columns, about 3 AM with Ian's integration). E12 (OCR) and E13 (binding witness, hardening, calibration) are second tier and start only after the core gate.
 
 ## Global Constraints
 
@@ -23,6 +23,7 @@
 - `contract_version` is `"0.1.0"`; every metadata folder has a `manifest.json`; loaders fail loudly on a mismatch.
 - Same input must give byte-identical output (sorted keys, no randomness without a fixed seed).
 - **Nothing is hard-coded to one project**: distances are multiples of the page's own word height or gridline spacing (`calibrate.py`); language, notation, units and ratios live in `Config` and can be overridden with `--config file.json`.
+- **Analysis is allowed; hard-coding what analysis finds is not.** Code, tests, fixtures, the spec and the plans contain no project names, sheet ids, grid cells, marks, real values or real notation strings (only published standard forms such as bar sizes `10M`..`35M`). Data-derived numbers and examples live only in the git-ignored `docs/private/` notes, which `scripts/guard.py` refuses to commit. Every behaviour must work on a synthetic document built differently (scale, rotation, language, labels, grid orientation, bar-size system).
 - No document may be sent to any cloud service or external AI API; the pipeline imports no network library and runs offline. Confidential data (PDFs, derived JSON/XLSX/PDF outputs, models) is never committed: `data/`, `deliverables/`, `demo/` are git-ignored and `scripts/guard.py` blocks them in the pre-commit hook. Tests use synthetic data only.
 - No commercially licensed software; dependencies are open source (PyMuPDF is AGPL-3.0: the source ships with the submission). `THIRD_PARTY.md` lists every dependency and license.
 - Each lane edits only its own folders (`.github/CODEOWNERS`); `shared/` and `backend/l2c/contract/` change only through a contract PR reviewed by both people, which also regenerates `shared/schemas/` and `shared/fixtures/` in the same commit.
@@ -30,10 +31,10 @@
 
 ## Review Focus
 
-- A different project: another drawing scale, a stored page rotation, another language, the transposed grid, another bar-size system, another unit. Pinned by `test_robustness.py` (Task E10), the transposed-grid test (E4) and the config tests (E1).
+- A different project: another drawing scale, a stored page rotation, another language **and other labels (learned from the page, not assumed)**, the transposed grid, another bar-size system, another unit. Pinned by `test_robustness.py` (Task E10), the learning tests with an invented vocabulary (E9), the transposed-grid test (E4) and the config tests (E1).
 - A file that cannot be opened, a page with no text or no grid, a page that raises: the run continues and the page carries the reason in `SheetInfo.layout`. Pinned in `test_pipeline.py` (E9) and `test_robustness.py` (E10).
-- Annotation blocks that sit on either side of their column and next to gridlines 57 pt apart: bound one-to-one, not by nearest outline. Pinned in `test_anchor.py` (E5); measured on real CLP in Task E11.
-- OCR output that drops spaces and dots or glues the mark to the spacing (`ETRI:1310M10ET13X18@12`): the parsers must still read it. Pinned in `test_notation.py` (E3) and `test_ocr.py` (E12).
+- Annotation blocks that sit on either side of their column and next to gridlines only tens of points apart: bound one-to-one, not by nearest outline. Pinned in `test_anchor.py` (E5); measured on the fully-text project in Task E11.
+- OCR output that drops spaces and dots, glues the mark to the spacing, or writes `LEVEL4` for `LEVEL 4`: the parsers must still read it. Pinned in `test_notation.py` (E3) and `test_ocr.py` (E12).
 - Several elevation views on one shop page and blocks below the lowest level line; shop files whose names contain spaces and accents. Pinned in `test_columns_shop.py` (E8) and `test_pipeline.py` (E9).
 
 ---
@@ -167,7 +168,9 @@ class Config:
     bar_sizes: tuple[str, ...] = ("10M", "15M", "20M", "25M", "30M", "35M")
     grid_letter_pattern: str = r"^[A-Z]{1,2}$"  # rows may continue past Z: AA, BB, ...
     grid_number_pattern: str = r"^\d{1,2}(?:\.\d)?$"
-    grid_label_pattern: str = r"^([A-Z])-([1-9]\d?(?:\.\d)?)$"  # K-6; C-01 is a mark, not a cell
+    grid_label_pattern: str = (
+        r"^([A-Z])-([1-9]\d?(?:\.\d)?)$"  # a grid cell like J-12; C-01 is a mark, not a cell
+    )
     sheet_id_pattern: str = r"^S-\d{3}$"
     default_spacing_unit: str = "in"  # a bare number after @ is inches; "mm" is always explicit
     # ---- tuning ratios (multiples of the page's own geometry)
@@ -228,7 +231,7 @@ class Config:
         )
         numbered = "|".join(re.escape(n) for n in self.level_numbered)
         return re.compile(
-            rf"(?:{titles})\s*-\s*((?:{numbered})\s+\d+|{names}|REZ-DE-CHAUSS[ÉE]E)", re.IGNORECASE
+            rf"(?:{titles})\s*-\s*((?:{numbered})\s*\d+|{names}|REZ-DE-CHAUSS[ÉE]E)", re.IGNORECASE
         )
 
 
@@ -396,10 +399,10 @@ def test_classify_layer():
 def test_words_and_title_block_sheet(tmp_path):
     doc, page = new_doc()
     put(page, 100, 100, "ARM.: 4-25M")
-    put(page, 1050, 850, "S-502")
+    put(page, 1050, 850, "S-517")
     pdf = save(doc, tmp_path / "plan.pdf")
     (p,) = load_pdf(pdf)
-    assert p.feuillet == "S-502"
+    assert p.feuillet == "S-517"
     assert any(w.text == "4-25M" for w in p.words)
     assert (p.width, p.height, p.rotation) == (1200, 900, 0)
 
@@ -641,7 +644,7 @@ git switch dev && git merge --no-ff eric/e2-ingest
 
 **Interfaces:**
 - Consumes: `Config`, `DEFAULT_CONFIG` (E1); `FOOT_MM`, `INCH_MM` from `l2c.contract.constants`.
-- Produces (all take an optional `config` last argument): `parse_count_size(text) -> CountSize(count, size) | None` (`4-25M`), `parse_size_spacing(text) -> SizeSpacing(size, spacing_mm) | None` (`10M@6" c/c` is 152.4 mm; `@200mm` is 200; bare numbers use `config.default_spacing_unit`), `parse_section(text) -> (mm, mm) | None`, `parse_elevation(text) -> mm | None` (`157' - 9"`, `12.5 m`), `parse_shop_vert(text) -> ShopVert(count, size, mark) | None`, `parse_shop_ties(text) -> ShopTies(count, size, mark, spacing_mm | None) | None`, `parse_grid_label(text) -> (letter, number) | None` (`K-6`; `C-01` is a mark, not a cell), `canon_level(text) -> "SS"|"RDC"|"N<k>"|"TOIT"|"TOIT_APP"| None`, `plan_column_level(page_text) -> level | None`, `inches_to_mm`. The shop regexes tolerate what OCR does to text (dropped spaces, dropped quote mark, mark glued to the spacing).
+- Produces (all take an optional `config` last argument): `parse_count_size(text) -> CountSize(count, size) | None` (`4-25M`), `parse_size_spacing(text) -> SizeSpacing(size, spacing_mm) | None` (`10M@6" c/c` is 152.4 mm; `@200mm` is 200; bare numbers use `config.default_spacing_unit`), `parse_section(text) -> (mm, mm) | None`, `parse_elevation(text) -> mm | None` (`157' - 9"`, `12.5 m`), `parse_shop_vert(text) -> ShopVert(count, size, mark) | None`, `parse_shop_ties(text) -> ShopTies(count, size, mark, spacing_mm | None) | None`, `parse_grid_label(text) -> (letter, number) | None` (`J-12`; `C-01` is a mark, not a cell), `canon_level(text) -> "SS"|"RDC"|"N<k>"|"TOIT"|"TOIT_APP"| None`, `plan_column_level(page_text) -> level | None`, `inches_to_mm`. The shop regexes tolerate what OCR does to text (dropped spaces, dropped quote mark, mark glued to the spacing).
 
 - [ ] **Step 1: Branch and write the failing test**
 
@@ -669,7 +672,7 @@ def test_count_size():
     "text, size, mm",
     [
         ('LIG.: 10M@6" c/c', "10M", 152.4),
-        ("LIG.: 10M@12'' c/c", "10M", 304.8),
+        ("LIG.: 15M@8'' c/c", "15M", 203.2),
         ("H.:15M@200mm c/c", "15M", 200.0),
         ("10M @ 4”", "10M", 101.6),
     ],
@@ -679,23 +682,23 @@ def test_size_spacing(text, size, mm):
 
 
 def test_section_and_feet_inches():
-    assert N.parse_section('COL. 16"x24"') == (406.4, 609.6)
-    assert N.parse_feet_inches("157' - 9\"") == pytest.approx(157 * 304.8 + 9 * 25.4)
-    assert N.parse_feet_inches("100' - 0\"") == pytest.approx(30480.0)
+    assert N.parse_section('COL. 18"x20"') == (457.2, 508.0)
+    assert N.parse_feet_inches("143' - 3\"") == pytest.approx(143 * 304.8 + 3 * 25.4)
+    assert N.parse_feet_inches("90' - 0\"") == pytest.approx(27432.0)
     assert N.parse_feet_inches("no numbers") is None
 
 
 def test_shop_vert_and_ties():
-    assert N.parse_shop_vert("VERT: 4 25M 25Z12-01") == N.ShopVert(4, "25M", "25Z12-01")
-    t = N.parse_shop_ties('ÉTRI: 25 10M 10ET13X21 @6"')
-    assert t == N.ShopTies(25, "10M", "10ET13X21", 152.4)
-    assert N.parse_shop_ties("ÉTRI: 6 10M 10ET13X21").spacing_mm is None
+    assert N.parse_shop_vert("VERT: 4 25M B7-01") == N.ShopVert(4, "25M", "B7-01")
+    t = N.parse_shop_ties('ÉTRI: 25 10M T4X21 @6"')
+    assert t == N.ShopTies(25, "10M", "T4X21", 152.4)
+    assert N.parse_shop_ties("ÉTRI: 6 10M T4X21").spacing_mm is None
     assert N.parse_shop_vert("VERTICALES") is None
 
 
 def test_grid_label_and_levels():
-    assert N.parse_grid_label("K-6") == ("K", 6.0)
-    assert N.parse_grid_label("A-15.8") == ("A", 15.8)
+    assert N.parse_grid_label("J-12") == ("J", 12.0)
+    assert N.parse_grid_label("A-7.5") == ("A", 7.5)
     assert N.parse_grid_label("C-01") is None  # element mark, not a grid cell
     assert N.canon_level("NIVEAU 4") == "N4"
     assert N.canon_level("REZ-DE-CHAUSSÉE") == "RDC"
@@ -710,11 +713,16 @@ def test_grid_label_and_levels():
 
 def test_shop_notation_tolerates_what_ocr_does_to_it():
     # OCR often drops spaces and the quote mark; the mark must not swallow the spacing
-    t = N.parse_shop_ties("ETRI:1310M10ET13X18@12")
-    assert t == N.ShopTies(13, "10M", "10ET13X18", 304.8)
-    v = N.parse_shop_vert("VERT:425M25Z12-01")
-    assert v == N.ShopVert(4, "25M", "25Z12-01")
-    assert N.parse_shop_ties('ETRI:510M 10ET13X21@6"').spacing_mm == 152.4
+    t = N.parse_shop_ties("ETRI:1310MT4X18@9")
+    assert t == N.ShopTies(13, "10M", "T4X18", 228.6)
+    v = N.parse_shop_vert("VERT:425MB7-01")
+    assert v == N.ShopVert(4, "25M", "B7-01")
+    assert N.parse_shop_ties('ETRI:510M T4X21@6"').spacing_mm == 152.4
+
+
+def test_level_names_tolerate_dropped_spaces_from_ocr():
+    assert N.canon_level("NIVEAU4") == "N4" and N.canon_level("LEVEL12") == "N12"
+    assert N.plan_column_level("PLAN DES COLONNES - NIVEAU2") == "N2"
 ```
 
 - [ ] **Step 2: Run it to verify it fails**
@@ -822,7 +830,7 @@ def parse_size_spacing(text: str, config: Config = DEFAULT_CONFIG) -> SizeSpacin
 
 
 def parse_section(text: str) -> tuple[float, float] | None:
-    """`COL. 16"x24"` -> (406.4, 609.6) mm (inches) ; `COL. 400x600mm` -> (400, 600)."""
+    """`COL. 18"x20"` -> (406.4, 609.6) mm (inches) ; `COL. 400x600mm` -> (400, 600)."""
     m = re.search(
         rf"COL\.?\s*(\d+(?:\.\d+)?)\s*[{_QUOTES}]?\s*[xX×]\s*(\d+(?:\.\d+)?)\s*(mm)?", text
     )
@@ -833,7 +841,7 @@ def parse_section(text: str) -> tuple[float, float] | None:
 
 
 def parse_elevation(text: str) -> float | None:
-    """Elevation in mm from `157' - 9"`, `12.50 m` or `3500 mm`."""
+    """Elevation in mm from `143' - 3"`, `12.50 m` or `3500 mm`."""
     metric = re.search(r"(-?\d+(?:\.\d+)?)\s*(mm|m)\b", text)
     if metric and "'" not in text:
         v = float(metric.group(1))
@@ -851,13 +859,13 @@ def parse_feet_inches(text: str) -> float | None:  # kept for readability at cal
 
 
 def parse_shop_vert(text: str, config: Config = DEFAULT_CONFIG) -> ShopVert | None:
-    """`VERT: 4 25M 25Z12-01`."""
+    """`VERT: 4 25M B7-01`."""
     m = _shop_re(config.shop_vert, config.bar_size_pattern, False).search(text)
     return ShopVert(int(m.group(1)), m.group(2).upper(), m.group(3)) if m else None
 
 
 def parse_shop_ties(text: str, config: Config = DEFAULT_CONFIG) -> ShopTies | None:
-    """`ÉTRI: 6 10M 10ET13X21 @6"` (spacing optional)."""
+    """`ÉTRI: 6 10M T4X21 @6"` (spacing optional)."""
     m = _shop_re(config.shop_ties, config.bar_size_pattern, True).search(text)
     if not m:
         return None
@@ -866,7 +874,7 @@ def parse_shop_ties(text: str, config: Config = DEFAULT_CONFIG) -> ShopTies | No
 
 
 def parse_grid_label(text: str, config: Config = DEFAULT_CONFIG) -> tuple[str, float] | None:
-    """`K-6` -> ("K", 6.0); `A-15.8` -> ("A", 15.8)."""
+    """`J-12` -> ("J", 12.0); `A-7.5` -> ("A", 7.5)."""
     m = re.match(config.grid_label_pattern, text.strip())
     return (m.group(1), float(m.group(2))) if m else None
 
@@ -881,7 +889,7 @@ def canon_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
     """Canonical level: SS, RDC, N2.., TOIT. None when the text is not a level name."""
     t = _plain(text)
     numbered = "|".join(re.escape(n) for n in config.level_numbered)
-    m = re.match(rf"(?:{numbered})\s+(\d{{1,2}})\b", t)
+    m = re.match(rf"(?:{numbered})\s*(\d{{1,2}})\b", t)  # OCR often drops the space
     if m:
         return f"N{int(m.group(1))}"
     for name, canon in sorted(config.level_names, key=lambda kv: len(kv[0]), reverse=True):
@@ -902,7 +910,7 @@ def plan_column_level(page_text: str, config: Config = DEFAULT_CONFIG) -> str | 
 python -m pytest backend/tests/extract/test_notation.py -v
 ```
 
-Expected: 9 passed.
+Expected: 10 passed.
 
 - [ ] **Step 5: Commit and merge**
 
@@ -977,13 +985,13 @@ def test_fit_grid_requires_enough_labels(tmp_path):
 
 
 def test_snap_confidence_drops_when_between_close_gridlines():
-    g = Grid(rows={"A": 100.0, "B": 200.0}, cols={"5.6": 1986.0, "6": 1929.0})
-    exact = g.snap(1929.0, 100.0, 14.0)
-    assert exact == ("A", "6", 1.0)
-    ambiguous = g.snap(1957.0, 104.0, tol=30.0)  # halfway between 5.6 and 6, 57 pt apart
-    assert ambiguous is not None and ambiguous[1] in {"5.6", "6"} and ambiguous[2] < 0.1
-    assert g.snap(1957.0, 104.0, 14.0) is None  # default tolerance rejects a point on neither line
-    assert g.snap(1500.0, 100.0, 14.0) is None  # too far from any gridline
+    g = Grid(rows={"A": 100.0, "B": 200.0}, cols={"3.4": 1400.0, "4": 1352.0})
+    exact = g.snap(1352.0, 100.0, 14.0)
+    assert exact == ("A", "4", 1.0)
+    ambiguous = g.snap(1376.0, 104.0, tol=30.0)  # halfway between two close gridlines
+    assert ambiguous is not None and ambiguous[1] in {"3.4", "4"} and ambiguous[2] < 0.1
+    assert g.snap(1376.0, 104.0, 14.0) is None  # default tolerance rejects a point on neither line
+    assert g.snap(900.0, 100.0, 14.0) is None  # too far from any gridline
 
 
 def test_text_runs_split_on_gaps(tmp_path):
@@ -1453,7 +1461,7 @@ git switch dev && git merge --no-ff eric/e4-geometry
 - Consumes: `Grid` (E4), `Shape` (E2).
 - Produces: `Outline(row, col, shape, grid_conf)`; `find_outlines(shapes, grid, tol, size_tolerance=0.4) -> dict[(row, col), Outline]` (small closed shapes whose centre snaps to a grid intersection; outline size learned from the data, not fixed); `Binding(row, col, cost, margin, grid_conf, second_pass)`; `bind_blocks(anchors, outlines, max_dist=120.0) -> list[Binding | None]` (one-to-one Hungarian assignment; learns the sheet's recurring block offsets, usually one left and one right of the column, adds zero offset as a candidate, then a second wider pass for leftovers with a halved margin).
 
-Why this exists (measured on real data): text position alone is ambiguous where gridlines are 57 pt apart, and a single median offset fails because blocks sit on both sides of their column. Plain nearest-outline put the one odd block on the wrong column.
+Why this exists (measured on real data): text position alone is ambiguous where gridlines are only tens of points apart, and a single median offset fails because blocks sit on both sides of their column. Plain nearest-outline put the one odd block on the wrong column.
 
 - [ ] **Step 1: Branch and write the failing test**
 
@@ -1474,35 +1482,42 @@ def shape(cx, cy, w=12.0, h=18.0):
     return Shape(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2)
 
 
-GRID = Grid(rows={"K": 100.0, "L": 200.0}, cols={"5.6": 986.0, "6": 929.0, "7": 800.0})
+GRID = Grid(rows={"K": 100.0, "L": 200.0}, cols={"3.4": 1400.0, "4": 1352.0, "5": 1220.0})
 
 
 def test_find_outlines_snaps_to_cells_and_ignores_noise():
-    shapes = [shape(929, 100), shape(986, 200), shape(500, 500), Shape(0, 0, 1, 1), shape(929, 103)]
+    shapes = [
+        shape(1352, 100),
+        shape(1400, 200),
+        shape(500, 500),
+        Shape(0, 0, 1, 1),
+        shape(1352, 103),
+    ]
     out = find_outlines(shapes, GRID, 14.0)
-    assert set(out) == {("K", "6"), ("L", "5.6")}
-    assert out[("K", "6")].shape.cy == 100  # closest candidate to the intersection wins
+    assert set(out) == {("K", "4"), ("L", "3.4")}
+    assert out[("K", "4")].shape.cy == 100  # closest candidate to the intersection wins
 
 
 def test_binding_uses_consistent_offset_not_nearest_outline():
-    outlines = find_outlines([shape(929, 100), shape(986, 100), shape(800, 100)], GRID, 14.0)
-    # blocks sit 35 pt to the right and 20 below their column: the block of K-6 is nearer to K-5.6
-    anchors = [(929 + 35, 120), (986 + 35, 120), (800 + 35, 120)]
+    outlines = find_outlines([shape(1352, 100), shape(1400, 100), shape(1220, 100)], GRID, 14.0)
+    # blocks sit 35 pt right of and 20 pt below their column: the first block is nearer
+    # to the neighbouring outline than to its own
+    anchors = [(1352 + 35, 120), (1400 + 35, 120), (1220 + 35, 120)]
     bound = bind_blocks(anchors, outlines)
-    assert [(b.row, b.col) for b in bound] == [("K", "6"), ("K", "5.6"), ("K", "7")]
+    assert [(b.row, b.col) for b in bound] == [("K", "4"), ("K", "3.4"), ("K", "5")]
     nearest_only = min(outlines, key=lambda k: abs(outlines[k].shape.cx - anchors[0][0]))
-    assert nearest_only == ("K", "5.6")  # proves plain nearest-outline would have been wrong
+    assert nearest_only == ("K", "3.4")  # proves plain nearest-outline would have been wrong
 
 
 def test_binding_is_one_to_one_and_leaves_extra_blocks_unbound():
-    outlines = find_outlines([shape(929, 100)], GRID, 14.0)
-    bound = bind_blocks([(930, 120), (931, 121)], outlines)
+    outlines = find_outlines([shape(1352, 100)], GRID, 14.0)
+    bound = bind_blocks([(1353, 120), (1354, 121)], outlines)
     assert sum(b is not None for b in bound) == 1
 
 
 def test_binding_margin_is_low_when_two_outlines_are_equally_close():
-    outlines = find_outlines([shape(929, 100), shape(986, 100)], GRID, 14.0)
-    (b,) = bind_blocks([(957.5, 120)], outlines)
+    outlines = find_outlines([shape(1352, 100), shape(1400, 100)], GRID, 14.0)
+    (b,) = bind_blocks([(1376, 120)], outlines)
     assert b is not None and b.margin < 0.2
 
 
@@ -1546,9 +1561,10 @@ Create `backend/l2c/extract/anchor.py`:
 ```python
 """Anchor annotation blocks to column outlines.
 
-Text position alone is ambiguous near close gridlines (5.6 vs 6 are ~57 pt apart), so the
-anchor is the column *outline* found in the vector geometry. Blocks are bound to outlines
-one-to-one (Hungarian assignment) after correcting for the sheet's consistent block offset.
+Text position alone is ambiguous near close gridlines (they can be only tens of points
+apart), so the anchor is the column *outline* found in the vector geometry. Blocks are bound
+to outlines one-to-one (Hungarian assignment) after learning the sheet's recurring block
+offsets.
 """
 
 from __future__ import annotations
@@ -1776,7 +1792,7 @@ def test_attr_penalties_stack():
 
 
 def test_overall_is_the_weakest_link_times_consistency():
-    loc = Q.location("outline", 1.0, margin=1.0, grid_cell="K-6", binding_method="hungarian")
+    loc = Q.location("outline", 1.0, margin=1.0, grid_cell="D-6", binding_method="hungarian")
     attrs = {"count": Q.attr(4), "size": Q.attr("25M"), "spacing": Q.attr(152.4, conf=0.8)}
     q = Q.build_quality(
         type_conf=1.0, level_conf=1.0, loc=loc, attrs=attrs, passed=["a"], failed=[], flags=["x"]
@@ -1974,7 +1990,7 @@ from l2c.extract.grid import fit_grid
 from l2c.ingest.pages import load_pdf
 from tests.extract.pdfmaker import new_doc, put, rect, save
 
-ROWY = {"K": 300.0, "L": 400.0, "M": 500.0, "N": 600.0, "O": 700.0}
+ROWY = {"D": 300.0, "E": 400.0, "F": 500.0, "G": 600.0, "H": 700.0}
 COLX = {"6": 500.0, "7": 600.0, "8": 700.0, "9": 800.0, "10": 900.0}
 
 
@@ -1985,7 +2001,7 @@ def center(row: str, col: str) -> tuple[float, float]:
 def block(page, row, col, arm="ARM.: 4-25M", lig='LIG.: 10M@6" c/c', dx=35.0, dy=20.0):
     cx, cy = center(row, col)
     x, y = cx + dx, cy + dy
-    put(page, x, y - 9, 'COL. 16"x24"')
+    put(page, x, y - 9, 'COL. 18"x20"')
     put(page, x, y, arm)
     put(page, x, y + 9, lig)
     put(page, x, y + 18, "BÉTON: 25MPa / N")
@@ -1999,19 +2015,19 @@ def plan_pdf(tmp_path, *, with_outline=True, extra=None):
     for label, x in COLX.items():
         put(page, x, 60, label)
         put(page, x, 820, label)
-    put(page, 1050, 860, "S-502")
+    put(page, 1050, 860, "S-517")
     put(page, 300, 40, "PLAN DES COLONNES - NIVEAU 2")
-    cells = [("K", "6"), ("K", "7"), ("L", "7"), ("M", "9")]
+    cells = [("D", "6"), ("D", "7"), ("E", "7"), ("F", "9")]
     for r, c in cells:
         if with_outline:
             rect(page, *center(r, c))
-        outlier = (r, c) == ("L", "7")
+        outlier = (r, c) == ("E", "7")
         block(
             page,
             r,
             c,
             arm="ARM.: 4-35M +GOUJ." if outlier else "ARM.: 4-25M",
-            lig='LIG.: 10M@12" c/c' if outlier else 'LIG.: 10M@6" c/c',
+            lig='LIG.: 10M@8" c/c' if outlier else 'LIG.: 10M@6" c/c',
         )
     if extra:
         extra(page)
@@ -2031,19 +2047,19 @@ def test_extracts_columns_with_correct_cells_even_when_blocks_sit_beside_neighbo
     grid = fit_grid(page.words)
     els = extract_plan_columns(page, "N2", grid)
     by_grid = {e.grid: e for e in els}
-    assert set(by_grid) == {"K-6", "K-7", "L-7", "M-9"}
-    odd = by_grid["L-7"]
+    assert set(by_grid) == {"D-6", "D-7", "E-7", "F-9"}
+    odd = by_grid["E-7"]
     assert odd.armature[0].quantite == 4 and odd.armature[0].diametre == "35M"
-    assert odd.armature[1].espacement_mm == 304.8
+    assert odd.armature[1].espacement_mm == 203.2
     assert "dowels_noted" in odd.quality.flags
-    assert odd.match_key.key_str() == "colonne|N2|L|7"
-    assert odd.section_mm == (406.4, 609.6)
-    typical = by_grid["K-6"]
+    assert odd.match_key.key_str() == "colonne|N2|E|7"
+    assert odd.section_mm == (457.2, 508.0)
+    typical = by_grid["D-6"]
     assert typical.armature[0].diametre == "25M" and typical.armature[1].espacement_mm == 152.4
     assert typical.quality.location.anchor == "outline"
     assert 0.9 <= typical.quality.overall <= 1.0
     assert (
-        typical.id == "S-502_K-6_plan" and typical.feuillet == "S-502" and typical.source == "plan"
+        typical.id == "S-517_D-6_plan" and typical.feuillet == "S-517" and typical.source == "plan"
     )
 
 
@@ -2332,11 +2348,11 @@ from l2c.ingest.pages import load_pdf
 from tests.extract.pdfmaker import new_doc, put, save
 
 LEVEL_LINES = [
-    ("N4", 100.0, "131' - 9\"", "NIVEAU 4"),
-    ("N3", 300.0, "122' - 0\"", "NIVEAU 3"),
-    ("N2", 500.0, "112' - 3\"", "NIVEAU 2"),
+    ("N4", 100.0, "118' - 4\"", "NIVEAU 4"),
+    ("N3", 300.0, "108' - 6\"", "NIVEAU 3"),
+    ("N2", 500.0, "98' - 9\"", "NIVEAU 2"),
 ]
-LABELS = {"K-6": 200.0, "K-7": 320.0, "L-7": 440.0}
+LABELS = {"D-6": 200.0, "D-7": 320.0, "E-7": 440.0}
 
 
 def shop_pdf(tmp_path, *, drop_label=False):
@@ -2345,14 +2361,14 @@ def shop_pdf(tmp_path, *, drop_label=False):
         put(page, 60, y, f"EL.: {el}")
         put(page, 60, y + 7, name)
     for label, x in LABELS.items():
-        if drop_label and label == "L-7":
+        if drop_label and label == "E-7":
             continue
         put(page, x, 800, label)
         # upper band (N4..N3 -> level N3) and lower band (N3..N2 -> level N2)
-        put(page, x, 130, "VERT: 4 25M 25Z12-01")
-        put(page, x, 139, 'ÉTRI: 6 10M 10ET13X21 @6"')
-        put(page, x, 330, "VERT: 6 20M 20Z10-02")
-        put(page, x, 339, "ÉTRI: 13 10M 10ET7X27")  # no spacing printed, like the real sheets
+        put(page, x, 130, "VERT: 4 25M B7-01")
+        put(page, x, 139, 'ÉTRI: 6 10M T4X21 @6"')
+        put(page, x, 330, "VERT: 6 20M B9-02")
+        put(page, x, 339, "ÉTRI: 13 10M T2X27")  # no spacing printed, like real sheets
     return save(doc, tmp_path / "COLONNES_P1.pdf")
 
 
@@ -2360,7 +2376,7 @@ def test_level_lines_and_bands(tmp_path):
     (page,) = load_pdf(shop_pdf(tmp_path))
     lines = find_level_lines(page, text_runs(page.words))
     assert [line.level for line in lines] == ["N4", "N3", "N2"]
-    assert abs(lines[0].elevation_mm - (131 * 304.8 + 9 * 25.4)) < 0.01
+    assert abs(lines[0].elevation_mm - (118 * 304.8 + 4 * 25.4)) < 0.01
     views = split_views(lines)
     assert len(views) == 1
     assert assign_level(views, 130) == ("N3", []) and assign_level(views, 330) == ("N2", [])
@@ -2371,10 +2387,10 @@ def test_level_lines_and_bands(tmp_path):
 def test_two_stacked_elevation_views_do_not_mix_levels(tmp_path):
     doc, page = new_doc(1200, 1400)
     for y, el, name in [
-        (100, "122' - 0\"", "NIVEAU 3"),
-        (300, "112' - 3\"", "NIVEAU 2"),
-        (700, "122' - 0\"", "NIVEAU 3"),
-        (900, "112' - 3\"", "NIVEAU 2"),
+        (100, "108' - 6\"", "NIVEAU 3"),
+        (300, "98' - 9\"", "NIVEAU 2"),
+        (700, "108' - 6\"", "NIVEAU 3"),
+        (900, "98' - 9\"", "NIVEAU 2"),
     ]:
         put(page, 60, y, f"EL.: {el}")
         put(page, 60, y + 7, name)
@@ -2393,13 +2409,13 @@ def test_extracts_one_element_per_label_and_band(tmp_path):
     (page,) = load_pdf(shop_pdf(tmp_path))
     els, levels = extract_shop_columns(page)
     assert len(els) == 6 and [lv.level for lv in levels] == ["N4", "N3", "N2"]
-    k6_n3 = next(e for e in els if e.grid == "K-6" and e.level == "N3")
+    k6_n3 = next(e for e in els if e.grid == "D-6" and e.level == "N3")
     assert k6_n3.source == "shop" and k6_n3.feuillet == "COLONNES_P1"
     assert k6_n3.armature[0].quantite == 4 and k6_n3.armature[0].diametre == "25M"
     assert k6_n3.armature[1].quantite == 6 and k6_n3.armature[1].espacement_mm == 152.4
-    assert k6_n3.match_key.key_str() == "colonne|N3|K|6"
+    assert k6_n3.match_key.key_str() == "colonne|N3|D|6"
     assert k6_n3.quality.location.anchor == "label"
-    k6_n2 = next(e for e in els if e.grid == "K-6" and e.level == "N2")
+    k6_n2 = next(e for e in els if e.grid == "D-6" and e.level == "N2")
     assert k6_n2.armature[1].espacement_mm is None
     assert "spacing_not_on_sheet" in k6_n2.quality.flags
     assert "spacing" not in k6_n2.quality.attributes  # absent, not penalised
@@ -2407,9 +2423,9 @@ def test_extracts_one_element_per_label_and_band(tmp_path):
 
 def test_no_labels_means_no_elements_but_levels_still_reported(tmp_path):
     doc, page = new_doc()
-    put(page, 60, 100, "EL.: 131' - 9\"")
+    put(page, 60, 100, "EL.: 118' - 4\"")
     put(page, 60, 107, "NIVEAU 4")
-    put(page, 60, 300, "EL.: 122' - 0\"")
+    put(page, 60, 300, "EL.: 108' - 6\"")
     put(page, 60, 307, "NIVEAU 3")
     (p,) = load_pdf(save(doc, tmp_path / "x.pdf"))
     els, levels = extract_shop_columns(p)
@@ -2418,13 +2434,13 @@ def test_no_labels_means_no_elements_but_levels_still_reported(tmp_path):
 
 def test_blocks_below_the_lowest_level_line_are_foundation_dowels(tmp_path):
     doc, page = new_doc()
-    put(page, 60, 100, "EL.: 131' - 9\"")
+    put(page, 60, 100, "EL.: 118' - 4\"")
     put(page, 60, 107, "NIVEAU 4")
-    put(page, 60, 300, "EL.: 122' - 0\"")
+    put(page, 60, 300, "EL.: 108' - 6\"")
     put(page, 60, 307, "NIVEAU 3")
-    for label, x in {"K-6": 200.0, "K-7": 320.0}.items():
+    for label, x in {"D-6": 200.0, "D-7": 320.0}.items():
         put(page, x, 800, label)
-        put(page, x, 600, "VERT: 4 25M 25Z12-01")  # below the last level line
+        put(page, x, 600, "VERT: 4 25M B7-01")  # below the last level line
     (p,) = load_pdf(save(doc, tmp_path / "y.pdf"))
     els, _ = extract_shop_columns(p)
     assert len(els) == 2 and all("below_lowest_level" in e.quality.flags for e in els)
@@ -2446,7 +2462,7 @@ Create `backend/l2c/extract/columns_shop.py`:
 ```python
 """Extract column elements from a shop-drawing elevation sheet (convention A).
 
-Layout (measured on real sheets): grid labels like `K-6` along one edge, one column strip per
+Layout (typical of sheets seen so far): grid labels like `J-12` along one edge, one column strip per
 label; level bands down the page marked by `EL.: <elevation>` lines with the level name just
 below; in each band every column strip holds a `VERT: <n> <size> <mark>` run and an
 `ÉTRI: <n> <size> <mark> @<spacing>` run. Distances are multiples of the page's own geometry.
@@ -2727,22 +2743,137 @@ git switch dev && git merge --no-ff eric/e8-shop
 
 ---
 
-### Task E9: Pipeline, layout detection, error isolation and the extract CLI
+### Task E9: Pipeline, per-page vocabulary learning, layout detection, error isolation and the extract CLI
 
 **Files:**
-- Create: `backend/l2c/extract/ocr_quality.py`, `backend/l2c/extract/pipeline.py`, `backend/l2c/extract/__main__.py`
-- Test: `backend/tests/extract/test_pipeline.py`
+- Create: `backend/l2c/extract/learn.py`, `backend/l2c/extract/ocr_quality.py`, `backend/l2c/extract/pipeline.py`, `backend/l2c/extract/__main__.py`
+- Test: `backend/tests/extract/test_learn.py`, `backend/tests/extract/test_pipeline.py`
 
 **Interfaces:**
 - Consumes: E1 to E8; `write_bundle`, `MetaBundle`, `SheetInfo`, `GridSheet`, `LevelInfo` (F2).
-- Produces: `discover(project_dir) -> Discovery(plans, shops)` (plan PDFs directly in the project folder; shop PDFs under `DA/`, element type from the folder name in French or English); `extract_project(project_dir, project=None, config=DEFAULT_CONFIG, use_ocr=False) -> MetaBundle`; `plan_layout` / `shop_layout` (one of `plan_outline`, `plan_blocks_without_grid`, `not_a_column_plan`, `shop_label_strip`, `shop_unlabelled_unsupported`, `no_column_blocks`, `needs_ocr`, `empty_page`, `rotated_text_unsupported`, `type_not_supported:<type>`, `error:<ExceptionName>`, `error:open_failed:<ExceptionName>`, recorded in `SheetInfo.layout`); `mark_ocr(elements, words, config)`; CLI `python -m l2c.extract <project_dir> --out <dir> [--project NAME] [--ocr] [--config FILE]` printing counts only.
-- A page that fails never stops the run; a file that cannot be opened is recorded and skipped; a page that fits no adapter is reported with the reason, never guessed.
+- Produces: `learn_keywords(words, config) -> dict[field, tuple[str, ...]]` and `learn_config(words, config) -> Config` (the word that precedes each standard notation form, when it repeats at least 3 times and covers a clear share of that form on the page, becomes that page's label; a label is never learned for two roles, most specific form first; unchanged config when nothing new is found). The notation forms are standard (a bar line is a word, a count, a dash and a bar size; a tie line is a word, a bar size, `@`, a spacing; and so on), so a project with other labels needs no config file.
+- `discover(project_dir) -> Discovery(plans, shops)` (plan PDFs directly in the project folder; shop PDFs under `DA/`, element type from the folder name in French or English); `extract_project(project_dir, project=None, config=DEFAULT_CONFIG, use_ocr=False, learn=True) -> MetaBundle`; `plan_layout` / `shop_layout` (one of `plan_outline`, `plan_blocks_without_grid`, `not_a_column_plan`, `shop_label_strip`, `shop_unlabelled_unsupported`, `shop_levels_not_found`, `no_column_blocks`, `needs_ocr`, `empty_page`, `rotated_text_unsupported`, `type_not_supported:<type>`, `error:<ExceptionName>`, `error:open_failed:<ExceptionName>`, recorded in `SheetInfo.layout`); `mark_ocr(elements, words, config)`; CLI `python -m l2c.extract <project_dir> --out <dir> [--project NAME] [--ocr] [--no-learn] [--config FILE]` printing counts only.
+- A page that fails never stops the run; a file that cannot be opened is recorded and skipped; a page that fits no adapter is reported with the reason, never guessed; shop pages with column blocks but no elevation lines are reported as `shop_levels_not_found` because elements without a level can never be matched.
 
-- [ ] **Step 1: Branch and write the failing test**
+- [ ] **Step 1: Branch and write the failing tests**
 
 ```bash
 git switch dev && git pull
 git switch -c eric/e9-pipeline
+```
+
+Create `backend/tests/extract/test_learn.py`:
+
+```python
+"""Labels in an invented language are learned from the notation around them."""
+
+import dataclasses
+
+from l2c.extract.columns_plan import extract_plan_columns
+from l2c.extract.config import DEFAULT_CONFIG
+from l2c.extract.grid import fit_grid
+from l2c.extract.learn import learn_config, learn_keywords
+from l2c.ingest.pages import load_pdf
+from tests.extract.pdfmaker import DisplayPage
+
+ROWS = {"A": 300.0, "B": 400.0, "C": 500.0, "D": 600.0, "E": 700.0}
+COLS = {"1": 500.0, "2": 600.0, "3": 700.0, "4": 800.0, "5": 900.0}
+CELLS = [("A", "1"), ("A", "2"), ("B", "2"), ("C", "4"), ("D", "5")]
+
+# an invented vocabulary no default dictionary contains
+WORDS = dict(bar="ZORB", tie="KLEM", sect="QUAD", end="FINX", title="PLAN DES COLONNES - NIVEAU 2")
+
+
+def invented_plan(tmp_path):
+    dp = DisplayPage(1200, 900)
+    for letter, y in ROWS.items():
+        dp.put(40, y, letter)
+        dp.put(1100, y, letter)
+    for label, x in COLS.items():
+        dp.put(x, 60, label)
+        dp.put(x, 820, label)
+    dp.put(300, 40, WORDS["title"])
+    dp.put(1050, 860, "S-517")
+    for r, c in CELLS:
+        cx, cy = COLS[c] + 2, ROWS[r] + 4
+        dp.rect(cx, cy)
+        x, y = cx + 35, cy + 20
+        dp.put(x, y - 9, f'{WORDS["sect"]} 18"x20"')
+        dp.put(x, y, f"{WORDS['bar']}: 4-25M")
+        dp.put(x, y + 9, f'{WORDS["tie"]}: 10M@6" c/c')
+        dp.put(x, y + 18, f"{WORDS['end']}: 25MPa")
+    dp.put(100, 150, "TYP: 4-25M")  # a one-off label must not be learned
+    return dp.save(tmp_path / "invented.pdf")
+
+
+def test_unknown_labels_are_learned_from_the_notation_around_them(tmp_path):
+    (page,) = load_pdf(invented_plan(tmp_path))
+    learned = learn_keywords(page.words)
+    assert learned["block_start"] == ("ZORB",)
+    assert learned["ties_line"] == ("KLEM",)
+    assert learned["section_line"] == ("QUAD",)
+    assert "TYP" not in learned["block_start"]  # appears once: below the occurrence minimum
+
+
+def test_without_learning_the_default_dictionary_finds_nothing(tmp_path):
+    (page,) = load_pdf(invented_plan(tmp_path))
+    assert extract_plan_columns(page, "N2", fit_grid(page.words)) == []
+
+
+def test_with_learning_the_same_page_extracts_every_column(tmp_path):
+    (page,) = load_pdf(invented_plan(tmp_path))
+    config = learn_config(page.words)
+    els = extract_plan_columns(page, "N2", fit_grid(page.words, config), config)
+    assert sorted(e.grid for e in els) == ["A-1", "A-2", "B-2", "C-4", "D-5"]
+    assert all(e.armature[0].quantite == 4 and e.armature[1].espacement_mm == 152.4 for e in els)
+
+
+def test_known_labels_are_not_duplicated_and_the_config_is_unchanged_when_nothing_is_new(tmp_path):
+    from tests.extract.test_columns_plan import plan_pdf
+
+    (page,) = load_pdf(plan_pdf(tmp_path))
+    assert learn_keywords(page.words) == {}
+    assert learn_config(page.words) is DEFAULT_CONFIG
+
+
+def test_learning_is_deterministic_and_does_not_mutate_the_default(tmp_path):
+    (page,) = load_pdf(invented_plan(tmp_path))
+    a, b = learn_config(page.words), learn_config(page.words)
+    assert a == b and dataclasses.is_dataclass(a)
+    assert "ZORB" not in DEFAULT_CONFIG.block_start
+
+
+def test_a_page_without_notation_learns_nothing():
+    assert learn_keywords([]) == {}
+
+
+def test_the_pipeline_learns_by_default_and_can_be_told_not_to(tmp_path):
+    from l2c.extract.pipeline import extract_project
+
+    root = tmp_path / "P"
+    root.mkdir()
+    invented_plan(tmp_path).rename(root / "plan.pdf")
+    learned = extract_project(root)
+    assert sorted(e.grid for e in learned.elements) == ["A-1", "A-2", "B-2", "C-4", "D-5"]
+    assert learned.sheets[0].layout == "plan_outline"
+    off = extract_project(root, learn=False)
+    assert off.elements == []
+
+
+def test_a_label_is_never_learned_for_two_roles(tmp_path):
+    """A tie line without a printed spacing has the shape of a vertical-bar line; it must not be
+    learned as one, or every tie line would be read twice."""
+    dp = DisplayPage(1200, 900)
+    for x in (100, 300, 500, 700, 900):
+        dp.put(x, 100, "QWERT: 4 25M B7-01")
+        dp.put(x, 109, 'ZIGZAG: 6 10M T3X21 @6"')
+        dp.put(x, 300, "QWERT: 4 25M B7-02")
+        dp.put(x, 309, "ZIGZAG: 13 10M T3X18")  # no spacing printed
+    (page,) = load_pdf(dp.save(tmp_path / "shop_roles.pdf"))
+    learned = learn_keywords(page.words)
+    assert learned.get("shop_vert") == ("QWERT",)
+    assert "ZIGZAG" not in learned.get("shop_vert", ())
+    assert learned.get("shop_ties") == ("ZIGZAG",)
 ```
 
 Create `backend/tests/extract/test_pipeline.py`:
@@ -2854,7 +2985,7 @@ def test_cli_prints_counts_only(tmp_path):
     assert r.returncode == 0, r.stderr
     assert r.stdout.startswith("elements=10 plan=4 shop=6")
     assert "plan_outline" in r.stdout and "shop_label_strip" in r.stdout
-    assert "25M" not in r.stdout and "K-6" not in r.stdout  # no drawing values on stdout
+    assert "25M" not in r.stdout and "D-6" not in r.stdout  # no drawing values on stdout
 
 
 def test_empty_project_and_missing_folders_do_not_crash(tmp_path):
@@ -2894,15 +3025,112 @@ def test_a_corrupt_pdf_is_reported_and_the_rest_of_the_run_continues(tmp_path):
     assert len([e for e in b.elements if e.source == "shop"]) == 6  # the good file still ran
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [ ] **Step 2: Run them to verify they fail**
 
 ```bash
-python -m pytest backend/tests/extract/test_pipeline.py -v
+python -m pytest backend/tests/extract/test_learn.py backend/tests/extract/test_pipeline.py -v
 ```
 
-Expected: `ModuleNotFoundError: No module named 'l2c.extract.pipeline'`.
+Expected: `ModuleNotFoundError: No module named 'l2c.extract.learn'`.
 
-- [ ] **Step 3: Write the pipeline**
+- [ ] **Step 3: Write learning, quality marking, the pipeline and the CLI**
+
+Create `backend/l2c/extract/learn.py`:
+
+```python
+"""Learn this document's own labels from the standard notation around them.
+
+The *notation* of rebar annotations is standard even when the *label* is not: a bar line is a word
+followed by a count, a dash and a bar size; a tie line is a word followed by a bar size, `@` and a
+spacing; a shop vertical-bar line is a word, a count, a bar size and a mark; an elevation line is
+a word followed by feet-inches. The word that precedes each form, when it repeats, is that
+document's label. Learned labels are added to the config for that page only.
+"""
+
+from __future__ import annotations
+
+import re
+from collections import Counter
+from dataclasses import replace
+
+from l2c.extract.config import DEFAULT_CONFIG, Config
+from l2c.extract.runs import median_word_height, text_runs
+from l2c.ingest.pages import Word
+
+MIN_OCCURRENCES = 3
+MIN_SHARE = 0.3  # of all occurrences of that notation form on the page
+PRIORITY = ("ties_line", "shop_ties", "block_start", "section_line", "elevation_line", "shop_vert")
+_LABEL = r"(?P<k>[^\W\d_][\w.]*)"
+_SEP = r"[\s:.\-]*"
+
+
+def _forms(size: str) -> dict[str, re.Pattern[str]]:
+    return {
+        "block_start": re.compile(rf"^{_LABEL}{_SEP}\d{{1,2}}\s*-\s*{size}\b"),
+        "ties_line": re.compile(rf"^{_LABEL}{_SEP}{size}\s*@"),
+        "section_line": re.compile(rf"^{_LABEL}{_SEP}\d+(?:\.\d+)?\s*[\"'”″]?\s*[xX×]\s*\d"),
+        "shop_vert": re.compile(rf"^{_LABEL}{_SEP}\d{{1,3}}\s*{size}\s*[^\s@]+$"),
+        "shop_ties": re.compile(rf"^{_LABEL}{_SEP}\d{{1,3}}\s*{size}\s*[^\s@]+\s*@"),
+        "elevation_line": re.compile(rf"^{_LABEL}{_SEP}\d+\s*'\s*-?\s*\d*"),
+    }
+
+
+def _normalise(label: str) -> str:
+    return label.strip(".:- ").upper()
+
+
+def learn_keywords(
+    words: list[Word], config: Config = DEFAULT_CONFIG
+) -> dict[str, tuple[str, ...]]:
+    """Per config field, the labels found on this page that are not already known."""
+    gap = max(1.0, config.run_gap_word_heights * median_word_height(words))
+    runs = text_runs(words, gap=gap)
+    found: dict[str, Counter[str]] = {}
+    totals: Counter[str] = Counter()
+    for field, pattern in _forms(config.bar_size_pattern).items():
+        counts: Counter[str] = Counter()
+        for r in runs:
+            m = pattern.match(r.text.strip())
+            if m:
+                counts[_normalise(m.group("k"))] += 1
+                totals[field] += 1
+        found[field] = counts
+    # A label already used for one role must not be learned for another: a tie line without a
+    # printed spacing has the same shape as a vertical-bar line, and would otherwise be read twice.
+    all_known = {
+        w.strip().rstrip(".:").upper()
+        for f in found
+        for w in getattr(config, f)
+        if w.strip().rstrip(".:")
+    }
+    learned: dict[str, tuple[str, ...]] = {}
+    claimed: set[str] = set()
+    # most specific forms first: a label seen before `@` is a tie label before it can be a bar label
+    for field in PRIORITY:
+        counts = found[field]
+        known = all_known
+        keep = sorted(
+            label
+            for label, n in counts.items()
+            if n >= MIN_OCCURRENCES
+            and n >= MIN_SHARE * totals[field]
+            and label
+            and label not in claimed
+            and not any(label.startswith(k) for k in known if k)
+        )
+        if keep:
+            learned[field] = tuple(keep)
+            claimed.update(keep)
+    return learned
+
+
+def learn_config(words: list[Word], config: Config = DEFAULT_CONFIG) -> Config:
+    """The config extended with the labels this page uses (unchanged when nothing new is found)."""
+    learned = learn_keywords(words, config)
+    if not learned:
+        return config
+    return replace(config, **{f: (*getattr(config, f), *labels) for f, labels in learned.items()})
+```
 
 Create `backend/l2c/extract/ocr_quality.py`:
 
@@ -2984,9 +3212,10 @@ from l2c.contract.io import MetaBundle
 from l2c.contract.models import ElementExt, GridSheet, LevelInfo, SheetInfo
 from l2c.extract.calibrate import calibrate
 from l2c.extract.columns_plan import extract_plan_columns
-from l2c.extract.columns_shop import extract_shop_columns, find_labels
+from l2c.extract.columns_shop import extract_shop_columns, find_labels, find_level_lines
 from l2c.extract.config import DEFAULT_CONFIG, Config
 from l2c.extract.grid import Grid, fit_grid
+from l2c.extract.learn import learn_config
 from l2c.extract.notation import parse_shop_vert, plan_column_level
 from l2c.extract.ocr_quality import mark_ocr
 from l2c.extract.runs import text_runs
@@ -3092,6 +3321,8 @@ def shop_layout(page: PageData, etype: str | None, config: Config) -> str:
         return "no_column_blocks"
     if not find_labels(page.words, config, scale.word_h):
         return "shop_unlabelled_unsupported"
+    if not find_level_lines(page, runs, config, scale.word_h):
+        return "shop_levels_not_found"  # elements without a level can never be matched
     return "shop_label_strip"
 
 
@@ -3109,6 +3340,7 @@ def extract_project(
     project: str | None = None,
     config: Config = DEFAULT_CONFIG,
     use_ocr: bool = False,
+    learn: bool = True,
 ) -> MetaBundle:
     found = discover(project_dir)
     elements: list[ElementExt] = []
@@ -3139,14 +3371,15 @@ def extract_project(
             continue
         for page in pages:
             page = prepare_page(page, pdf, use_ocr, config)
+            cfg = learn_config(page.words, config) if learn else config
             level = None
             layout = "unknown"
             etype = None
             try:
                 text = " ".join(w.text for w in page.words)
-                level = plan_column_level(text, config)
-                grid = fit_grid(page.words, config) if has_text(page, config) else None
-                layout = plan_layout(page, level, grid, config)
+                level = plan_column_level(text, cfg)
+                grid = fit_grid(page.words, cfg) if has_text(page, cfg) else None
+                layout = plan_layout(page, level, grid, cfg)
                 if grid is not None and layout in {"plan_outline", "not_a_column_plan"}:
                     grids.append(
                         GridSheet(
@@ -3161,10 +3394,8 @@ def extract_project(
                 if layout in {"plan_outline", "plan_blocks_without_grid"}:
                     etype = "colonne"
                     levels.setdefault(level or "", LevelInfo(level=level or "", name=level or ""))
-                    els = extract_plan_columns(page, level or "", grid, config)
-                    elements.extend(
-                        mark_ocr(els, page.words, config) if page.source == "ocr" else els
-                    )
+                    els = extract_plan_columns(page, level or "", grid, cfg)
+                    elements.extend(mark_ocr(els, page.words, cfg) if page.source == "ocr" else els)
             except Exception as exc:  # one bad page must not stop the run
                 layout = f"error:{type(exc).__name__}"
             sheets.append(sheet(page, "plan", etype, level, layout))
@@ -3179,12 +3410,11 @@ def extract_project(
             layout = "unknown"
             try:
                 page = prepare_page(page, pdf, use_ocr, config) if folder == "colonne" else page
-                layout = shop_layout(page, folder, config)
+                cfg = learn_config(page.words, config) if learn else config
+                layout = shop_layout(page, folder, cfg)
                 if layout == "shop_label_strip":
-                    els, lvls = extract_shop_columns(page, config)
-                    elements.extend(
-                        mark_ocr(els, page.words, config) if page.source == "ocr" else els
-                    )
+                    els, lvls = extract_shop_columns(page, cfg)
+                    elements.extend(mark_ocr(els, page.words, cfg) if page.source == "ocr" else els)
                     for lv in lvls:
                         current = levels.get(lv.level)
                         if current is None or (
@@ -3228,6 +3458,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--project", default=None)
     ap.add_argument("--ocr", action="store_true", help="read pages without a text layer with OCR")
     ap.add_argument(
+        "--no-learn", action="store_true", help="do not learn labels from each page (config only)"
+    )
+    ap.add_argument(
         "--config",
         type=Path,
         default=None,
@@ -3238,7 +3471,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"not a directory: {args.project_dir}", file=sys.stderr)
         return 2
     bundle = extract_project(
-        args.project_dir, args.project, load_config(args.config), use_ocr=args.ocr
+        args.project_dir,
+        args.project,
+        load_config(args.config),
+        use_ocr=args.ocr,
+        learn=not args.no_learn,
     )
     write_bundle(args.out, bundle)
     flags = Counter(f for e in bundle.elements for f in e.quality.flags)
@@ -3261,17 +3498,17 @@ if __name__ == "__main__":
 - [ ] **Step 4: Run the tests**
 
 ```bash
-python -m pytest backend/tests/extract/test_pipeline.py -v
+python -m pytest backend/tests/extract/test_learn.py backend/tests/extract/test_pipeline.py -v
 python scripts/check.py
 ```
 
-Expected: 9 passed: end-to-end counts (4 plan + 6 shop elements), all seven files validate against `shared/schemas/`, two runs are byte-identical, the CLI prints counts and layouts but no values, an empty project and a folder with only a plan work, names with spaces and accents work, a corrupt PDF and a zero-byte PDF are reported while the good file still runs.
+Expected: 17 passed. Learning: labels in an invented language are learned and a page extracts fully without any config (and extracts nothing with `--no-learn`); a one-off label is not learned; known labels are never duplicated; a label is never learned for two roles. Pipeline: end-to-end counts, all seven files validate against `shared/schemas/`, two runs are byte-identical, the CLI prints counts and layouts but no values, empty projects and folders without `DA/` work, names with spaces and accents work, corrupt and zero-byte PDFs are reported while the good file still runs.
 
 - [ ] **Step 5: Commit and merge**
 
 ```bash
 git add backend/l2c/extract backend/tests/extract
-git commit -m "Add extraction pipeline and CLI"
+git commit -m "Add extraction pipeline, label learning and CLI"
 ```
 
 ```bash
@@ -3312,30 +3549,30 @@ from l2c.extract.pipeline import extract_project
 from l2c.ingest.pages import load_pdf
 from tests.extract.pdfmaker import DisplayPage, new_doc, put, save
 
-ROWS = {"K": 300.0, "L": 400.0, "M": 500.0, "N": 600.0, "O": 700.0}
+ROWS = {"D": 300.0, "E": 400.0, "F": 500.0, "G": 600.0, "H": 700.0}
 COLS = {"6": 500.0, "7": 600.0, "8": 700.0, "9": 800.0, "10": 900.0}
-CELLS = [("K", "6"), ("K", "7"), ("L", "7"), ("M", "9")]
+CELLS = [("D", "6"), ("D", "7"), ("E", "7"), ("F", "9")]
 
 FR = dict(
     title="PLAN DES COLONNES - NIVEAU 2",
     arm="ARM.: {n}-{s}",
     lig='LIG.: {t}@6" c/c',
     end="BÉTON: 25MPa / N",
-    col='COL. 16"x24"',
+    col='COL. 18"x20"',
 )
 EN = dict(
     title="COLUMN PLAN - LEVEL 2",
     arm="REINF.: {n}-{s}",
     lig='TIES: {t}@6" c/c',
     end="CONCRETE: 25MPa",
-    col='COLUMN 16"x24"',
+    col='COLUMN 18"x20"',
 )
 ES = dict(
     title="PLANO DE COLUMNAS - NIVEL 2",
     arm="REFUERZO: {n}-{s}",
     lig='ESTRIBOS: {t}@6" c/c',
     end="HORMIGON: 25MPa",
-    col='COLUMNA 16"x24"',
+    col='COLUMNA 18"x20"',
 )
 
 
@@ -3351,7 +3588,7 @@ def build_plan(tmp_path, *, scale=1.0, rotation=0, words=FR, size="25M", noise=F
         for label, x in COLS.items():
             dp.put(x * s, 60 * s, label, fs)
             dp.put(x * s, 820 * s, label, fs)
-    dp.put(1050 * s, 860 * s, "S-502", fs)
+    dp.put(1050 * s, 860 * s, "S-517", fs)
     dp.put(300 * s, 40 * s, words["title"], fs)
     for r, c in CELLS:
         cx, cy = COLS[c] * s + 2 * s, ROWS[r] * s + 4 * s
@@ -3521,6 +3758,22 @@ def test_unsupported_folder_types_are_covered_in_sheets_not_elements(tmp_path):
     save(doc, root / "DA" / "Dalles" / "slab.pdf")
     b = extract_project(root)
     assert b.elements == [] and b.sheets[0].layout == "type_not_supported:dalle"
+
+
+def test_a_shop_sheet_without_any_level_marks_is_reported_not_emitted_as_unusable_elements(
+    tmp_path,
+):
+    root = tmp_path / "P"
+    (root / "DA" / "Colonnes").mkdir(parents=True)
+    dp = DisplayPage(1200, 900)
+    for label, x in {"D-6": 200.0, "D-7": 360.0, "E-7": 520.0}.items():
+        dp.put(x, 800, label)
+        for y in (130, 330):
+            dp.put(x, y, "VERT: 4 25M V7-A")
+            dp.put(x, y + 9, 'ETRI: 6 10M T4X21 @6"')
+    dp.save(root / "DA" / "Colonnes" / "nolevels.pdf")
+    b = extract_project(root)
+    assert b.elements == [] and b.sheets[0].layout == "shop_levels_not_found"
 ```
 
 - [ ] **Step 2: Run it**
@@ -3529,7 +3782,7 @@ def test_unsupported_folder_types_are_covered_in_sheets_not_elements(tmp_path):
 python -m pytest backend/tests/extract/test_robustness.py -v
 ```
 
-Expected: 19 passed. If any case fails, that is a real adaptation bug: reproduce it with the smallest synthetic page, fix the module (never the test), re-run the whole suite.
+Expected: 20 passed. If any case fails, that is a real adaptation bug: reproduce it with the smallest synthetic page, fix the module (never the test), re-run the whole suite.
 
 - [ ] **Step 3: Commit and merge**
 
@@ -3550,7 +3803,7 @@ git switch dev && git merge --no-ff eric/e10-robustness
 **Files:**
 - Create: `scripts/validate_extract.py`, `scripts/probe_project.py`, `scripts/sample_for_handcheck.py`, `scripts/grid_debug.py`
 
-These print **counts and percentages only** (never drawing text) and write nothing that can be committed.
+These print **counts and percentages only** (never drawing text) and write nothing that can be committed. Measured baselines from the development projects are in the local, git-ignored `docs/private/baselines.md`; this plan states the acceptance criteria without them.
 
 - [ ] **Step 1: Add the scripts**
 
@@ -3654,6 +3907,7 @@ ADVICE = {
     "plan_blocks_without_grid": "blocks found but no grid: elements will be unbound (needs_review)",
     "rotated_text_unsupported": "text drawn sideways: not supported yet",
     "no_column_blocks": "shop page without column blocks (details, notes?)",
+    "shop_levels_not_found": "blocks and labels but no elevation lines: no level can be assigned",
     "not_a_column_plan": "plan page that is not a column plan (other element type or notes)",
 }
 
@@ -3835,9 +4089,9 @@ if __name__ == "__main__":
 
 ```bash
 mkdir -p data/in
-# unzip l2c-participants.zip into a temporary folder, then copy each project folder (CLP, LIGREP, WP2, EspCa3B)
-# so that data/in/CLP/L2C_PLAN_STR_CLP.pdf and data/in/CLP/DA/** exist
-python scripts/purge.py        # dry run: confirms data/ is what would be removed at the end
+# unzip the participant archive into a temporary folder, then copy each project folder
+# so that data/in/<project>/<plan>.pdf and data/in/<project>/DA/** exist
+python scripts/purge.py        # dry run: shows what would be removed at the end of the event
 ```
 
 `data/` is git-ignored; the hook refuses anything under it.
@@ -3845,52 +4099,27 @@ python scripts/purge.py        # dry run: confirms data/ is what would be remove
 - [ ] **Step 3: Probe every project first (what is covered and why not)**
 
 ```bash
-python scripts/probe_project.py data/in/CLP
-python scripts/probe_project.py data/in/LIGREP
-python scripts/probe_project.py data/in/WP2
-python scripts/probe_project.py data/in/EspCa3B
+python scripts/probe_project.py data/in/<project>
 ```
 
-Baseline measured while building this plan (your numbers should match or beat them):
+For each project this lists, per plan page and shop page, which adapter ran or why none did (`plan_outline`, `plan_blocks_without_grid`, `shop_label_strip`, `shop_unlabelled_unsupported`, `shop_levels_not_found`, `needs_ocr`, `type_not_supported:<type>`, ...), the layer kinds, element counts and the share of pages fully handled. Compare with `docs/private/baselines.md`; the numbers should match or beat it. Expect very different shapes per project: that is the point of the tool.
 
-| Project | plan pages with `plan_outline` | plan `plan_blocks_without_grid` | shop `shop_label_strip` | shop `needs_ocr` | shop `shop_unlabelled_unsupported` |
-|---|---|---|---|---|---|
-| CLP | 6 | 0 | 13 | 0 | 0 |
-| LIGREP | 10 | 1 | 34 | 0 | 6 |
-| WP2 | 5 | 8 | 0 | 36 | 0 |
-| EspCa3B | 2 | 21 | 0 | 23 | 0 |
-
-- [ ] **Step 4: Validate the CLP extraction against the census**
+- [ ] **Step 4: Validate the fully-text project against the census**
 
 ```bash
-python scripts/validate_extract.py data/in/CLP
+python scripts/validate_extract.py data/in/<project>
 ```
 
-Baseline (the script marks rows below its thresholds; some will be):
+Acceptance for the plan column sheets of the fully-text project: every block's text is parsed, and at least 90% of blocks are bound to a grid cell on most sheets (rows below the threshold are marked; investigate them with Task E13, do not lower the threshold). Shop column pages: report which pages assign fewer strips than the census; those are E13 material.
 
-| Plan sheet | blocks | parsed | bound to a grid cell |
-|---|---|---|---|
-| S-500 (SS) | 96 | 100% | 92% |
-| S-501 (RDC) | 69 | 100% | 90% |
-| S-502 (N2) | 70 | 100% | 93% |
-| S-503 (N3) | 70 | 100% | 93% |
-| S-504 (N4) | 64 | 100% | 91% |
-| S-505 (N5) | 25 | 100% | 80% |
-
-Shop pages: Part 1 pages 1 to 2 and Part 2/3 page 1 to 2 at 100%; Part 1 pages 3 to 5 at 68 to 83%; Part 2/3 pages 3 to 4 at 69 to 85% (strip assignment, see Task E13). Parts 2 and 3 have identical per-page counts: they overlap, which is exactly what Ian's `cross.shop_vs_shop` check is for.
-
-- [ ] **Step 5: Write the metadata and check it**
+- [ ] **Step 5: Write the metadata, estimate binding accuracy and sample for a hand check**
 
 ```bash
-python -m l2c.extract data/in/CLP --out data/out/CLP/metadata
-python scripts/sample_for_handcheck.py data/out/CLP/metadata --n 20 --out data/handcheck_CLP.csv
+python -m l2c.extract data/in/<project> --out data/out/<project>/metadata
+python scripts/sample_for_handcheck.py data/out/<project>/metadata --n 20 --out data/handcheck_<project>.csv
 ```
 
-Expected output of the first command (counts only): `elements=1252 plan=394 shop=858 layouts={{...}}`. Open `data/handcheck_CLP.csv`, and for each of the 20 rows open the PDF page at the given x, y and fill the `correct? (y/n)` column. The file holds real values: it stays in `data/`.
-
-Known real cases to confirm by eye (found by the pipeline, the first as a peer outlier on plan sheet S-502, the second on S-504):
-- grid `K-6` at level N2: the plan block shows one unusual bar size (`35M`) where its neighbours show `25M`;
-- grid `I-13` at level N4: the plan block shows tie spacing `12"` where its neighbours show `6"`.
+The first command prints counts only. Open the CSV, and for each of the 20 rows open the PDF page at the given x, y and fill `correct? (y/n)`. The file holds real values and stays in `data/`. Then record, with Ian at the sync, the element counts, the share of pages fully handled and the hand-check result; these are the numbers the integration gate (Ian's Task I10) compares against.
 
 - [ ] **Step 6: Commit the tools and merge**
 
@@ -3908,7 +4137,7 @@ git switch dev && git merge --no-ff eric/e11-tools
 
 ### Task E12 (second tier): OCR for pages without a text layer
 
-Start this task only after E1 to E11 pass and Ian's comparison has run on real CLP output (the core gate). About 70% of the shop pages across the four development projects have no text layer, and the hidden evaluation project is likely to look the same.
+Start this task only after E1 to E11 pass and Ian's comparison has run on real output (the core gate). Most shop pages across the development projects have no text layer, and the hidden evaluation project is likely to look the same.
 
 **Files:**
 - Create: `backend/l2c/ingest/snap.py`, `backend/l2c/ingest/ocr.py`
@@ -3916,7 +4145,7 @@ Start this task only after E1 to E11 pass and Ian's comparison has run on real C
 
 **Interfaces:**
 - Consumes: `Word`, `PageData`, `load_pdf` (E2); `Config` OCR knobs (E1); `mark_ocr` and `prepare_page` (E9, already wired behind `--ocr`).
-- Produces: `snap_token(text, config) -> (text, changed)` (repairs confusable characters like `2SM` to `25M` only when the result is a valid bar size); `render(page, dpi)`, `tiles(img, tile_px, overlap)`, `to_tile_frame`, `read_tile`, `line_to_words`, `dedupe` (longer, more confident readings win; fragments of a better box are dropped), `choose_orientations` (optional probe), `ocr_page(page, config, orientations=None) -> OcrResult(words, orientations, snapped, mean_conf)`, `ocr_pdf_page(path, page_number, config)`, `with_ocr_words(page, result) -> PageData(source="ocr")`, `load_with_ocr(path, fichier, config)`. RapidOCR (ONNX, CPU, models bundled in the wheel) is created lazily once; vertical text is read natively by the engine, so the default policy reads the upright orientation only (the orientation probe is 4x slower and was less accurate in measurement).
+- Produces: `snap_token(text, config) -> (text, changed)` (repairs confusable characters only when the result is a valid bar size); `render(page, dpi)`, `tiles(img, tile_px, overlap)`, `to_tile_frame`, `read_tile`, `line_to_words`, `dedupe` (longer, more confident readings win; fragments of a better box are dropped), `choose_orientations` (optional probe), `ocr_page(page, config, orientations=None) -> OcrResult(words, orientations, snapped, mean_conf)`, `ocr_pdf_page(path, page_number, config)`, `with_ocr_words(page, result) -> PageData(source="ocr")`, `load_with_ocr(path, fichier, config)`. RapidOCR (ONNX, CPU, models bundled in the wheel) is created lazily once. The engine reads vertical text itself, so the default policy reads the upright orientation only (the orientation probe is slower and was less accurate in measurement).
 
 - [ ] **Step 1: Branch and write the failing tests**
 
@@ -4000,7 +4229,7 @@ def test_ocr_reads_an_image_only_page_with_positions_in_pdf_points(tmp_path):
 
 def test_vertical_text_is_read_even_without_the_orientation_probe(tmp_path):
     # RapidOCR reads vertical lines itself, so the default policy needs no extra orientations
-    path = raster_pdf(tmp_path, ["VERT: 4 25M 25Z12-01", "ETRI: 6 10M 10ET13X21"], rotate=90)
+    path = raster_pdf(tmp_path, ["VERT: 4 25M B7-01", "ETRI: 6 10M T4X21"], rotate=90)
     res = ocr.ocr_pdf_page(path, 1, DEFAULT_CONFIG)
     assert res.orientations == (0,)
     assert any("25M" in w.text for w in res.words)
@@ -4010,7 +4239,7 @@ def test_orientation_probe_is_available_and_prefers_upright_when_all_read_equall
     import dataclasses
 
     cfg = dataclasses.replace(DEFAULT_CONFIG, ocr_orientation_probe=True)
-    path = raster_pdf(tmp_path, ["ARM.: 4-25M", "VERT: 4 25M 25Z12-01"])
+    path = raster_pdf(tmp_path, ["ARM.: 4-25M", "VERT: 4 25M B7-01"])
     res = ocr.ocr_pdf_page(path, 1, cfg)
     assert 0 in res.orientations and any("25M" in w.text for w in res.words)
 
@@ -4038,16 +4267,16 @@ def shop_sheet(tmp_path, scale=2.0):
     dp = DisplayPage(1200 * s, 900 * s)
     fs = 8.0 * s
     for y, el, name in [
-        (100, "131' - 9\"", "NIVEAU 4"),
-        (300, "122' - 0\"", "NIVEAU 3"),
-        (500, "112' - 3\"", "NIVEAU 2"),
+        (100, "118' - 4\"", "NIVEAU 4"),
+        (300, "108' - 6\"", "NIVEAU 3"),
+        (500, "98' - 9\"", "NIVEAU 2"),
     ]:
         dp.put(60 * s, y * s, f"EL.: {el}", fs)
         dp.put(60 * s, (y + 9) * s, name, fs)
-    for label, x in {"K-6": 200.0, "K-7": 360.0, "L-7": 520.0}.items():
+    for label, x in {"D-6": 200.0, "D-7": 360.0, "E-7": 520.0}.items():
         dp.put(x * s, 800 * s, label, fs)
-        dp.put(x * s, 330 * s, "VERT: 4 25M 25Z12-01", fs)
-        dp.put(x * s, 340 * s, 'ETRI: 6 10M 10ET13X21 @6"', fs)
+        dp.put(x * s, 330 * s, "VERT: 4 25M B7-01", fs)
+        dp.put(x * s, 340 * s, 'ETRI: 6 10M T4X21 @6"', fs)
     return dp.save(tmp_path / "shop_vec.pdf")
 
 
@@ -4378,15 +4607,14 @@ def load_with_ocr(path: Path, fichier: str, config: Config = DEFAULT_CONFIG) -> 
 python -m pytest backend/tests/extract/test_ocr.py -v
 ```
 
-Expected: 10 passed (first run is slower while the ONNX models load). The end-to-end test makes an image-only shop sheet, shows that without `--ocr` its layout is `needs_ocr` and with OCR it becomes `shop_label_strip` with elements flagged `ocr_text`.
+Expected: 10 passed (the first run is slower while the ONNX models load). The end-to-end test makes an image-only shop sheet; without `--ocr` its layout is `needs_ocr`, with OCR it becomes `shop_label_strip` with elements flagged `ocr_text`.
 
-- [ ] **Step 5: Measure on a real rasterized sheet (local only)**
+- [ ] **Step 5: Measure on a rasterized real sheet (local only)**
 
-This reproduces the measurement used to choose the defaults. It rasterizes real text-layer pages at 200 dpi (so they look like image-only drawings), OCRs them and compares the extracted elements with the ones from the native text:
+Rasterize a text-layer shop PDF at 200 dpi (so it looks like an image-only drawing), OCR it, and compare the extracted elements with the ones from the native text. Save this as `data/ocr_check.py` (git-ignored) and run `python data/ocr_check.py <pdf> <first page> <last page>` from the repository root with the environment active:
 
-```bash
-python - <<'PY'
-import tempfile
+```python
+import sys, tempfile
 from pathlib import Path
 import pymupdf
 from l2c.extract.columns_shop import extract_shop_columns
@@ -4395,22 +4623,27 @@ from l2c.ingest import ocr
 from l2c.ingest.pages import load_pdf
 from tests.extract.pdfmaker import rasterize
 
-src = Path('data/in/CLP/DA/Colonnes/CLP_COLONNES Partie 1.pdf')
-for pg in range(5):
+src, first, last = Path(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
+for pg in range(first - 1, last):
     tmp = Path(tempfile.mkdtemp())
-    one = pymupdf.open(); one.insert_pdf(pymupdf.open(src), from_page=pg, to_page=pg); one.save(tmp / 'one.pdf')
+    one = pymupdf.open()
+    one.insert_pdf(pymupdf.open(src), from_page=pg, to_page=pg)
+    one.save(tmp / 'one.pdf')
     raster = rasterize(tmp / 'one.pdf', tmp / 'raster.pdf', dpi=200)
     native = load_pdf(tmp / 'one.pdf')[0]
-    want = {{(e.grid, e.level): (e.armature[0].quantite, e.armature[0].diametre) for e in extract_shop_columns(native)[0]}}
+    def keyed(page):
+        return {{(e.grid, e.level): (e.armature[0].quantite, e.armature[0].diametre)
+                for e in extract_shop_columns(page)[0]}}
+    want = keyed(native)
     with pymupdf.open(raster) as d:
         words = ocr.ocr_page(d[0], C)
-    got = {{(e.grid, e.level): (e.armature[0].quantite, e.armature[0].diametre) for e in extract_shop_columns(ocr.with_ocr_words(native, words))[0]}}
+    got = keyed(ocr.with_ocr_words(native, words))
     both = set(want) & set(got)
-    print(f'page {{pg+1}}: found {{len(both)}}/{{len(want)}}, vertical exact {{sum(want[k]==got[k] for k in both)}}/{{len(both)}}')
-PY
+    exact = sum(want[k] == got[k] for k in both)
+    print(f'page {{pg + 1}}: found {{len(both)}}/{{len(want)}}, vertical exact {{exact}}/{{len(both)}}')
 ```
 
-Baseline: found 109 of 114 elements across the five pages (96%), vertical bars (count and size) exact for 100% of the ones found, full profile including ties exact for 87%, about 7 seconds per page. Run it from the repository root with the environment active (`tests` is importable because `pythonpath` is configured in `pyproject.toml` for pytest; for this one-off run use `PYTHONPATH=backend python - <<'PY'`).
+Use `PYTHONPATH=backend` if `tests` is not importable. Acceptance: at least 90% of the native elements are found and at least 95% of the found ones have the correct vertical bars; the number measured while building this plan is in `docs/private/baselines.md`. About 7 seconds per page.
 
 - [ ] **Step 6: Commit and merge**
 
@@ -4426,23 +4659,235 @@ git switch dev && git merge --no-ff eric/e12-ocr
 
 ---
 
-### Task E13 (second tier): Hardening loop for unseen layouts and quality calibration
+### Task E13 (second tier): Measure binding accuracy, harden against unseen layouts, calibrate quality
 
-No new files up front: this is a measured loop. Every fix adds a synthetic test that reproduces the failure shape, then changes code or config, then re-runs the baselines so nothing regresses.
+**Files:**
+- Create: `backend/l2c/extract/witness.py`, `scripts/binding_witness.py`
+- Test: `backend/tests/extract/test_witness.py` (uses `make_element` from Plan 00 Task F4, so F4 must be merged)
 
-**Loop (repeat per gap):**
+**Interfaces:**
+- Produces: `witness(bundle, seed=1) -> Witness(matched_cells, typical_total, typical_agree, atypical_total, atypical_agree, chance_total, chance_agree)` with `.binding_accuracy` and `.chance` properties.
+
+Why: the text parse is exact (every field has confidence 1.0), but *which outline a block belongs to* is a geometric judgement, and the quality score reflects that doubt only through an uncalibrated formula. The witness estimates binding accuracy without any labels: a plan column that differs from its sheet's usual profile must match the shop element **at the same grid cell**. If binding were wrong, those unusual columns would agree only at chance level. Typical columns agree almost always and are reported separately because they prove nothing.
+
+- [ ] **Step 1: Branch and write the failing test**
+
+```bash
+git switch dev && git pull
+git switch -c eric/e13-witness
+```
+
+Create `backend/tests/extract/test_witness.py`:
+
+```python
+from l2c.contract.io import MetaBundle
+from l2c.extract.witness import witness
+from l2c.mock.elements import make_element
+
+
+def project(shuffle_atypical: bool):
+    cols = range(1, 21)
+    odd = {3: 6, 9: 8, 15: 10}  # three atypical plan columns (different bar count)
+    plan = [make_element("plan", "N2", "K", c, count=odd.get(c, 4), x=10.0 * c) for c in cols]
+    shop_counts = dict(odd)
+    if shuffle_atypical:  # the shop has the unusual values, but in other cells
+        shop_counts = {4: 6, 10: 8, 16: 10}
+    shop = [
+        make_element("shop", "N2", "K", c, count=shop_counts.get(c, 4), x=10.0 * c) for c in cols
+    ]
+    return MetaBundle(project="w", elements=plan + shop)
+
+
+def test_correct_binding_makes_atypical_columns_agree_with_the_shop():
+    w = witness(project(shuffle_atypical=False))
+    assert w.atypical_total == 3 and w.atypical_agree == 3 and w.binding_accuracy == 1.0
+    assert w.typical_total == 17 and w.typical_agree == 17
+    assert w.matched_cells == 20
+
+
+def test_wrong_binding_drops_atypical_agreement_to_chance():
+    w = witness(project(shuffle_atypical=True))
+    assert w.atypical_agree == 0 and w.binding_accuracy == 0.0
+    assert w.chance is not None and w.chance < 0.5
+
+
+def test_no_atypical_columns_means_no_estimate():
+    plan = [make_element("plan", "N2", "K", c) for c in range(1, 6)]
+    shop = [make_element("shop", "N2", "K", c) for c in range(1, 6)]
+    w = witness(MetaBundle(project="x", elements=plan + shop))
+    assert w.binding_accuracy is None and w.atypical_total == 0
+```
+
+- [ ] **Step 2: Run it to verify it fails**
+
+```bash
+python -m pytest backend/tests/extract/test_witness.py -v
+```
+
+Expected: `ModuleNotFoundError: No module named 'l2c.extract.witness'`.
+
+- [ ] **Step 3: Write the witness and the script**
+
+Create `backend/l2c/extract/witness.py`:
+
+```python
+"""Estimate binding accuracy without labels, using the other document as an independent witness.
+
+A column on the plan that differs from its sheet's usual profile (an *atypical* column) must match
+the shop element at the **same grid cell**. If blocks were bound to the wrong cells, atypical
+columns would agree with the shop at chance level; typical columns agree almost always and prove
+nothing, so they are reported separately and excluded from the estimate. Percentages only.
+"""
+
+from __future__ import annotations
+
+import random
+from collections import Counter, defaultdict
+from dataclasses import dataclass
+
+from l2c.contract.io import MetaBundle
+from l2c.contract.models import ElementExt
+
+
+@dataclass(frozen=True)
+class Witness:
+    matched_cells: int
+    typical_total: int
+    typical_agree: int
+    atypical_total: int
+    atypical_agree: int
+    chance_total: int
+    chance_agree: int
+
+    @property
+    def binding_accuracy(self) -> float | None:
+        """Lower bound: genuine plan/shop differences also count as disagreement."""
+        return self.atypical_agree / self.atypical_total if self.atypical_total else None
+
+    @property
+    def chance(self) -> float | None:
+        return self.chance_agree / self.chance_total if self.chance_total else None
+
+
+def _key(e: ElementExt) -> tuple[int | None, str | None]:
+    v = e.armature[0] if e.armature else None
+    return (v.quantite if v else None, v.diametre if v else None)
+
+
+def witness(bundle: MetaBundle, seed: int = 1) -> Witness:
+    plan = {(e.level, e.grid): e for e in bundle.elements if e.source == "plan" and e.grid}
+    shop: dict[tuple[str, str | None], list[ElementExt]] = defaultdict(list)
+    for e in bundle.elements:
+        if e.source == "shop" and e.grid:
+            shop[(e.level, e.grid)].append(e)
+    mode: dict[str, Counter] = defaultdict(Counter)
+    for (level, _), e in plan.items():
+        mode[level][_key(e)] += 1
+    usual = {lv: c.most_common(1)[0][0] for lv, c in mode.items()}
+    rng = random.Random(seed)
+    cells_by_level: dict[str, list[tuple[str, str | None]]] = defaultdict(list)
+    for k in plan:
+        if k in shop:
+            cells_by_level[k[0]].append(k)
+    t_tot = t_ok = a_tot = a_ok = c_tot = c_ok = 0
+    for k in sorted(k for ks in cells_by_level.values() for k in ks):
+        e = plan[k]
+        agree = any(_key(s) == _key(e) for s in shop[k])
+        if _key(e) == usual[k[0]]:
+            t_tot += 1
+            t_ok += agree
+        else:
+            a_tot += 1
+            a_ok += agree
+            other = rng.choice(cells_by_level[k[0]])
+            c_tot += 1
+            c_ok += any(_key(s) == _key(e) for s in shop[other])
+    matched = sum(len(v) for v in cells_by_level.values())
+    return Witness(matched, t_tot, t_ok, a_tot, a_ok, c_tot, c_ok)
+```
+
+Create `scripts/binding_witness.py`:
+
+```python
+"""Binding accuracy estimate for a metadata folder, using the shop drawings as a witness.
+
+Usage: python scripts/binding_witness.py data/out/<project>/metadata
+Prints percentages only. A binding change must not lower the atypical agreement.
+"""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+from l2c.contract.io import read_bundle
+from l2c.extract.witness import witness
+
+
+def pct(a: int, b: int) -> str:
+    return f"{a}/{b} = {a / b:.0%}" if b else "n/a (no cases)"
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("metadata_dir", type=Path)
+    args = ap.parse_args()
+    w = witness(read_bundle(args.metadata_dir))
+    typical = pct(w.typical_agree, w.typical_total)
+    atypical = pct(w.atypical_agree, w.atypical_total)
+    chance = pct(w.chance_agree, w.chance_total)
+    print(f"cells present on both plan and shop: {w.matched_cells}")
+    print(f"typical plan columns agree with shop at the same cell : {typical}")
+    print(f"ATYPICAL plan columns agree with shop (binding estimate): {atypical}")
+    print(f"chance level for atypical columns (random cell)        : {chance}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+```
+
+- [ ] **Step 4: Run the tests**
+
+```bash
+python -m pytest backend/tests/extract/test_witness.py -v
+```
+
+Expected: 3 passed (correct binding gives 100% agreement; shuffled cells drop it to chance; no unusual columns means no estimate).
+
+- [ ] **Step 5: Measure the real project**
+
+```bash
+python scripts/binding_witness.py data/out/<project>/metadata
+```
+
+It prints three percentages: typical columns, unusual columns (the binding estimate, a lower bound because genuine plan/shop differences also count as disagreement) and the chance level. Record the unusual-column figure: it is the standing quality gate for every binding change from now on, and it must never go down. The figure measured while building this plan is in `docs/private/baselines.md`: well above chance, clearly below 100%.
+
+- [ ] **Step 6: Commit and merge**
+
+```bash
+git add backend/l2c/extract/witness.py scripts/binding_witness.py backend/tests/extract/test_witness.py
+git commit -m "Add binding accuracy witness"
+```
+
+```bash
+git switch dev && git merge --no-ff eric/e13-witness
+```
+
+
+**Hardening loop (repeat per gap; no new files up front).** Every fix adds a synthetic test that reproduces the failure *shape* with invented labels, then changes config or code, then re-runs the baselines so nothing regresses.
 
 - [ ] **Step 1: Pick the largest gap from the probe**
 
-Run `python scripts/probe_project.py data/in/<project>` and choose the biggest `plan_blocks_without_grid`, `shop_unlabelled_unsupported` or `no_column_blocks` count.
+Run `python scripts/probe_project.py data/in/<project>` and choose the biggest `plan_blocks_without_grid`, `shop_unlabelled_unsupported`, `shop_levels_not_found` or `no_column_blocks` count.
 
-- [ ] **Step 2: Find out why with the debug tool**
+- [ ] **Step 2: Find out why**
 
 ```bash
 python scripts/grid_debug.py data/in/<project>/<plan>.pdf <page number>
 ```
 
-It prints how many letter-like and number-like labels the page has, how many share a line in each direction, how many repeat on the opposite edge, and what `fit_grid` decided. This is how the transposed convention was found (letters along the top, numbers down the side).
+It prints how many letter-like and number-like labels the page has, how many share a line in each direction, how many repeat on the opposite edge, and what `fit_grid` decided. This is how the second grid orientation (letters along the top, numbers down the side) and rows past Z were found.
 
 - [ ] **Step 3: Reproduce the shape synthetically**
 
@@ -4450,17 +4895,18 @@ Add a test in `backend/tests/extract/test_grid.py`, `test_columns_plan.py`, `tes
 
 - [ ] **Step 4: Fix at the right level**
 
-Prefer, in this order: a `Config` value (new key or new default ratio), then a vocabulary entry, then a code change. Never add a fixed distance in points.
+Prefer, in this order: learn it from the page (extend `learn.py`), a `Config` value (new key or default ratio), a vocabulary entry, then a code change. Never add a fixed distance in points and never copy a label or layout from the development data into code.
 
 - [ ] **Step 5: Re-run all baselines**
 
 ```bash
 python scripts/check.py
-python scripts/validate_extract.py data/in/CLP
-for p in CLP LIGREP WP2 EspCa3B; do python scripts/probe_project.py data/in/$p; done
+python scripts/validate_extract.py data/in/<project>
+python scripts/binding_witness.py data/out/<project>/metadata
+for p in <each project>; do python scripts/probe_project.py data/in/$p; done
 ```
 
-The CLP plan binding table from Task E11 must not drop on any row; the probe tables should improve.
+Nothing may drop against `docs/private/baselines.md` or the witness figure; the probe tables should improve.
 
 - [ ] **Step 6: Commit and merge**
 
@@ -4471,31 +4917,19 @@ git switch dev && git merge --no-ff eric/<branch>
 ```
 
 
-**Known gaps to work through (measured, largest first):**
+**Known gap categories (details and numbers in `docs/private/baselines.md`):** sheets whose plan grid is not found (remaining sheets of the projects that use the transposed grid, likely too few labels or labels drawn as shapes); shop pages with blocks but no grid labels (a mark plus axis convention: add an adapter that resolves marks by their order along the plan axis); shop pages without elevation lines (levels cannot be assigned: find another level cue such as the file name or a title); shop pages where only part of the column strips are assigned; element types other than columns (a later plan adds one adapter per type).
 
-| Gap | Where | Numbers now | Hint |
-|---|---|---|---|
-| Plan grid not found | EspCa3B plan pages | 21 of 23 column pages unbound | letters run along the top, numbers down the side (handled); remaining sheets likely have too few labels or labels as vector bubbles: check with `grid_debug.py` |
-| Plan grid not found | WP2 plan pages | 8 of 13 unbound | same family as above |
-| Shop blocks without labels | LIGREP column sheets | 6 pages `shop_unlabelled_unsupported` | marks like `C-01` plus an axis in the title (`AXE 12`): add a mark+axis adapter that resolves marks by their order along the plan axis |
-| Strip assignment | CLP shop pages 3 to 5 of part 1, 3 to 4 of parts 2 and 3 | 68 to 85% of `VERT` runs become elements | print which runs fail; likely labels farther than `strip_tol_fraction` of the label spacing |
-| Plan binding | CLP S-505 | 80% (others 90 to 93%) | small sheet, few outlines per cell |
-| Foundation segments | CLP shop | 103 elements at level `FDN` | kept and flagged `below_lowest_level`; they have no plan sheet |
-| Unsupported element types | beams, slabs, foundations, walls | counted as `type_not_supported` | out of scope for this plan; a later plan adds one adapter per type |
-
-**Quality calibration (do this once real data has flowed through Ian's comparison):**
-
-Measured on CLP: plan elements have median `quality.overall` 0.60 (249 of 394 carry `weak_binding`) and shop elements 0.79; only 28% of matched pairs reach the verdict trust of 0.7, so 425 of 541 findings are `needs_review`. The binding confidence (`0.6 + 0.4 * margin` in `quality.location_score`) is too pessimistic because the margin to the runner-up outline is small by construction where gridlines are close.
+**Quality calibration (once real data has flowed through Ian's comparison):** the binding confidence (`0.6 + 0.4 * margin` in `quality.location_score`) is an uncalibrated heuristic: the margin to the runner-up outline is zero for about half of the blocks even when the binding is right, because two outlines are about equally plausible once block offsets are learned, so most pairs fall below the verdict bar and most findings land in `needs_review`.
 
 - [ ] **Step 1: Label a sample**
 
-Use `scripts/sample_for_handcheck.py` (Task E11) on plan and shop elements, 30 each, and fill `correct?`.
+Use `scripts/sample_for_handcheck.py` (Task E11) on plan and shop elements, about 30 each, and fill `correct?`.
 
 - [ ] **Step 2: Build the reliability table**
 
-Bin `overall` (0 to 1 in tenths) and report, per bin, the share marked correct. A trustworthy score has the share rising with the bin.
+Bin `overall` (0 to 1 in tenths) and report, per bin, the share marked correct, next to the witness estimate. A trustworthy score has the share rising with the bin.
 
-- [ ] **Step 3: Adjust only what the table justifies**
+- [ ] **Step 3: Adjust only what the evidence justifies**
 
-Change the weights in `l2c.contract.constants` (`ANCHOR_FACTOR`, `CONSISTENCY_*`) or the binding factor in `quality.location_score`; do not touch the verdict threshold. Acceptance: at least 60% of matched pairs reach trust 0.7 **and** at least 90% of the elements in the 0.7+ bins are marked correct. Weights are a contract change: announce it, regenerate fixtures if their numbers move.
+Change the binding factor in `quality.location_score` or the weights in `l2c.contract.constants` (`ANCHOR_FACTOR`, `CONSISTENCY_*`); never the verdict threshold. Acceptance: the elements in the 0.7+ bins are at least 90% correct in the hand check, a clear majority of matched pairs reach 0.7, and the witness figure has not dropped. Weights are a contract change: announce it and regenerate fixtures if their numbers move.
 

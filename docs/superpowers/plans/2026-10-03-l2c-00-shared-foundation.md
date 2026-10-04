@@ -21,6 +21,7 @@
 - `contract_version` is `"0.1.0"`; every metadata folder has a `manifest.json`; loaders fail loudly on a mismatch.
 - Same input must give byte-identical output (sorted keys, no randomness without a fixed seed).
 - **Nothing is hard-coded to one project**: distances are multiples of the page's own word height or gridline spacing (`calibrate.py`); language, notation, units and ratios live in `Config` and can be overridden with `--config file.json`.
+- **Analysis is allowed; hard-coding what analysis finds is not.** Code, tests, fixtures, the spec and the plans contain no project names, sheet ids, grid cells, marks, real values or real notation strings (only published standard forms such as bar sizes `10M`..`35M`). Data-derived numbers and examples live only in the git-ignored `docs/private/` notes, which `scripts/guard.py` refuses to commit. Every behaviour must work on a synthetic document built differently (scale, rotation, language, labels, grid orientation, bar-size system).
 - No document may be sent to any cloud service or external AI API; the pipeline imports no network library and runs offline. Confidential data (PDFs, derived JSON/XLSX/PDF outputs, models) is never committed: `data/`, `deliverables/`, `demo/` are git-ignored and `scripts/guard.py` blocks them in the pre-commit hook. Tests use synthetic data only.
 - No commercially licensed software; dependencies are open source (PyMuPDF is AGPL-3.0: the source ships with the submission). `THIRD_PARTY.md` lists every dependency and license.
 - Each lane edits only its own folders (`.github/CODEOWNERS`); `shared/` and `backend/l2c/contract/` change only through a contract PR reviewed by both people, which also regenerates `shared/schemas/` and `shared/fixtures/` in the same commit.
@@ -121,6 +122,12 @@ def test_secret_patterns_are_detected():
     assert guard.find_secrets("a.py", 'api_key = "abcdef0123456789abcdef"')
     assert guard.find_secrets("b.txt", "-----BEGIN PRIVATE KEY-----")
     assert guard.find_secrets("c.py", "x = 1  # nothing here") == []
+
+
+def test_local_analysis_notes_and_hand_labels_are_blocked():
+    problems = guard.check_paths({"docs/private/baselines.md": 10, "metrics/gold/labels.csv": 10})
+    assert any("docs/private/baselines.md" in p for p in problems)
+    assert any("metrics/gold/labels.csv" in p for p in problems)
 ```
 
 Also create the three empty files `backend/l2c/__init__.py`, `backend/tests/__init__.py`, `backend/tests/tooling/__init__.py`.
@@ -249,6 +256,7 @@ BLOCKED_SUFFIXES = {
     ".db",
 }
 BLOCKED_DIRS = {"data", "deliverables", "demo"}
+BLOCKED_PREFIXES = ("docs/private/", "metrics/gold/")  # local analysis notes and hand labels
 ALLOWED_PREFIXES = ("shared/fixtures/",)  # synthetic, hand-made files only
 MAX_BYTES = 1_000_000
 SECRET_PATTERNS = [
@@ -270,6 +278,8 @@ def check_paths(files: dict[str, int], notebook_with_outputs: set[str] | None = 
             if size > MAX_BYTES:
                 problems.append(f"{path}: fixture larger than {MAX_BYTES} bytes")
             continue
+        if path.startswith(BLOCKED_PREFIXES):
+            problems.append(f"{path}: local-only analysis notes and labels are never committed")
         if pp.parts and pp.parts[0] in BLOCKED_DIRS and pp.name != ".gitkeep":
             problems.append(f"{path}: files under {pp.parts[0]}/ must never be committed")
         if pp.suffix.lower() in BLOCKED_SUFFIXES:
@@ -557,6 +567,7 @@ deliverables/
 demo/
 metrics/gold/
 models/
+docs/private/
 *.pdf
 !shared/fixtures/**/*.pdf
 *.dxf
@@ -643,7 +654,7 @@ python scripts/install_hooks.py
 python scripts/check.py
 ```
 
-Expected: 4 passed; `CHECK PASSED` (the guard step prints nothing when nothing is staged).
+Expected: 5 passed; `CHECK PASSED` (the guard step prints nothing when nothing is staged).
 
 - [ ] **Step 8: Prove the hook really blocks confidential files**
 
@@ -722,10 +733,10 @@ def make_element(**over) -> ElementExt:
         x=412.5,
         y=318.0,
         type_element="colonne",
-        element="K-6",
+        element="D-6",
         armature=[Armature(repere="K6-V", diametre="25M", quantite=4)],
         match_key=MatchKey(type="colonne", level="N2", row="K", col=6),
-        grid="K-6",
+        grid="D-6",
         level="N2",
         bbox=(400.0, 310.0, 430.0, 326.0),
         quality=Quality(
@@ -909,7 +920,7 @@ ANCHOR_FACTOR = {"outline": 1.0, "label": 0.95, "mark_axis": 0.8, "text_only": 0
 
 # Internal consistency: tie count x spacing / storey height. The accepted band is learned from the
 # project's own shop elements (median +/- K robust sigmas); the fixed band is only a fallback
-# when there are too few samples. (Measured 0.96-1.21 on the CLP development project.)
+# when there are too few samples.
 TIE_RATIO_MIN = 0.8
 TIE_RATIO_MAX = 1.3
 TIE_BAND_K = 6.0
@@ -1466,7 +1477,7 @@ def test_mock_defects_are_visible_in_the_data():
     m = mock_project()
     by = {(e.source, e.level, e.grid): e for e in m.bundle.elements if e.grid}
     assert by[("shop", "N2", "K-4")].armature[0].quantite == 6
-    assert by[("plan", "N2", "K-6")].armature[0].diametre == "35M"
+    assert by[("plan", "N2", "K-5")].armature[0].diametre == "35M"
     assert ("shop", "N2", "L-8") not in by
     assert by[("shop", "N3", "L-5")].armature[1].espacement_mm == 304.8
 ```
@@ -1656,7 +1667,7 @@ class MockProject:
 
 def _typical(source: str, level: str, row: str, col: int, **kw) -> ElementExt:
     fichier = "plan.pdf" if source == "plan" else (FILE_A if row == "K" else FILE_B)
-    feuillet = {"N2": "S-502", "N3": "S-503"}[level] if source == "plan" else None
+    feuillet = {"N2": "S-517", "N3": "S-518"}[level] if source == "plan" else None
     return make_element(
         source,
         level,
@@ -1714,9 +1725,9 @@ def mock_project() -> MockProject:
     shop.append(_typical("shop", "N3", "K", 9))
     expected.append(Expected("cross.plan_vs_shop", "added", "N3", "K-9"))
     # 5. the realistic known case: plan has one odd size among peers, shop has the typical value
-    replace(plan, "N2", "K", 6, _typical("plan", "N2", "K", 6, size="35M"))
-    expected.append(Expected("cross.plan_vs_shop", "non_compliant", "N2", "K-6", "size"))
-    expected.append(Expected("self.peer_outlier", "needs_review", "N2", "K-6", "size"))
+    replace(plan, "N2", "K", 5, _typical("plan", "N2", "K", 5, size="35M"))
+    expected.append(Expected("cross.plan_vs_shop", "non_compliant", "N2", "K-5", "size"))
+    expected.append(Expected("self.peer_outlier", "needs_review", "N2", "K-5", "size"))
     # 6. a difference seen through an unreliable extraction: must NOT be a firm verdict
     replace(
         shop,
@@ -1784,7 +1795,7 @@ def mock_project() -> MockProject:
             "N3",
             None,
             None,
-            feuillet="S-503",
+            feuillet="S-518",
             flags=("unbound_block",),
             overall=0.1,
             x=900.0,
@@ -1807,7 +1818,7 @@ def mock_project() -> MockProject:
             GridSheet(
                 fichier="plan.pdf",
                 page=1,
-                feuillet="S-502",
+                feuillet="S-517",
                 rows={"K": 300.0, "L": 400.0},
                 cols={str(c): 100.0 + 40 * c for c in COLS},
             )
@@ -1817,7 +1828,7 @@ def mock_project() -> MockProject:
             SheetInfo(
                 fichier="plan.pdf",
                 page=1,
-                feuillet="S-502",
+                feuillet="S-517",
                 kind="plan",
                 type_element="colonne",
                 level="N2",
@@ -1829,7 +1840,7 @@ def mock_project() -> MockProject:
             SheetInfo(
                 fichier="plan.pdf",
                 page=2,
-                feuillet="S-503",
+                feuillet="S-518",
                 kind="plan",
                 type_element="colonne",
                 level="N3",
