@@ -115,3 +115,22 @@ def test_fractional_rows_are_kept_in_order_between_their_neighbours(tmp_path):
     (p,) = load_pdf(save(doc, tmp_path / "frac.pdf"))
     grid = fit_grid(p.words)
     assert grid is not None and list(grid.rows) == list(rows)
+
+
+def test_repeated_identical_letters_in_a_row_do_not_beat_the_real_axis(tmp_path):
+    """Annotation rows repeat one letter many times and each copy has a twin far away; the real
+    axis is a long run of distinct, increasing labels even when it is not mirrored."""
+    doc, page = new_doc(1400, 900)
+    letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
+    for i, ch in enumerate(letters):
+        put(page, 100 + 120 * i, 40, ch)  # the real axis along the top, not mirrored
+    for i in range(1, 7):
+        put(page, 40, 100 + 110 * i, str(i))
+        put(page, 1300, 100 + 110 * i, str(i))
+    for row_y in (300, 500):  # two annotation rows of identical letters, like "/ N" in notes
+        for k in range(9):
+            put(page, 100 + 130 * k, row_y, "N")
+    (p,) = load_pdf(save(doc, tmp_path / "noisy_axis.pdf"))
+    grid = fit_grid(p.words)
+    assert grid is not None and grid.letters_on == "x"
+    assert list(grid.rows) == letters

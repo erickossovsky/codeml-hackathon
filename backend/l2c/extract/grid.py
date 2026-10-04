@@ -104,8 +104,9 @@ def _pick_axis(
 ) -> tuple[list[tuple[Word, float]], tuple[int, int, int]]:
     """Choose the best line of labels. `across` is True for a horizontal axis (numbers).
 
-    A line is a cluster of labels sharing one y (numbers) or one x (letters). Score: how many have
-    a mirrored twin on the opposite edge, then the longest monotonic run, then the plain count.
+    A line is a cluster of labels sharing one y (numbers) or one x (letters). Score: the longest
+    monotonic run of distinct labels, then how many distinct labels have a mirrored twin on the
+    opposite edge, then the plain count.
     """
     coords = [w.y0 if across else w.x0 for w, _ in labels]
     groups = [[labels[i] for i in g] for g in cluster_1d(coords, align_tol)]
@@ -114,8 +115,10 @@ def _pick_axis(
     for members in groups:
         ordered = sorted(members, key=lambda t: t[0].cx if across else t[0].cy)
         mono = _monotonic_length([v for _, v in ordered])
-        mirrored = 0
+        twinned: set[float] = set()  # distinct labels that have a twin on the opposite edge
         for w, v in members:
+            if v in twinned:
+                continue
             for w2, v2 in labels:
                 if v2 != v or w2 is w:
                     continue
@@ -125,9 +128,11 @@ def _pick_axis(
                     abs(gap) >= MIRROR_WORD_HEIGHTS * word_h
                     and abs(off) <= ALIGN_WORD_HEIGHTS * word_h
                 ):
-                    mirrored += 1
+                    twinned.add(v)
                     break
-        score = (mirrored, mono, len(members))
+        # A real axis is a long run of distinct, increasing labels; a row that repeats one label
+        # (annotation notes) has a monotonic length of 1 however many twins it has.
+        score = (mono, len(twinned), len(members))
         if best_score is None or score > best_score:
             best_score, best = score, members
     return best, best_score or (0, 0, 0)
