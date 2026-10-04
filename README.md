@@ -1,9 +1,38 @@
-# CodeML Hackathon
+# L2C: From Plans to Shop Drawings
 
-Hackathon project repository.
+Checks reinforcement shop drawings against structural plans. PDFs go in; a JSON metadata
+database (Appendix A schema), per-shop-drawing comparison files and PDF reports come out.
+Everything runs locally and offline; confidential drawings never leave the machine.
 
-## Team
-Ian, Chandler, Eric.
+## Setup (macOS, Linux, Windows)
 
-## Getting started
-TBD during the hackathon.
+```
+uv venv --python 3.12 .venv
+# macOS/Linux: source .venv/bin/activate      Windows: .venv\Scripts\Activate.ps1
+uv pip install -r requirements.txt
+uv pip install -e .
+python scripts/install_hooks.py      # enables the data/secret guard on every commit
+python scripts/check.py              # lint + format + tests + guard
+```
+
+## Run
+
+```
+python -m l2c.extract <project_dir> --out data/out/<project>/metadata [--ocr] [--config c.json]
+python -m l2c.compare data/out/<project>/metadata --out data/out/<project> [--ml]
+```
+
+`<project_dir>` holds the plan PDF(s) and a `DA/` folder of shop drawings. Both commands print
+counts only, never drawing values.
+
+## Lanes
+
+- `backend/l2c/{ingest,extract}`: PDF to metadata (Eric). Deterministic rules; OCR only for pages
+  without a text layer.
+- `backend/l2c/{match,compare,report,mock}`: metadata to comparison files and reports (Ian).
+- `backend/l2c/contract`, `shared/`: the contract between the lanes (both; contract PRs only).
+
+## Data rules
+
+Real drawings and everything derived from them live under `data/`, `deliverables/` or `demo/`
+(git-ignored). `python scripts/purge.py --yes` removes them at the end of the event.
