@@ -185,7 +185,7 @@ class ScheduleSpec:
 def _schedule_re(size: str) -> re.Pattern[str]:
     return re.compile(
         rf"(?:(\d{{1,2}})\s*[xX×]\s*)?(\d{{1,2}})[\s.]*({size})[\s.]*([A-Za-z0-9][A-Za-z0-9.\-]*?)"
-        rf"[,;]?(?=\s|$|@)(?:\s*@\s*(\d{{1,3}}(?:\.\d+)?)\s*(mm|cm|[{_QUOTES}]{{1,2}})?)?",
+        rf"[,;]?(?=\s|$|@)(?:\s*\d?\s*@\s*(\d{{1,3}}(?:\.\d+)?)\s*(mm|cm|[{_QUOTES}]{{1,2}})?)?",
         re.IGNORECASE,
     )
 

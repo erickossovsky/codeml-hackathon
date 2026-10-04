@@ -103,3 +103,24 @@ def test_the_level_can_come_from_the_file_name_when_the_title_has_none(tmp_path)
     (page,) = load_pdf(schedule_pdf(tmp_path, title="PART 1"))  # file name carries NIV-3@4
     els, levels = extract_schedule_columns(page)
     assert [lv.level for lv in levels] == ["N3"] and len(els) == 6
+
+
+def test_damaged_tie_lines_are_still_ties_because_of_the_row_they_sit_in(tmp_path):
+    doc, page = new_doc(1200, 900)
+    put(page, 700, 850, "COLONNE NIV3@NIV4")
+    cols = [
+        (150.0, "D-6", "3x4 25M 25Z2620A", "3x18 10M 10E3752 @150"),
+        (450.0, "D-7", "2x4 25M 25Z2620A", "2x18 10M 10E3752 2@150"),  # stray digit before the @
+        (750.0, "E-7", "1x4 25M 25Z2620A", "1x26 10M 10E2752"),  # the @ and spacing were lost
+    ]
+    for x, label, vert, ties in cols:
+        put(page, x, 60, label)
+        put(page, x, 300, vert)
+        put(page, x, 400, ties)
+    (p,) = load_pdf(save(doc, tmp_path / "damaged.pdf"))
+    els, _ = extract_schedule_columns(p)
+    by = {e.grid: e for e in els}
+    assert all(len(e.armature) == 2 for e in els), {g: len(e.armature) for g, e in by.items()}
+    assert by["D-7"].armature[1].quantite == 18 and by["D-7"].armature[1].espacement_mm == 150.0
+    assert by["E-7"].armature[1].quantite == 26 and by["E-7"].armature[1].espacement_mm is None
+    assert by["E-7"].armature[0].quantite == 4

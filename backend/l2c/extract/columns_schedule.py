@@ -32,6 +32,7 @@ from l2c.extract.runs import Run, text_runs
 from l2c.ingest.pages import PageData, Word
 
 MIN_COLUMNS = 2
+ROW_GAP_WORD_HEIGHTS = 2.0  # specs closer than this (in word heights) share a table row
 FALLBACK_PITCH_WORD_HEIGHTS = 24.0  # column pitch when only one column can be measured
 CONFUSED_I = re.compile(r"^1((?:\.\d)?-\d)")  # OCR reads the row letter I as the digit 1
 
@@ -100,12 +101,32 @@ def _title_level(page: PageData, config: Config) -> str | None:
     return schedule_level(text, config) or schedule_level(PurePath(page.fichier).stem, config)
 
 
+def _split_rows(specs: list[Located], word_h: float) -> tuple[list[Located], list[Located]]:
+    """(vertical-bars specs, ties specs): ties sit in the row below the bars.
+
+    Damaged OCR text loses the `@spacing` of a tie line, so the printed spacing is only used to find
+    which row holds the ties (the row with the most spacings); every specification in that row is a
+    tie and everything above it is a bar line. Without any spacing, all specs are bar lines.
+    """
+    from l2c.extract.runs import cluster_1d
+
+    if not specs:
+        return [], []
+    rows = cluster_1d([s.y0 for s in specs], ROW_GAP_WORD_HEIGHTS * word_h)
+    members = [[specs[i] for i in g] for g in rows]
+    with_spacing = [sum(s.spec.spacing_mm is not None for s in m) for m in members]
+    if max(with_spacing) == 0:
+        return specs, []
+    tie_row = max(range(len(members)), key=lambda k: (with_spacing[k], k))
+    ties = members[tie_row]
+    verts = [s for k, m in enumerate(members) if k < tie_row for s in m]
+    return verts, ties
+
+
 def _analyse(page: PageData, config: Config):
     scale = calibrate(page.words, None, config)
     runs = text_runs(page.words, gap=scale.run_gap)
-    specs = _located_specs(runs, config)
-    verts = [s for s in specs if s.spec.spacing_mm is None]
-    ties = [s for s in specs if s.spec.spacing_mm is not None]
+    verts, ties = _split_rows(_located_specs(runs, config), scale.word_h)
     return scale, runs, verts, ties, _labels(runs, config)
 
 
