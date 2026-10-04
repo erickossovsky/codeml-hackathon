@@ -185,7 +185,7 @@ class ScheduleSpec:
 def _schedule_re(size: str) -> re.Pattern[str]:
     return re.compile(
         rf"(?:(\d{{1,2}})\s*[xX×]\s*)?(\d{{1,2}})\s*({size})\s*([A-Za-z0-9][A-Za-z0-9.\-]*?)"
-        rf"[,;]?(?=\s|$|@)(?:\s*@\s*(\d+(?:\.\d+)?)\s*(mm|cm|[{_QUOTES}]{{1,2}})?)?",
+        rf"[,;]?(?=\s|$|@)(?:\s*@\s*(\d{{1,3}}(?:\.\d+)?)\s*(mm|cm|[{_QUOTES}]{{1,2}})?)?",
         re.IGNORECASE,
     )
 
@@ -225,10 +225,21 @@ def _level_token(token: str, config: Config) -> str | None:
 
 
 def schedule_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
-    """Lower level of a title such as `COLONNE NIV3@NIV4` (the column rises from it)."""
+    """Lower level of a title such as `COLONNE NIV3@NIV4` (the column rises from it).
+
+    The first level may be numbered (`NIV3`) or a level name (`FDN`, `SS1`, `RDC`); a title with
+    other `x@y` text is not a level span.
+    """
     numbered = "|".join(re.escape(n) for n in config.level_numbered)
+    plain = _plain(text)
     m = re.search(
-        rf"(?:{numbered})\s*-?\s*([A-Z0-9]+)\s*@\s*(?:(?:{numbered})\s*-?\s*)?[A-Z0-9]+",
-        _plain(text),
+        rf"(?:{numbered})\s*-?\s*([A-Z0-9]+)\s*@\s*(?:(?:{numbered})\s*-?\s*)?[A-Z0-9]+", plain
     )
-    return _level_token(m.group(1), config) if m else None
+    if m:
+        return _level_token(m.group(1), config)
+    bare = rf"\b([A-Z][A-Z0-9]*)\s*@\s*(?:(?:{numbered})\s*-?\s*)?([A-Z0-9]+)"
+    for m in re.finditer(bare, plain):
+        first, second = _level_token(m.group(1), config), _level_token(m.group(2), config)
+        if first is not None and second is not None:
+            return first
+    return None

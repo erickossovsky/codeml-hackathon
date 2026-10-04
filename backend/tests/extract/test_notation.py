@@ -102,3 +102,16 @@ def test_schedule_bar_specs_survive_glued_ocr_text():
     single = N.parse_schedule_specs("4 25M 25Z2620A")
     assert single[0].mult is None and single[0].count == 4
     assert N.parse_schedule_specs("450 x 600") == []
+
+
+def test_a_spacing_is_not_extended_by_the_next_columns_count():
+    # neighbouring columns touch, so OCR prints `@100` and the next `4x28` as `@1004x28`
+    ties = N.parse_schedule_specs("3x28 10M 10E2752 @1004x28 10M 10E2752 @100")
+    assert [(s.mult, s.count, s.spacing_mm) for s in ties] == [(3, 28, 100.0), (4, 28, 100.0)]
+    assert N.parse_schedule_specs("2x15 10M 10E3752 @152.4")[0].spacing_mm == 152.4
+
+
+def test_schedule_level_without_a_numbered_prefix():
+    assert N.schedule_level("COLONNE FDN@SS1 CLE 3.2") == "FDN"
+    assert N.schedule_level("COLONNE SS1@RDC") == "SS"
+    assert N.schedule_level("EMAIL ME@HOME") is None  # not level names
