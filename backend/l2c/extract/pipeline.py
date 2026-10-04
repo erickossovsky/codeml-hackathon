@@ -7,14 +7,19 @@ an exception on one page never stops the run.
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from l2c.contract.io import MetaBundle
 from l2c.contract.models import ElementExt, GridSheet, LevelInfo, SheetInfo
 from l2c.extract.calibrate import calibrate
 from l2c.extract.columns_plan import extract_plan_columns
-from l2c.extract.columns_schedule import extract_schedule_columns, is_schedule_page
+from l2c.extract.columns_schedule import (
+    extract_schedule_columns,
+    is_schedule_page,
+    schedule_issue,
+)
 from l2c.extract.columns_shop import extract_shop_columns, find_labels, find_level_lines
 from l2c.extract.config import DEFAULT_CONFIG, Config
 from l2c.extract.grid import Grid, fit_grid
@@ -26,21 +31,6 @@ from l2c.ingest.pages import PageData, load_pdf
 
 VERTICAL_TEXT_LIMIT = 0.5  # more than this share of vertical words means rotated text
 
-FOLDER_TYPES = {
-    "colonnes": "colonne",
-    "columns": "colonne",
-    "poutres": "poutre",
-    "beams": "poutre",
-    "dalles": "dalle",
-    "slabs": "dalle",
-    "fondations": "fondation",
-    "foundations": "fondation",
-    "semelles": "fondation",
-    "refends": "mur_refend",
-    "murs": "mur_refend",
-    "walls": "mur_refend",
-}
-
 
 @dataclass(frozen=True)
 class Discovery:
@@ -48,23 +38,48 @@ class Discovery:
     shops: list[tuple[Path, str | None]]  # (pdf, element type from the folder name)
 
 
-def folder_type(rel_parts: tuple[str, ...]) -> str | None:
+def folder_type(rel_parts: tuple[str, ...], config: Config = DEFAULT_CONFIG) -> str | None:
     for part in rel_parts:
         low = part.lower()
-        for key, value in FOLDER_TYPES.items():
+        for key, value in config.folder_types:
             if key in low:
                 return value
     return None
 
 
-def discover(project_dir: Path) -> Discovery:
-    plans = sorted(p for p in project_dir.glob("*.pdf") if p.is_file())
+def _is_pdf(path: Path) -> bool:
+    return path.is_file() and path.suffix.lower() == ".pdf"
+
+
+def discover(project_dir: Path, config: Config = DEFAULT_CONFIG) -> Discovery:
+    plans = sorted(p for p in project_dir.iterdir() if _is_pdf(p))
     shops: list[tuple[Path, str | None]] = []
     da = project_dir / "DA"
     if da.is_dir():
-        for pdf in sorted(da.rglob("*.pdf")):
-            shops.append((pdf, folder_type(pdf.relative_to(da).parts[:-1])))
+        for pdf in sorted(p for p in da.rglob("*") if _is_pdf(p)):
+            shops.append((pdf, folder_type(pdf.relative_to(da).parts[:-1], config)))
     return Discovery(plans, shops)
+
+
+def make_ids_unique(elements: list[ElementExt]) -> list[ElementExt]:
+    """Element ids join the metadata to the findings, so they must be unique.
+
+    Ids normally are (sheet or file stem, page and cell). Where two files give the same id the file
+    path is put in front, and anything still repeated gets a counter.
+    """
+    counts = Counter(e.id for e in elements)
+    out = []
+    for e in elements:
+        if counts[e.id] > 1:
+            slug = PurePosixPath(e.fichier).with_suffix("").as_posix().replace("/", "_")
+            e = e.model_copy(update={"id": f"{slug}__{e.id}"})
+        out.append(e)
+    seen: Counter[str] = Counter()
+    final = []
+    for e in out:
+        seen[e.id] += 1
+        final.append(e if seen[e.id] == 1 else e.model_copy(update={"id": f"{e.id}_{seen[e.id]}"}))
+    return final
 
 
 def has_text(page: PageData, config: Config = DEFAULT_CONFIG) -> bool:
@@ -121,7 +136,9 @@ def shop_layout(page: PageData, etype: str | None, config: Config) -> str:
         if config.starts(r.text, config.shop_vert) and parse_shop_vert(r.text, config)
     ]
     if not verts:
-        return "shop_schedule_table" if is_schedule_page(page, config) else "no_column_blocks"
+        if is_schedule_page(page, config):
+            return schedule_issue(page, config) or "shop_schedule_table"
+        return "no_column_blocks"
     if not find_labels(page.words, config, scale.word_h):
         return "shop_unlabelled_unsupported"
     if not find_level_lines(page, runs, config, scale.word_h):
@@ -145,7 +162,7 @@ def extract_project(
     use_ocr: bool = False,
     learn: bool = True,
 ) -> MetaBundle:
-    found = discover(project_dir)
+    found = discover(project_dir, config)
     elements: list[ElementExt] = []
     grids: list[GridSheet] = []
     sheets: list[SheetInfo] = []
@@ -173,12 +190,13 @@ def extract_project(
             sheets.append(_open_failed(_rel(project_dir, pdf), "plan", None, exc))
             continue
         for page in pages:
-            page = prepare_page(page, pdf, use_ocr, config)
-            cfg = learn_config(page.words, config) if learn else config
             level = None
             layout = "unknown"
             etype = None
+            cfg = config
             try:
+                page = prepare_page(page, pdf, use_ocr, config)
+                cfg = learn_config(page.words, config) if learn else config
                 text = " ".join(w.text for w in page.words)
                 level = plan_column_level(text, cfg)
                 grid = fit_grid(page.words, cfg) if has_text(page, cfg) else None
@@ -235,7 +253,7 @@ def extract_project(
 
     return MetaBundle(
         project=project or project_dir.name,
-        elements=elements,
+        elements=make_ids_unique(elements),
         grids=grids,
         levels=[levels[k] for k in sorted(levels)],
         sheets=sheets,

@@ -138,3 +138,9 @@ def test_committed_json_schemas_match_the_models():
     for name, tp in mod.SCHEMAS.items():
         committed = json.loads((root / "shared" / "schemas" / name).read_text(encoding="utf-8"))
         assert committed == TypeAdapter(tp).json_schema(), name
+
+
+def test_duplicate_element_ids_are_refused_loudly(tmp_path: Path):
+    bundle = MetaBundle(project="demo", elements=[make_element(), make_element(x=9.0)])
+    with pytest.raises(ValueError, match="duplicate element ids"):
+        write_bundle(tmp_path, bundle)

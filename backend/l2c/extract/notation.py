@@ -53,7 +53,9 @@ def _spacing_mm(value: float, unit: str | None, config: Config) -> float:
         return round(value * 10.0, 3)
     if unit:  # a quote mark
         return inches_to_mm(value)
-    return value if config.default_spacing_unit == "mm" else inches_to_mm(value)
+    if config.default_spacing_unit == "mm" or value >= BARE_MM_FROM:
+        return value  # a bare 30 or more cannot be inches of bar spacing
+    return inches_to_mm(value)
 
 
 @lru_cache(maxsize=64)
@@ -90,11 +92,23 @@ def parse_size_spacing(text: str, config: Config = DEFAULT_CONFIG) -> SizeSpacin
     return SizeSpacing(m.group(1).upper(), _spacing_mm(float(m.group(2)), m.group(3), config))
 
 
-def parse_section(text: str) -> tuple[float, float] | None:
-    """`COL. 18"x20"` -> (406.4, 609.6) mm (inches) ; `COL. 400x600mm` -> (400, 600)."""
-    m = re.search(
-        rf"COL\.?\s*(\d+(?:\.\d+)?)\s*[{_QUOTES}]?\s*[xX×]\s*(\d+(?:\.\d+)?)\s*(mm)?", text
+@lru_cache(maxsize=16)
+def _section_re(words: tuple[str, ...]) -> re.Pattern[str]:
+    alt = "|".join(
+        re.escape(w.strip().rstrip(".")) for w in sorted(words, key=len, reverse=True) if w.strip()
     )
+    return re.compile(
+        rf"(?:{alt})\.?\s*(\d+(?:\.\d+)?)\s*[{_QUOTES}]?\s*[xX×]\s*(\d+(?:\.\d+)?)\s*(mm)?",
+        re.IGNORECASE,
+    )
+
+
+def parse_section(text: str, config: Config = DEFAULT_CONFIG) -> tuple[float, float] | None:
+    """`COL. 18"x20"` -> (457.2, 508.0) mm (inches) ; `COL. 400x600mm` -> (400, 600).
+
+    The section words come from `config.section_line`, so another language needs no code change.
+    """
+    m = _section_re(config.section_line).search(text)
     if not m:
         return None
     a, b = float(m.group(1)), float(m.group(2))
@@ -155,6 +169,10 @@ def canon_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
         return f"N{int(m.group(1))}"
     for name, canon in sorted(config.level_names, key=lambda kv: len(kv[0]), reverse=True):
         if t.startswith(_plain(name)):
+            if canon == "SS":  # several basements: the first is plain SS, deeper ones keep a number
+                m = re.match(r"\s*-?\s*(\d{1,2})\b", t[len(_plain(name)) :])
+                if m and int(m.group(1)) > 1:
+                    return f"SS{int(m.group(1))}"
             return canon
     return None
 
@@ -162,7 +180,7 @@ def canon_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
 def plan_column_level(page_text: str, config: Config = DEFAULT_CONFIG) -> str | None:
     """Level from a column-plan title such as `PLAN DES COLONNES - NIVEAU 4`."""
     m = config.plan_title_regex().search(page_text)
-    return canon_level(m.group(1), config) if m else None
+    return canon_level(m.group(1) or m.group(2), config) if m else None
 
 
 @dataclass(frozen=True)
@@ -198,13 +216,7 @@ def parse_schedule_specs(text: str, config: Config = DEFAULT_CONFIG) -> list[Sch
     """
     out: list[ScheduleSpec] = []
     for m in _schedule_re(config.bar_size_pattern).finditer(text):
-        spacing = None
-        if m.group(5):
-            value, unit = float(m.group(5)), m.group(6)
-            if not unit and value >= BARE_MM_FROM:
-                spacing = value
-            else:
-                spacing = _spacing_mm(value, unit, config)
+        spacing = _spacing_mm(float(m.group(5)), m.group(6), config) if m.group(5) else None
         out.append(
             ScheduleSpec(
                 int(m.group(1)) if m.group(1) else None,
@@ -224,22 +236,30 @@ def _level_token(token: str, config: Config) -> str | None:
     return canon_level(token, config)
 
 
-def schedule_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
-    """Lower level of a title such as `COLONNE NIV3@NIV4` (the column rises from it).
+def schedule_spans(text: str, config: Config = DEFAULT_CONFIG) -> list[tuple[str, str]]:
+    """Every level span `x@y` in a text, in order, as (lower level, upper level).
 
-    The first level may be numbered (`NIV3`) or a level name (`FDN`, `SS1`, `RDC`); a title with
-    other `x@y` text is not a level span.
+    Each end may be numbered (`NIV3`) or a level name (`FDN`, `SS1`, `RDC`); other `x@y` text is not
+    a span. A repeated span is reported once.
     """
     numbered = "|".join(re.escape(n) for n in config.level_numbered)
     plain = _plain(text)
-    m = re.search(
-        rf"(?:{numbered})\s*-?\s*([A-Z0-9]+)\s*@\s*(?:(?:{numbered})\s*-?\s*)?[A-Z0-9]+", plain
-    )
-    if m:
-        return _level_token(m.group(1), config)
+    prefixed = rf"(?:{numbered})\s*-?\s*([A-Z0-9]+)\s*@\s*(?:(?:{numbered})\s*-?\s*)?([A-Z0-9]+)"
     bare = rf"\b([A-Z][A-Z0-9]*)\s*@\s*(?:(?:{numbered})\s*-?\s*)?([A-Z0-9]+)"
-    for m in re.finditer(bare, plain):
-        first, second = _level_token(m.group(1), config), _level_token(m.group(2), config)
-        if first is not None and second is not None:
-            return first
-    return None
+    found: list[tuple[int, str, str]] = []
+    for pattern in (prefixed, bare):
+        for m in re.finditer(pattern, plain):
+            lower, upper = _level_token(m.group(1), config), _level_token(m.group(2), config)
+            if lower is not None and upper is not None:
+                found.append((m.start(), lower, upper))
+    spans: list[tuple[str, str]] = []
+    for _, lower, upper in sorted(found):
+        if (lower, upper) not in spans:
+            spans.append((lower, upper))
+    return spans
+
+
+def schedule_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
+    """Lower level of a title such as `COLONNE NIV3@NIV4` (the column rises from it)."""
+    spans = schedule_spans(text, config)
+    return spans[0][0] if spans else None

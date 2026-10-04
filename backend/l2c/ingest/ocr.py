@@ -17,12 +17,12 @@ import numpy as np
 import pymupdf
 
 from l2c.extract.config import DEFAULT_CONFIG, Config
-from l2c.ingest.pages import PageData, Word, load_pdf
+from l2c.ingest.pages import PageData, Word, load_pdf, title_block_sheet
 from l2c.ingest.snap import snap_token
 
 ROTATIONS = (0, 90, 270)  # degrees the text is turned clockwise in the image
 # strict on purpose: only real notation counts as evidence for an orientation
-RELEVANT = re.compile(r"\b(?:VERT|ETRI|ÉTRI|ARM|LIG)\b|\d{1,2}\s?-\s?\d{2}\s?M\b", re.IGNORECASE)
+COUNT_SIZE = re.compile(r"\d{1,2}\s?-\s?\d{2}\s?M\b", re.IGNORECASE)
 MIN_INK = 0.00002  # only tiles with essentially no ink are skipped (labels are tiny)
 DEDUP_IOU = 0.5
 CONTAINED_SHARE = 0.6  # a box mostly inside a better one is a fragment of it
@@ -171,7 +171,7 @@ def choose_orientations(img: np.ndarray, config: Config) -> tuple[int, ...]:
             hits[r] += sum(
                 1
                 for *_, text, c in read_tile(tile, r)
-                if c >= config.ocr_min_conf and RELEVANT.search(text)
+                if c >= config.ocr_min_conf and _is_notation(text, config)
             )
     best = max(hits.values())
     if best == 0:
@@ -219,9 +219,21 @@ def ocr_pdf_page(path: Path, page_number: int, config: Config = DEFAULT_CONFIG) 
         return ocr_page(doc[page_number - 1], config)
 
 
-def with_ocr_words(page: PageData, result: OcrResult) -> PageData:
-    """A copy of the page whose words come from OCR, so the normal extractors can run on it."""
-    return replace(page, words=result.words, source="ocr")
+def _is_notation(text: str, config: Config) -> bool:
+    """Strict on purpose: only the configured keywords or a count-size form count as evidence."""
+    words = {k.rstrip(".:").strip() for k in config.keywords()}
+    return bool(COUNT_SIZE.search(text)) or any(
+        re.search(rf"\b{re.escape(w)}\b", text, re.IGNORECASE) for w in words if w
+    )
+
+
+def with_ocr_words(page: PageData, result: OcrResult, config: Config = DEFAULT_CONFIG) -> PageData:
+    """A copy of the page whose words come from OCR, so the normal extractors can run on it.
+
+    The sheet id lives in the title block, which a text-less page only has after OCR.
+    """
+    sheet = title_block_sheet(result.words, page.width, page.height, config)
+    return replace(page, words=result.words, source="ocr", feuillet=sheet or page.feuillet)
 
 
 def load_with_ocr(path: Path, fichier: str, config: Config = DEFAULT_CONFIG) -> list[PageData]:

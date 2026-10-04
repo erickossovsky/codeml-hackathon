@@ -68,9 +68,13 @@ def location(
 BINDING_FLOOR = 0.75
 
 
+FIRST_PASS = "hungarian"  # the only binding method the floor was measured on
+
+
 def location_score(loc: LocationQuality) -> float:
     margin = loc.margin_to_runner_up
-    binding = 1.0 if margin is None else BINDING_FLOOR + (1.0 - BINDING_FLOOR) * margin
+    floor = BINDING_FLOOR if loc.binding_method == FIRST_PASS else 0.6
+    binding = 1.0 if margin is None else floor + (1.0 - floor) * margin
     return round(loc.page_xy_conf * loc.grid_conf * C.ANCHOR_FACTOR[loc.anchor] * binding, 3)
 
 
@@ -86,8 +90,11 @@ def build_quality(
 ) -> Quality:
     weakest = min([type_conf, level_conf, location_score(loc), *[a.conf for a in attrs.values()]])
     factor = max(C.CONSISTENCY_FLOOR, C.CONSISTENCY_FAIL_FACTOR ** len(failed))
+    overall = round(weakest * factor, 3)
+    if failed:  # an implausible value must never carry a firm verdict
+        overall = min(overall, round(C.TRUST_MIN_FOR_VERDICT - 0.01, 3))
     return Quality(
-        overall=round(weakest * factor, 3),
+        overall=overall,
         type_conf=type_conf,
         level_conf=level_conf,
         location=loc,

@@ -60,6 +60,10 @@ def write_bundle(directory: Path, bundle: MetaBundle) -> None:
     from l2c.contract.ids import global_id
 
     ordered = sorted(bundle.elements, key=lambda e: (e.source, e.fichier, e.page, e.id))
+    ids_seen = [e.id for e in ordered]
+    if len(set(ids_seen)) != len(ids_seen):
+        dup = sorted({i for i in ids_seen if ids_seen.count(i) > 1})
+        raise ValueError(f"duplicate element ids ({len(dup)}), e.g. {dup[:3]}")
     ids = [
         IdRow(
             element_id=e.id,

@@ -74,12 +74,12 @@ def test_grid_rows_may_be_fractional_like_columns():
 
 
 def test_schedule_title_gives_the_lower_level_of_the_span():
-    assert N.schedule_level("COLONNE NIV3@NIV4 PART 1") == "N3"
-    assert N.schedule_level("COLONNE-NIV-11@Toit") == "N11"
-    assert N.schedule_level("COLONNE NIV-FDN@SS1") == "FDN"
-    assert N.schedule_level("COLONNE NIV-SS1@RDC") == "SS"
-    assert N.schedule_level("COLONNE NIV-RDC@2") == "RDC"
-    assert N.schedule_level("COLONNENIV2@NIV3") == "N2"  # OCR dropped the spaces
+    assert N.schedule_level("COLUMNS LEVEL3@LEVEL4 PART 1") == "N3"
+    assert N.schedule_level("COLUMNS-LEVEL-11@Roof") == "N11"
+    assert N.schedule_level("COLUMNS LEVEL-FDN@SS1") == "FDN"
+    assert N.schedule_level("COLUMNS LEVEL-SS1@GROUND") == "SS"
+    assert N.schedule_level("COLUMNS LEVEL-GROUND@2") == "RDC"
+    assert N.schedule_level("COLUMNSLEVEL2@LEVEL3") == "N2"  # OCR dropped the spaces
     assert N.schedule_level("PLAN DES COLONNES - NIVEAU 4") is None
 
 
@@ -89,39 +89,72 @@ def test_grid_rows_may_carry_a_prime():
 
 
 def test_schedule_bar_specs_survive_glued_ocr_text():
-    spec = N.parse_schedule_specs("5x425M25Z2620A 2x4 30M 30Z2600,")
+    spec = N.parse_schedule_specs("5x425M25Y1800A 2x4 30M 30Y2100,")
     assert [(s.mult, s.count, s.size, s.mark) for s in spec] == [
-        (5, 4, "25M", "25Z2620A"),
-        (2, 4, "30M", "30Z2600"),
+        (5, 4, "25M", "25Y1800A"),
+        (2, 4, "30M", "30Y2100"),
     ]
-    ties = N.parse_schedule_specs('5x18 10M 10E3752 @150 3x18 10M10E3752 @6"')
+    ties = N.parse_schedule_specs('5x18 10M 10Q4400 @150 3x18 10M10Q4400 @6"')
     assert [(s.mult, s.count, s.size, s.mark, s.spacing_mm) for s in ties] == [
-        (5, 18, "10M", "10E3752", 150.0),
-        (3, 18, "10M", "10E3752", 152.4),
+        (5, 18, "10M", "10Q4400", 150.0),
+        (3, 18, "10M", "10Q4400", 152.4),
     ]
-    single = N.parse_schedule_specs("4 25M 25Z2620A")
+    single = N.parse_schedule_specs("4 25M 25Y1800A")
     assert single[0].mult is None and single[0].count == 4
     assert N.parse_schedule_specs("450 x 600") == []
 
 
 def test_a_spacing_is_not_extended_by_the_next_columns_count():
-    # neighbouring columns touch, so OCR prints `@100` and the next `4x28` as `@1004x28`
-    ties = N.parse_schedule_specs("3x28 10M 10E2752 @1004x28 10M 10E2752 @100")
-    assert [(s.mult, s.count, s.spacing_mm) for s in ties] == [(3, 28, 100.0), (4, 28, 100.0)]
-    assert N.parse_schedule_specs("2x15 10M 10E3752 @152.4")[0].spacing_mm == 152.4
+    # neighbouring columns touch, so OCR prints `@200` and the next `4x16` as `@2004x16`
+    ties = N.parse_schedule_specs("3x28 10M 10Q4400 @2004x16 10M 10Q4400 @200")
+    assert [(s.mult, s.count, s.spacing_mm) for s in ties] == [(3, 28, 200.0), (4, 16, 200.0)]
+    assert N.parse_schedule_specs("2x15 10M 10Q4400 @152.4")[0].spacing_mm == 152.4
 
 
 def test_schedule_level_without_a_numbered_prefix():
-    assert N.schedule_level("COLONNE FDN@SS1 CLE 3.2") == "FDN"
+    assert N.schedule_level("COLUMNS FDN@SS1 PART 2") == "FDN"
     assert N.schedule_level("COLONNE SS1@RDC") == "SS"
     assert N.schedule_level("EMAIL ME@HOME") is None  # not level names
 
 
 def test_schedule_specs_accept_dots_where_ocr_lost_the_spaces():
-    specs = N.parse_schedule_specs("5x4.25M.2572620 25Z2620.")
+    specs = N.parse_schedule_specs("5x4.25M.2578111 25Y1800.")
     assert [(s.mult, s.count, s.size) for s in specs] == [(5, 4, "25M")]
-    assert specs[0].mark == "2572620"
-    ties = N.parse_schedule_specs("3x7 10M.10E3752 @400")
+    assert specs[0].mark == "2578111"
+    ties = N.parse_schedule_specs("3x7 10M.10Q4400 @400")
     assert [(s.mult, s.count, s.size, s.spacing_mm) for s in ties] == [(3, 7, "10M", 400.0)]
     assert N.parse_schedule_specs("scale 2.5 note") == []
-    assert N.parse_schedule_specs("12.25M 25Z2620")[0].count == 12  # not split mid-number
+    assert N.parse_schedule_specs("12.25M 25Y1800")[0].count == 12  # not split mid-number
+
+
+def test_several_basements_keep_their_number():
+    assert N.canon_level("SOUS-SOL") == "SS" and N.canon_level("SS1") == "SS"
+    assert N.canon_level("SOUS-SOL 1") == "SS"  # the first basement is plain SS
+    assert N.canon_level("SS2") == "SS2" and N.canon_level("SOUS-SOL 2") == "SS2"
+    assert N.canon_level("BASEMENT 3") == "SS3"
+    assert N.schedule_level("COLUMNS SS2@SS1") == "SS2"
+    assert N.schedule_level("COLUMNS SS1@RDC") == "SS"
+
+
+def test_a_bare_metric_spacing_is_never_read_as_inches():
+    assert N.parse_size_spacing("10M@150").spacing_mm == 150.0
+    assert N.parse_shop_ties("ÉTRI: 6 10M T4X21 @150").spacing_mm == 150.0
+    assert N.parse_size_spacing("10M@6").spacing_mm == 152.4  # small bare numbers stay inches
+    assert N.parse_size_spacing('10M@150"').spacing_mm == 3810.0  # an explicit mark wins
+
+
+def test_plan_title_accepts_dashes_and_either_order():
+    assert N.plan_column_level("COLUMN PLAN – LEVEL 2") == "N2"
+    assert N.plan_column_level("COLUMN PLAN — LEVEL 2") == "N2"
+    assert N.plan_column_level("COLUMN PLAN: LEVEL 2") == "N2"
+    assert N.plan_column_level("LEVEL 3 COLUMN PLAN") == "N3"
+    assert N.plan_column_level("ROOF - COLUMN PLAN") == "TOIT"
+
+
+def test_section_reads_every_configured_section_word():
+    assert N.parse_section('COLUMN 18"x20"') == (457.2, 508.0)
+    import dataclasses
+
+    es = dataclasses.replace(N.DEFAULT_CONFIG, section_line=("COLUMNA ",))
+    assert N.parse_section('COLUMNA 18"x20"', es) == (457.2, 508.0)
+    assert N.parse_section('COL. 18"x20"', es) is None  # no longer a section word

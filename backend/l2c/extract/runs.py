@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from l2c.ingest.pages import Word
 
 DEFAULT_WORD_H = 8.0
+LINE_TOL_WORD_HEIGHTS = 0.375  # baseline jitter allowed within one text line
 
 
 def median_word_height(words: list[Word]) -> float:
@@ -36,7 +37,7 @@ class Run:
 def text_runs(
     words: list[Word],
     gap: float = 12.0,
-    line_tol: float = 3.0,
+    line_tol: float | None = None,
     split_before: tuple[str, ...] = (),
 ) -> list[Run]:
     """Words on the same baseline, split where the horizontal gap exceeds `gap` points.
@@ -44,6 +45,8 @@ def text_runs(
     `split_before` lists keywords (upper case); a word starting with one of them begins a new
     run even when it follows closely, so two annotation blocks that nearly touch stay separate.
     """
+    if line_tol is None:  # words on one baseline differ by a fraction of their own height
+        line_tol = LINE_TOL_WORD_HEIGHTS * median_word_height(words)
     ordered = sorted(words, key=lambda w: (w.y0, w.x0))
     lines: list[list[Word]] = []
     for w in ordered:

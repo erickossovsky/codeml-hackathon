@@ -38,7 +38,31 @@ def test_column_checks():
 def test_a_zero_margin_binding_still_reaches_the_trust_level():
     """Measured on a real project: bindings with no margin to the runner-up agree with the other
     document as often as the rest, so a thin margin alone must not push an element below 0.7."""
-    loc = Q.location("outline", 1.0, margin=0.0)
+    loc = Q.location("outline", 1.0, margin=0.0, binding_method="hungarian")
     assert 0.7 <= Q.location_score(loc) < 1.0
     off_grid = Q.location("outline", 0.6, margin=0.0)  # relaxed snap: still below the bar
     assert Q.location_score(off_grid) < 0.7
+
+
+def test_the_floor_applies_only_to_first_pass_outline_bindings():
+    """Only that method was measured; other methods keep the margin-driven score."""
+    second = Q.location("outline", 1.0, margin=0.0, binding_method="hungarian_second_pass")
+    strip = Q.location("label", 1.0, margin=0.0, binding_method="label_strip")
+    column = Q.location("label", 1.0, margin=0.0, binding_method="schedule_column")
+    assert Q.location_score(second) < 0.7
+    assert Q.location_score(strip) < 0.7 and Q.location_score(column) < 0.7
+
+
+def test_a_failed_plausibility_check_never_leaves_an_element_above_the_trust_bar():
+    loc = Q.location("outline", 1.0, margin=1.0, binding_method="hungarian")
+    attrs = {"count": Q.attr(4), "spacing": Q.attr(3810.0)}
+    q = Q.build_quality(
+        type_conf=1.0,
+        level_conf=1.0,
+        loc=loc,
+        attrs=attrs,
+        passed=[],
+        failed=["spacing_plausible"],
+        flags=[],
+    )
+    assert q.overall < 0.7

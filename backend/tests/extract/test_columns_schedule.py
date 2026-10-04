@@ -4,15 +4,15 @@ from tests.extract.pdfmaker import new_doc, put, save
 
 # three table columns: (cells, vertical spec, ties spec)
 TABLE = [
-    (["D-6", "D-7", "E-7"], "3x4 25M 25Z2620A", "3x18 10M 10E3752 @150"),
-    (["F'-3", "B.1-35.1"], "2x4 30M 30Z2600,", "2x15 10M 10E3752 @175"),
-    (["K-9"], "4 25M 25Z2620A", "18 10M 10E3752 @150"),
+    (["D-6", "D-7", "E-7"], "3x4 25M 25Y1800A", "3x18 10M 10Q4400 @150"),
+    (["F'-3", "B.1-35.1"], "2x4 30M 30Y2100,", "2x15 10M 10Q4400 @175"),
+    (["K-9"], "4 25M 25Y1800A", "18 10M 10Q4400 @150"),
 ]
 XS = [150.0, 450.0, 750.0]
 
 
 def schedule_pdf(
-    tmp_path, title="COLONNE NIV3@NIV4 PART 1", glue=False, name="COLONNE-NIV-3@4.pdf"
+    tmp_path, title="COLUMNS LEVEL3@LEVEL4 PART 1", glue=False, name="COLUMNS-LEVEL-3@4.pdf"
 ):
     doc, page = new_doc(1200, 900)
     put(page, 700, 850, title)
@@ -57,10 +57,10 @@ def test_glued_ocr_text_is_still_read(tmp_path):
 
 def test_count_of_cells_is_checked_against_the_printed_multiplier(tmp_path):
     doc, page = new_doc(1200, 900)
-    put(page, 700, 850, "COLONNE NIV3@NIV4")
+    put(page, 700, 850, "COLUMNS LEVEL3@LEVEL4")
     for x, cells, vert, ties in [
-        (150.0, ["D-6", "D-7"], "3x4 25M 25Z2620A", "3x18 10M 10E3752 @150"),
-        (450.0, ["F-1"], "1x4 25M 25Z2620A", "1x18 10M 10E3752 @150"),
+        (150.0, ["D-6", "D-7"], "3x4 25M 25Y1800A", "3x18 10M 10Q4400 @150"),
+        (450.0, ["F-1"], "1x4 25M 25Y1800A", "1x18 10M 10Q4400 @150"),
     ]:
         for i, label in enumerate(cells):
             put(page, x, 60 + 12 * i, label)
@@ -74,11 +74,11 @@ def test_count_of_cells_is_checked_against_the_printed_multiplier(tmp_path):
 
 def test_ocr_confusing_the_letter_i_with_a_one_is_repaired_and_marked(tmp_path):
     doc, page = new_doc(1200, 900)
-    put(page, 700, 850, "COLONNE NIV3@NIV4")
+    put(page, 700, 850, "COLUMNS LEVEL3@LEVEL4")
     for x in (150.0, 450.0):
         put(page, x, 60, "1.1-34" if x == 150.0 else "D-6")
-        put(page, x, 300, "1x4 25M 25Z2620A")
-        put(page, x, 400, "1x18 10M 10E3752 @150")
+        put(page, x, 300, "1x4 25M 25Y1800A")
+        put(page, x, 400, "1x18 10M 10Q4400 @150")
     (p,) = load_pdf(save(doc, tmp_path / "ocr_i.pdf"))
     els, _ = extract_schedule_columns(p)
     fixed = next(e for e in els if e.grid == "I.1-34")
@@ -100,18 +100,18 @@ def test_other_pages_are_not_schedules():
 
 
 def test_the_level_can_come_from_the_file_name_when_the_title_has_none(tmp_path):
-    (page,) = load_pdf(schedule_pdf(tmp_path, title="PART 1"))  # file name carries NIV-3@4
+    (page,) = load_pdf(schedule_pdf(tmp_path, title="PART 1"))  # file name carries LEVEL-3@4
     els, levels = extract_schedule_columns(page)
     assert [lv.level for lv in levels] == ["N3"] and len(els) == 6
 
 
 def test_damaged_tie_lines_are_still_ties_because_of_the_row_they_sit_in(tmp_path):
     doc, page = new_doc(1200, 900)
-    put(page, 700, 850, "COLONNE NIV3@NIV4")
+    put(page, 700, 850, "COLUMNS LEVEL3@LEVEL4")
     cols = [
-        (150.0, "D-6", "3x4 25M 25Z2620A", "3x18 10M 10E3752 @150"),
-        (450.0, "D-7", "2x4 25M 25Z2620A", "2x18 10M 10E3752 2@150"),  # stray digit before the @
-        (750.0, "E-7", "1x4 25M 25Z2620A", "1x26 10M 10E2752"),  # the @ and spacing were lost
+        (150.0, "D-6", "3x4 25M 25Y1800A", "3x18 10M 10Q4400 @150"),
+        (450.0, "D-7", "2x4 25M 25Y1800A", "2x18 10M 10Q4400 2@150"),  # stray digit before the @
+        (750.0, "E-7", "1x4 25M 25Y1800A", "1x26 10M 10Q4400"),  # the @ and spacing were lost
     ]
     for x, label, vert, ties in cols:
         put(page, x, 60, label)

@@ -149,8 +149,94 @@ def test_a_schedule_table_sheet_is_extracted_through_the_pipeline(tmp_path):
 
     root = tmp_path / "S"
     (root / "DA" / "Colonnes").mkdir(parents=True)
-    schedule_pdf(tmp_path).rename(root / "DA" / "Colonnes" / "COLONNE-NIV-3@4.pdf")
+    schedule_pdf(tmp_path).rename(root / "DA" / "Colonnes" / "COLUMNS-LEVEL-3@4.pdf")
     b = extract_project(root)
     assert b.sheets[0].layout == "shop_schedule_table"
     assert len(b.elements) == 6 and {e.level for e in b.elements} == {"N3"}
     assert {lv.level for lv in b.levels} == {"N3"}
+
+
+def test_element_ids_are_unique_even_without_a_sheet_id(tmp_path):
+    from tests.extract.test_robustness import ES, build_plan  # noqa: F401
+
+    root = tmp_path / "U"
+    root.mkdir()
+    import pymupdf
+
+    # one plan PDF, two column-plan pages whose sheet id is not in the title block
+    pdf_a = build_plan(tmp_path)
+    src = pymupdf.open(pdf_a)
+    both = pymupdf.open()
+    both.insert_pdf(src)
+    both.insert_pdf(src)
+    both.save(root / "plans.pdf")
+    # remove the sheet id so ids cannot come from it
+    b = extract_project(
+        root,
+        config=__import__("dataclasses").replace(
+            __import__("l2c.extract.config", fromlist=["DEFAULT_CONFIG"]).DEFAULT_CONFIG,
+            sheet_id_pattern=r"^NOPE$",
+        ),
+    )
+    ids = [e.id for e in b.elements]
+    assert len(ids) == 8 and len(set(ids)) == 8
+
+
+def test_a_failing_ocr_or_learning_step_does_not_stop_the_run(tmp_path, monkeypatch):
+    import l2c.extract.pipeline as P
+
+    root = make_project(tmp_path)
+
+    def boom(*a, **k):
+        raise RuntimeError("synthetic failure")
+
+    monkeypatch.setattr(P, "learn_config", boom)
+    b = extract_project(root)
+    # the failure is recorded per page and the run reaches the end instead of aborting
+    assert [s.layout for s in b.sheets] == ["error:RuntimeError", "error:RuntimeError"]
+
+
+def test_upper_case_pdf_extensions_are_discovered(tmp_path):
+    root = make_project(tmp_path)
+    (root / "L2C_PLAN_STR_PROJ.pdf").rename(root / "PLAN.PDF")
+    found = discover(root)
+    assert [p.name for p in found.plans] == ["PLAN.PDF"]
+
+
+def test_shop_ids_do_not_collide_across_folders_with_the_same_file_name(tmp_path):
+    root = tmp_path / "D"
+    for sub in ("Colonnes", "Colonnes 2"):
+        (root / "DA" / sub).mkdir(parents=True)
+        shop_pdf(tmp_path).rename(root / "DA" / sub / "SHEET.pdf")
+        # shop_pdf saves to the same temp name each time, so rebuild for the next folder
+    b = extract_project(root)
+    ids = [e.id for e in b.elements]
+    assert len(ids) == len(set(ids)) and len(ids) == 12
+
+
+def test_multiple_schedule_tables_on_one_sheet_are_reported_not_guessed(tmp_path):
+    from tests.extract.pdfmaker import new_doc, put, save
+
+    doc, page = new_doc(1200, 1400)
+    for top, title in ((0, "COLUMNS LEVEL2@LEVEL3"), (700, "COLUMNS LEVEL3@LEVEL4")):
+        put(page, 700, top + 650, title)
+        for x, label in ((150.0, "D-6"), (450.0, "D-7")):
+            put(page, x, top + 60, label)
+            put(page, x, top + 300, "1x4 25M 25Y1800A")
+            put(page, x, top + 400, "1x18 10M 10Q4400 @150")
+    root = tmp_path / "M"
+    (root / "DA" / "Colonnes").mkdir(parents=True)
+    save(doc, root / "DA" / "Colonnes" / "two.pdf")
+    b = extract_project(root)
+    assert b.elements == []
+    assert b.sheets[0].layout == "schedule_multiple_tables_unsupported"
+
+
+def test_shop_folder_names_come_from_the_config(tmp_path):
+    import dataclasses
+
+    from l2c.extract.config import DEFAULT_CONFIG
+
+    es = dataclasses.replace(DEFAULT_CONFIG, folder_types=(("columnas", "colonne"),))
+    assert folder_type(("Columnas",), es) == "colonne"
+    assert folder_type(("Colonnes",), es) is None

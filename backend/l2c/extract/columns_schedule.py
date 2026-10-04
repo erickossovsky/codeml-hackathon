@@ -27,8 +27,9 @@ from l2c.extract.notation import (
     parse_grid_label,
     parse_schedule_specs,
     schedule_level,
+    schedule_spans,
 )
-from l2c.extract.runs import Run, text_runs
+from l2c.extract.runs import Run, cluster_1d, text_runs
 from l2c.ingest.pages import PageData, Word
 
 MIN_COLUMNS = 2
@@ -108,8 +109,6 @@ def _split_rows(specs: list[Located], word_h: float) -> tuple[list[Located], lis
     which row holds the ties (the row with the most spacings); every specification in that row is a
     tie and everything above it is a bar line. Without any spacing, all specs are bar lines.
     """
-    from l2c.extract.runs import cluster_1d
-
     if not specs:
         return [], []
     rows = cluster_1d([s.y0 for s in specs], ROW_GAP_WORD_HEIGHTS * word_h)
@@ -135,6 +134,27 @@ def is_schedule_page(page: PageData, config: Config = DEFAULT_CONFIG) -> bool:
         return False
     _, _, verts, _, labels = _analyse(page, config)
     return len(verts) >= MIN_COLUMNS and len(labels) >= MIN_COLUMNS
+
+
+def schedule_issue(page: PageData, config: Config = DEFAULT_CONFIG) -> str | None:
+    """Why a schedule page cannot be read safely, or None.
+
+    Several tables on one sheet (more than one level span, or more than one row of tie
+    specifications) would be given the first table's level and mixed rows, so they are reported
+    instead of guessed.
+    """
+    text = " ".join(w.text for w in page.words)
+    if len(schedule_spans(text, config)) > 1:
+        return "schedule_multiple_tables_unsupported"
+    scale = calibrate(page.words, None, config)
+    runs = text_runs(page.words, gap=scale.run_gap)
+    specs = _located_specs(runs, config)
+    if specs:
+        rows = cluster_1d([s.y0 for s in specs], ROW_GAP_WORD_HEIGHTS * scale.word_h)
+        with_spacing = sum(any(specs[i].spec.spacing_mm is not None for i in g) for g in rows)
+        if with_spacing > 1:
+            return "schedule_multiple_tables_unsupported"
+    return None
 
 
 def _pitch(verts: list[Located], word_h: float) -> float:

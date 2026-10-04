@@ -29,8 +29,8 @@ def main() -> int:
     args = ap.parse_args()
     found = discover(args.project_dir)
     ok = True
-    print("PLAN column sheets: sheet level blocks parsed% bound%")
-    for pdf in found.plans:
+    print("PLAN column sheets: file page level blocks parsed% bound%")
+    for pdf_no, pdf in enumerate(found.plans, 1):
         for page in load_pdf(pdf, pdf.name):
             level = plan_column_level(" ".join(w.text for w in page.words))
             if not level:
@@ -42,9 +42,9 @@ def main() -> int:
             pp, bb = parsed / max(census, 1), bound / max(census, 1)
             flag = "" if pp >= PLAN_PARSED_MIN and bb >= PLAN_BOUND_MIN else "  <-- below threshold"
             ok &= not flag
-            print(f"  {page.feuillet} {level} {census} {pp:.0%} {bb:.0%}{flag}")
-    print("SHOP column files: file page vert-runs elements parsed%")
-    for pdf, etype in found.shops:
+            print(f"  plan file #{pdf_no} p{page.page} {level} {census} {pp:.0%} {bb:.0%}{flag}")
+    print("SHOP column files: file page vert-runs elements parsed%  (file numbers, no names)")
+    for shop_no, (pdf, etype) in enumerate(found.shops, 1):
         if etype != "colonne":
             continue
         for page in load_pdf(pdf, pdf.name):
@@ -57,7 +57,7 @@ def main() -> int:
             pp = len(els) / census
             flag = "" if pp >= SHOP_PARSED_MIN else "  <-- below threshold"
             ok &= not flag
-            print(f"  {pdf.name[-18:]} p{page.page} {census} {len(els)} {pp:.0%}{flag}")
+            print(f"  shop file #{shop_no} p{page.page} {census} {len(els)} {pp:.0%}{flag}")
     print("RESULT:", "pass" if ok else "below threshold")
     return 0 if ok else 1
 

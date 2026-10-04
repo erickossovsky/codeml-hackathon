@@ -44,6 +44,22 @@ class Config:
     elevation_line: tuple[str, ...] = ("EL.", "EL:", "ELEV.", "EL ")  # OCR often drops the dot
     level_names: tuple[tuple[str, str], ...] = LEVEL_NAMES
     level_numbered: tuple[str, ...] = ("NIVEAU", "LEVEL", "FLOOR", "NIV")
+    dowel_notes: tuple[str, ...] = ("GOUJ", "DOWEL")  # a block that mentions dowels is flagged
+    # shop folder name (lower case, substring) -> element type
+    folder_types: tuple[tuple[str, str], ...] = (
+        ("colonnes", "colonne"),
+        ("columns", "colonne"),
+        ("poutres", "poutre"),
+        ("beams", "poutre"),
+        ("dalles", "dalle"),
+        ("slabs", "dalle"),
+        ("fondations", "fondation"),
+        ("foundations", "fondation"),
+        ("semelles", "fondation"),
+        ("refends", "mur_refend"),
+        ("murs", "mur_refend"),
+        ("walls", "mur_refend"),
+    )
     # ---- notation
     bar_size_pattern: str = r"(?:10|15|20|25|30|35)M"
     bar_sizes: tuple[str, ...] = ("10M", "15M", "20M", "25M", "30M", "35M")
@@ -102,6 +118,7 @@ class Config:
         return tuple(sorted({w.strip().upper() for g in groups for w in g if w.strip()}))
 
     def plan_title_regex(self) -> re.Pattern[str]:
+        """`<column plan title> - <level>` or `<level> <column plan title>` (dash or colon)."""
         titles = "|".join(re.escape(t) for t in self.plan_column_titles)
         names = "|".join(
             sorted(
@@ -111,9 +128,9 @@ class Config:
             )
         )
         numbered = "|".join(re.escape(n) for n in self.level_numbered)
-        return re.compile(
-            rf"(?:{titles})\s*-\s*((?:{numbered})\s*\d+|{names}|REZ-DE-CHAUSS[ÉE]E)", re.IGNORECASE
-        )
+        level = rf"((?:{numbered})\s*\d+|(?:{names})(?:\s*\d{{1,2}}\b)?|REZ-DE-CHAUSS[ÉE]E)"
+        sep = r"\s*[-\u2013\u2014:]?\s*"
+        return re.compile(rf"(?:{titles}){sep}{level}|{level}{sep}(?:{titles})", re.IGNORECASE)
 
 
 DEFAULT_CONFIG = Config()

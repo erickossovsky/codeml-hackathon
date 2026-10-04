@@ -168,12 +168,20 @@ def test_a_low_confidence_word_that_swallows_better_words_is_a_ghost():
         Word("20M", 40, 0, 70, 20, conf=0.96),
         Word("3900", 80, 0, 120, 20, conf=0.96),
     ]
-    ghost = Word("2074.3900.20X3900", 20, 5, 125, 15, conf=0.8)
+    ghost = Word("2074.3600.40X3600", 20, 5, 125, 15, conf=0.8)
     kept = ocr.dedupe([ghost, *good])
     assert [w.text for w in kept] == ["3x4", "20M", "3900"]
 
 
 def test_a_longer_word_is_kept_over_its_own_fragment():
-    full = Word("10E2752@100", 0, 0, 110, 20, conf=0.95)
-    part = Word("10E2752", 0, 0, 70, 20, conf=0.97)
-    assert [w.text for w in ocr.dedupe([part, full])] == ["10E2752@100"]
+    full = Word("10Q4400@100", 0, 0, 110, 20, conf=0.95)
+    part = Word("10Q4400", 0, 0, 70, 20, conf=0.97)
+    assert [w.text for w in ocr.dedupe([part, full])] == ["10Q4400@100"]
+
+
+def test_the_sheet_id_is_read_again_from_ocr_words():
+    from l2c.ingest.pages import PageData
+
+    page = PageData("x.pdf", 1, 1200, 900, 0, words=[], feuillet=None)
+    res = ocr.OcrResult([Word("S-517", 1050, 850, 1100, 860, conf=0.9)], (0,), 0, 0.9)
+    assert ocr.with_ocr_words(page, res).feuillet == "S-517"

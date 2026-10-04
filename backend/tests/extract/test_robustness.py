@@ -89,7 +89,7 @@ def signature(els):
 EXPECTED = sorted((f"{r}-{c}", 4, "25M", 152.4) for r, c in CELLS)
 
 
-@pytest.mark.parametrize("scale", [0.5, 1.0, 2.5])
+@pytest.mark.parametrize("scale", [0.25, 0.5, 1.0, 2.5, 4.0])
 def test_drawing_scale_does_not_matter(tmp_path, scale):
     _, level, els = extract(build_plan(tmp_path, scale=scale))
     assert level == "N2" and signature(els) == EXPECTED
@@ -159,9 +159,8 @@ def test_spacing_unit_default_is_configurable():
     from l2c.extract.notation import parse_size_spacing
 
     mm = load_config(None)
-    assert parse_size_spacing("10M@150", mm).spacing_mm == pytest.approx(
-        3810.0
-    )  # inches by default
+    assert parse_size_spacing("10M@150", mm).spacing_mm == 150.0  # 30 or more cannot be inches
+    assert parse_size_spacing("10M@6", mm).spacing_mm == pytest.approx(152.4)  # inches by default
     metric = type(mm)(default_spacing_unit="mm")
     assert parse_size_spacing("10M@150", metric).spacing_mm == 150.0
     assert parse_size_spacing('10M@6"', metric).spacing_mm == pytest.approx(152.4)

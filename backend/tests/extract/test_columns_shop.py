@@ -136,3 +136,20 @@ def test_labels_in_two_rows_are_both_used(tmp_path):
     (p,) = load_pdf(save(doc, tmp_path / "tworows.pdf"))
     els, _ = extract_shop_columns(p)
     assert sorted(e.grid for e in els) == sorted([*row_a, *row_b])
+
+
+def test_two_basements_are_two_levels_not_one(tmp_path):
+    doc, page = new_doc(1200, 900)
+    for y, el, name in [
+        (100, "100' - 0\"", "RDC"),
+        (300, "90' - 0\"", "SOUS-SOL 1"),
+        (500, "80' - 0\"", "SOUS-SOL 2"),
+    ]:
+        put(page, 60, y, f"EL.: {el}")
+        put(page, 60, y + 7, name)
+    (p,) = load_pdf(save(doc, tmp_path / "basements.pdf"))
+    views = split_views(find_level_lines(p, text_runs(p.words)))
+    assert len(views) == 1
+    assert assign_level(views, 150) == ("SS", [])  # between RDC and the first basement
+    assert assign_level(views, 350) == ("SS2", [])  # between the two basements
+    assert assign_level(views, 650) == ("FDN", ["below_lowest_level"])

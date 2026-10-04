@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import PurePath
 
 from l2c.contract.models import Armature, ElementExt, MatchKey
 from l2c.extract import quality as Q
@@ -108,7 +109,7 @@ def extract_plan_columns(
     bindings = bind_blocks(
         [(b.arm.x0, b.arm.y0) for b in blocks], outlines, max_dist=scale.max_bind_dist
     )
-    sheet = page.feuillet or page.fichier
+    sheet = page.feuillet or f"{PurePath(page.fichier).stem}_p{page.page}"
     out: list[ElementExt] = []
     unbound = 0
     for block, bind in zip(blocks, bindings, strict=True):
@@ -116,7 +117,7 @@ def extract_plan_columns(
         ties = parse_size_spacing(block.lig.text, config) if block.lig else None
         section = parse_section(block.col.text) if block.col else None
         flags: list[str] = []
-        if "GOUJ" in block.arm.text.upper():
+        if any(w.upper() in block.arm.text.upper() for w in config.dowel_notes):
             flags.append("dowels_noted")
         if bind is not None:
             grid_cell = f"{bind.row}-{bind.col}"
@@ -126,7 +127,7 @@ def extract_plan_columns(
                 bind.grid_conf,
                 anchor_dist_pt=bind.cost,
                 grid_cell=grid_cell,
-                binding_method="hungarian",
+                binding_method="hungarian_second_pass" if bind.second_pass else "hungarian",
                 assignment_cost=bind.cost,
                 margin=bind.margin,
             )
