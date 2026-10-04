@@ -51,8 +51,39 @@ def set_engine_threads(n: int) -> None:
     set_engine_options(threads=n)
 
 
+REPO = Path(__file__).resolve().parents[3]
+VENDOR = REPO / "data" / "vendor"
+_GPU_ACTIVE = False
+
+
+def _enable_gpu() -> bool:
+    """Use the CUDA build of onnxruntime kept under data/vendor (onnxruntime-gpu for CUDA 12 plus the
+    cuDNN libraries). It must be on sys.path before onnxruntime is first imported in this process;
+    when that has already happened, or the folder is missing, OCR stays on the CPU. Set
+    L2C_OCR_GPU=0 to force the CPU."""
+    import glob
+    import os
+    import sys
+
+    global _GPU_ACTIVE
+    if os.environ.get("L2C_OCR_GPU", "1") == "0" or not (VENDOR / "ortgpu").is_dir():
+        return False
+    if "onnxruntime" in sys.modules:
+        return _GPU_ACTIVE
+    sys.path.insert(0, str(VENDOR / "ortgpu"))
+    dirs = glob.glob(str(VENDOR / "ortgpu" / "nvidia" / "*" / "bin")) + glob.glob(str(VENDOR / "ortgpu_cudnn" / "nvidia" / "*" / "bin"))
+    dirs += glob.glob(os.path.join(sys.prefix, "Lib", "site-packages", "nvidia", "*", "bin"))
+    for d in dirs:
+        os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
+        if hasattr(os, "add_dll_directory"):
+            os.add_dll_directory(d)
+    _GPU_ACTIVE = True
+    return True
+
+
 @lru_cache(maxsize=1)
 def engine():
+    gpu = _enable_gpu()
     from rapidocr_onnxruntime import RapidOCR
 
     kwargs = {
@@ -60,7 +91,17 @@ def engine():
         for part in ("det", "cls", "rec")
         for kind in ("intra", "inter")
     }
+    if gpu:
+        kwargs.update(det_use_cuda=True, cls_use_cuda=True, rec_use_cuda=True)
     return RapidOCR(use_cls=_USE_CLS, **kwargs)
+
+
+def release_engine() -> None:
+    """Free the OCR engine (and its GPU memory) so the language model can have the card."""
+    import gc
+
+    engine.cache_clear()
+    gc.collect()
 
 
 @dataclass(frozen=True)
