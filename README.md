@@ -29,6 +29,18 @@ parallel by default; OCR runs one page at a time.
 `<project_dir>` holds the plan PDF(s) and a `DA/` folder of shop drawings. Both commands print
 counts only, never drawing values.
 
+## Lean pipeline (text, local model, one findings PDF)
+
+```
+python -m l2c.pipeline <project_dir> --out data/out/<project> [--workers 6]
+python -m l2c.pipeline.evaluate <project_dir> --out data/out/eval_<project>   # planted-change recall
+```
+
+Reads text and positions (OCR where needed), groups notes, matches plan and shop elements with a
+local open-source model for the close calls, and writes free-form element JSON, `findings.json` and
+one `findings.pdf` per project. See `docs/lean-pipeline.md` for the stages, the model setup and the
+known limits.
+
 ## Lanes
 
 - `backend/l2c/{ingest,extract}`: PDF to metadata (Eric). Deterministic rules; OCR only for pages

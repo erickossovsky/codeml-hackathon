@@ -1,0 +1,8 @@
+-r base.txt
+llama-cpp-python>=0.3
+huggingface_hub>=0.23  # only to download the model once
+# Optional GPU (NVIDIA, Windows): install the CUDA build of the runtime instead of the CPU wheel, plus
+# the CUDA libraries from pip, and put their bin folders on PATH before importing llama_cpp:
+#   pip install llama-cpp-python==0.3.36 --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
+#   pip install nvidia-cuda-runtime-cu12 nvidia-cublas-cu12
+# then load the model with n_gpu_layers=-1.
