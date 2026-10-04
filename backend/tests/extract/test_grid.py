@@ -101,3 +101,17 @@ def test_transposed_grid_is_detected_with_its_orientation(tmp_path):
 def test_the_usual_convention_still_reports_letters_on_y(tmp_path):
     (p,) = load_pdf(grid_pdf(tmp_path))
     assert fit_grid(p.words).letters_on == "y"
+
+
+def test_fractional_rows_are_kept_in_order_between_their_neighbours(tmp_path):
+    doc, page = new_doc(1100, 800)
+    rows = {"A": 100, "A.5": 160, "B": 240, "C": 330, "D": 420}
+    for r, y in rows.items():
+        put(page, 40, y, r)
+        put(page, 1000, y, r)
+    for i in range(1, 6):
+        put(page, 100 * i, 40, str(i))
+        put(page, 100 * i, 740, str(i))
+    (p,) = load_pdf(save(doc, tmp_path / "frac.pdf"))
+    grid = fit_grid(p.words)
+    assert grid is not None and list(grid.rows) == list(rows)

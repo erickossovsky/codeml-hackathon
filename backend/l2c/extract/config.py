@@ -45,10 +45,10 @@ class Config:
     # ---- notation
     bar_size_pattern: str = r"(?:10|15|20|25|30|35)M"
     bar_sizes: tuple[str, ...] = ("10M", "15M", "20M", "25M", "30M", "35M")
-    grid_letter_pattern: str = r"^[A-Z]{1,2}$"  # rows may continue past Z: AA, BB, ...
+    grid_letter_pattern: str = r"^[A-Z]{1,2}(?:\.\d)?$"  # past Z: AA, BB; fractional rows: A.5
     grid_number_pattern: str = r"^\d{1,2}(?:\.\d)?$"
     grid_label_pattern: str = (
-        r"^([A-Z])-([1-9]\d?(?:\.\d)?)$"  # a grid cell like J-12; C-01 is a mark, not a cell
+        r"^([A-Z]{1,2}(?:\.\d)?)-([1-9]\d?(?:\.\d)?)$"  # a cell like J-12 or J.5-12; C-01 is a mark
     )
     sheet_id_pattern: str = r"^S-\d{3}$"
     default_spacing_unit: str = "in"  # a bare number after @ is inches; "mm" is always explicit

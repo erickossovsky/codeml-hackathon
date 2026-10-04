@@ -76,8 +76,10 @@ def _margin(d1: float, d2: float) -> float:
 
 
 def _letter_rank(text: str) -> float:
-    """A..Z -> 1..26, then AA, BB, ... -> 27.. : monotonic along an axis in either style."""
-    return float(26 * (len(text) - 1) + ord(text[-1]) - 64)
+    """A..Z -> 1..26, then AA, BB, ... -> 27.. ; a fractional row (A.5) sits between A and B."""
+    base, _, frac = text.partition(".")
+    rank = float(26 * (len(base) - 1) + ord(base[-1]) - 64)
+    return rank + (int(frac) / 10.0 if frac else 0.0)
 
 
 def _lis(values: list[float]) -> int:

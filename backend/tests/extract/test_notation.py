@@ -65,3 +65,9 @@ def test_shop_notation_tolerates_what_ocr_does_to_it():
 def test_level_names_tolerate_dropped_spaces_from_ocr():
     assert N.canon_level("NIVEAU4") == "N4" and N.canon_level("LEVEL12") == "N12"
     assert N.plan_column_level("PLAN DES COLONNES - NIVEAU2") == "N2"
+
+
+def test_grid_rows_may_be_fractional_like_columns():
+    assert N.parse_grid_label("J.5-12") == ("J.5", 12.0)
+    assert N.parse_grid_label("A.5-7.5") == ("A.5", 7.5)
+    assert N.parse_grid_label("C.5-01") is None  # still a mark, not a cell
