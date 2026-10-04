@@ -8,7 +8,6 @@ Writes <out_dir>/performance_report.md. Run `python -m l2c.compare` first for th
 from __future__ import annotations
 
 import argparse
-import json
 import statistics
 import time
 from collections import Counter
@@ -146,9 +145,6 @@ def main() -> int:
     text = build(args.metadata_dir)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "performance_report.md").write_text(text, encoding="utf-8", newline="\n")
-    (args.out_dir / "performance_report.json").write_text(
-        json.dumps({"report": "see performance_report.md"}), encoding="utf-8"
-    )
     print(text)
     return 0
 

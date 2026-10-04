@@ -12,7 +12,6 @@ from l2c.contract import constants as C
 from l2c.contract.io import MetaBundle
 from l2c.contract.models import ComparisonFile, ElementExt, Finding
 
-UNASSIGNED = "unassigned_missing"
 NO_SHEET = "(no plan sheet)"
 
 
@@ -56,7 +55,7 @@ def assign_to_shop_files(
         elif f.plan_ref and f.check_type == "cross.plan_vs_shop":
             files = level_files.get(f.level)
             if files:
-                by_file[files[0]].append(f)
+                by_file.setdefault(files[0], []).append(f)
             else:
                 unassigned.append(f)
     return by_file, unassigned

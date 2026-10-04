@@ -22,6 +22,7 @@ class Pair:
     cost: float | None = None
     margin: float | None = None
     extra_shop: list[ElementExt] = field(default_factory=list)
+    extra_plan: list[ElementExt] = field(default_factory=list)
 
 
 def _complete(e: ElementExt) -> bool:
@@ -43,16 +44,27 @@ def match(plan: list[ElementExt], shop: list[ElementExt]) -> list[Pair]:
         group.sort(key=_rank)
     used: set[str] = set()
     pending_plan: list[ElementExt] = []
-    for p in sorted(
-        plan, key=lambda e: (e.level, e.match_key.row or "", e.match_key.col or 0, e.id)
-    ):
-        if not _complete(p):
-            pairs.append(Pair(p, None, "unbound"))
-            continue
+    plan_index: dict[str, list[ElementExt]] = {}
+    unbound_plan: list[ElementExt] = []
+    for p in plan:
+        if _complete(p):
+            plan_index.setdefault(p.match_key.key_str(), []).append(p)
+        else:
+            unbound_plan.append(p)
+    for group in plan_index.values():
+        group.sort(key=_rank)  # the same element drawn on several sheets: best quality leads
+    primaries = sorted(
+        ((g[0], g[1:]) for g in plan_index.values()),
+        key=lambda t: (t[0].level, t[0].match_key.row or "", t[0].match_key.col or 0, t[0].id),
+    )
+    for p in sorted(unbound_plan, key=lambda e: (e.level, e.id)):
+        pairs.append(Pair(p, None, "unbound"))
+    extras_of = {p.id: extras for p, extras in primaries}
+    for p, extras in primaries:
         key = p.match_key.key_str()
         if key in index and key not in used:
-            primary, *extras = index[key]
-            pairs.append(Pair(p, primary, "key", extra_shop=extras))
+            primary, *shop_extras = index[key]
+            pairs.append(Pair(p, primary, "key", extra_shop=shop_extras, extra_plan=list(extras)))
             used.add(key)
         else:
             pending_plan.append(p)
@@ -92,12 +104,22 @@ def match(plan: list[ElementExt], shop: list[ElementExt]) -> list[Pair]:
                 else max(0.0, (runner - c) / runner if runner else 0.0)
             )
             primary, *extras = free[shop_keys[j]]
-            pairs.append(Pair(plist[i], primary, "near_col", round(c, 3), round(margin, 3), extras))
+            pairs.append(
+                Pair(
+                    plist[i],
+                    primary,
+                    "near_col",
+                    round(c, 3),
+                    round(margin, 3),
+                    extras,
+                    extras_of[plist[i].id],
+                )
+            )
             used.add(shop_keys[j])
             assigned.add(i)
         still_plan.extend(p for i, p in enumerate(plist) if i not in assigned)
     for p in still_plan:
-        pairs.append(Pair(p, None, "none"))
+        pairs.append(Pair(p, None, "none", extra_plan=extras_of[p.id]))
     for key in sorted(k for k in index if k not in used):
         primary, *extras = index[key]
         pairs.append(Pair(None, primary, "none", extra_shop=extras))

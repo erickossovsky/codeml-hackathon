@@ -88,7 +88,8 @@ def write_bundle(directory: Path, bundle: MetaBundle) -> None:
     write_models(directory / C.FILE_MANIFEST, manifest)
 
 
-def read_bundle(directory: Path) -> MetaBundle:
+def read_bundle(directory: Path | str) -> MetaBundle:
+    directory = Path(directory)
     manifest_path = directory / C.FILE_MANIFEST
     manifest = Manifest.model_validate(json.loads(manifest_path.read_text(encoding="utf-8")))
     if manifest.contract_version != C.CONTRACT_VERSION:

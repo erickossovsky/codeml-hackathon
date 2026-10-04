@@ -116,3 +116,33 @@ def test_comparison_of_an_empty_project_still_writes_every_output(tmp_path):
     assert (out / "report" / "summary.pdf").is_file() and (out / "findings.xlsx").is_file()
     text = "".join(p.get_text() for p in pymupdf.open(out / "report" / "summary.pdf"))
     assert "NOT COVERED" in text  # coverage is stated even when nothing was found
+
+
+def test_assign_survives_a_bundle_whose_sheets_list_misses_a_shop_file():
+    m = mock_project()
+    m.bundle.sheets = [s for s in m.bundle.sheets if s.kind == "plan"]
+    findings = run_comparison(m.bundle)
+    by_file, _ = assign_to_shop_files(findings, m.bundle)
+    assert set(by_file) == {FILE_A, FILE_B}
+
+
+def test_cli_fails_cleanly_on_bad_input_and_on_the_unbuilt_ml_tier(tmp_path):
+    def run(*args):
+        return subprocess.run(
+            [sys.executable, "-m", "l2c.compare", *args], capture_output=True, text=True
+        )
+
+    r = run(str(tmp_path), "--out", str(tmp_path / "o"))
+    assert r.returncode == 2 and "Traceback" not in r.stderr
+    meta = tmp_path / "meta"
+    write_bundle(meta, mock_project().bundle)
+    manifest = meta / "manifest.json"
+    manifest.write_text(
+        manifest.read_text(encoding="utf-8").replace("0.1.0", "9.9.9"), encoding="utf-8"
+    )
+    r = run(str(meta), "--out", str(tmp_path / "o"))
+    assert r.returncode == 2 and "contract_version" in r.stderr and "Traceback" not in r.stderr
+    write_bundle(meta, mock_project().bundle)
+    r = run(str(meta), "--out", str(tmp_path / "o"), "--ml")
+    assert r.returncode == 0 and r.stdout.startswith("findings=")  # ML tier absent: rules only
+    assert "ML tier not available" in r.stderr

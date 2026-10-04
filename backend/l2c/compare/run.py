@@ -27,8 +27,11 @@ def add_pair_probabilities(findings: list[Finding], bundle: MetaBundle) -> list[
     change are limited to *raising* a no-difference pair to needs_review; a deterministic
     non_compliant/missing/added verdict is never lowered.
     """
-    from l2c.compare.ml import pair_model
-    from l2c.compare.ml.dataset import build_dataset_from_bundle
+    try:
+        from l2c.compare.ml import pair_model
+        from l2c.compare.ml.dataset import build_dataset_from_bundle
+    except ImportError:  # the learned tier (plan task I9) is optional: fall back to rules only
+        return findings
 
     agreeing = [
         f

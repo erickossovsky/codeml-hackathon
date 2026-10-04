@@ -41,3 +41,16 @@ def test_near_fallback_respects_the_distance_limit_and_one_to_one():
 def test_unbound_elements_never_match():
     pairs = match([plan(None, None)], [shop(None, None)])
     assert sorted(p.method for p in pairs) == ["unbound", "unbound"]
+
+
+def test_duplicate_plan_elements_collapse_to_one_pair_not_a_false_missing():
+    good = plan("K", 3, feuillet="S-1", overall=0.95)
+    other = plan("K", 3, feuillet="S-2", overall=0.6)
+    pairs = match([other, good], [shop("K", 3)])
+    assert [p.method for p in pairs] == ["key"]
+    assert pairs[0].plan is good and pairs[0].extra_plan == [other]
+
+
+def test_duplicate_plan_elements_without_a_shop_twin_give_one_missing():
+    pairs = match([plan("K", 3, feuillet="S-1"), plan("K", 3, feuillet="S-2")], [])
+    assert [p.method for p in pairs] == ["none"] and len(pairs[0].extra_plan) == 1
