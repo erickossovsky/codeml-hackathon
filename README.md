@@ -18,9 +18,13 @@ python scripts/check.py              # lint + format + tests + guard
 ## Run
 
 ```
-python -m l2c.extract <project_dir> --out data/out/<project>/metadata [--ocr] [--config c.json]
-python -m l2c.compare data/out/<project>/metadata --out data/out/<project> [--ml]
+python scripts/run_flow.py <project_dir> [--ocr]     # the whole flow in one command
+python -m l2c.extract <project_dir> --out data/out/<project>/metadata [--ocr] [--workers N]
+python -m l2c.compare data/out/<project>/metadata --out data/out/<project>/compare [--ml]
 ```
+
+Use `--ocr` when the shop sheets have no text layer (about 10 to 40 s per page). Page reading runs in
+parallel by default; OCR runs one page at a time.
 
 `<project_dir>` holds the plan PDF(s) and a `DA/` folder of shop drawings. Both commands print
 counts only, never drawing values.
