@@ -44,7 +44,11 @@ def main() -> int:
     flags = Counter(f for e in bundle.elements for f in e.quality.flags)
     print(f"\nelements: plan={plan} shop={shop}   levels={[lv.level for lv in bundle.levels]}")
     print("quality flags:", dict(flags.most_common(6)))
-    covered = sum(1 for s in bundle.sheets if s.layout in {"plan_outline", "shop_label_strip"})
+    covered = sum(
+        1
+        for s in bundle.sheets
+        if s.layout in {"plan_outline", "shop_label_strip", "shop_schedule_table"}
+    )
     print(f"pages fully handled: {covered} of {len(bundle.sheets)}")
     return 0
 

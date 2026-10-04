@@ -11,6 +11,7 @@ from l2c.contract.constants import FOOT_MM, INCH_MM
 from l2c.extract.config import DEFAULT_CONFIG, Config
 
 _QUOTES = "\"”″'"
+BARE_MM_FROM = 30.0  # a bare spacing at or above this cannot be inches
 
 
 @dataclass(frozen=True)
@@ -162,3 +163,72 @@ def plan_column_level(page_text: str, config: Config = DEFAULT_CONFIG) -> str | 
     """Level from a column-plan title such as `PLAN DES COLONNES - NIVEAU 4`."""
     m = config.plan_title_regex().search(page_text)
     return canon_level(m.group(1), config) if m else None
+
+
+@dataclass(frozen=True)
+class ScheduleSpec:
+    """One bar or tie specification of a column schedule: `5x4 25M MARK` or `5x18 10M MARK @150`.
+
+    `mult` is the number of identical columns the specification covers (None when not printed),
+    `count` the number of bars (or ties) in each of them.
+    """
+
+    mult: int | None
+    count: int
+    size: str
+    mark: str
+    spacing_mm: float | None
+    start: int  # offset of the specification in the parsed text
+
+
+@lru_cache(maxsize=64)
+def _schedule_re(size: str) -> re.Pattern[str]:
+    return re.compile(
+        rf"(?:(\d{{1,2}})\s*[xX×]\s*)?(\d{{1,2}})\s*({size})\s*([A-Za-z0-9][A-Za-z0-9.\-]*?)"
+        rf"[,;]?(?=\s|$|@)(?:\s*@\s*(\d+(?:\.\d+)?)\s*(mm|cm|[{_QUOTES}]{{1,2}})?)?",
+        re.IGNORECASE,
+    )
+
+
+def parse_schedule_specs(text: str, config: Config = DEFAULT_CONFIG) -> list[ScheduleSpec]:
+    """Every `[N x] count size mark [@ spacing]` in a text, in order (OCR may glue several).
+
+    A bare spacing is read in the page's own unit: values of 30 or more cannot be inches of bar
+    spacing, so they are millimetres; smaller ones use the configured default unit.
+    """
+    out: list[ScheduleSpec] = []
+    for m in _schedule_re(config.bar_size_pattern).finditer(text):
+        spacing = None
+        if m.group(5):
+            value, unit = float(m.group(5)), m.group(6)
+            if not unit and value >= BARE_MM_FROM:
+                spacing = value
+            else:
+                spacing = _spacing_mm(value, unit, config)
+        out.append(
+            ScheduleSpec(
+                int(m.group(1)) if m.group(1) else None,
+                int(m.group(2)),
+                m.group(3).upper(),
+                m.group(4),
+                spacing,
+                m.start(),
+            )
+        )
+    return out
+
+
+def _level_token(token: str, config: Config) -> str | None:
+    if token.isdigit():
+        return f"N{int(token)}"
+    return canon_level(token, config)
+
+
+def schedule_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
+    """Lower level of a title such as `COLONNE NIV3@NIV4` (the column rises from it)."""
+    numbered = "|".join(re.escape(n) for n in config.level_numbered)
+    m = re.search(
+        rf"(?:{numbered})\s*-?\s*([A-Z0-9]+)\s*@\s*(?:(?:{numbered})\s*-?\s*)?[A-Z0-9]+",
+        _plain(text),
+    )
+    return _level_token(m.group(1), config) if m else None

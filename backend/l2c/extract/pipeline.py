@@ -14,6 +14,7 @@ from l2c.contract.io import MetaBundle
 from l2c.contract.models import ElementExt, GridSheet, LevelInfo, SheetInfo
 from l2c.extract.calibrate import calibrate
 from l2c.extract.columns_plan import extract_plan_columns
+from l2c.extract.columns_schedule import extract_schedule_columns, is_schedule_page
 from l2c.extract.columns_shop import extract_shop_columns, find_labels, find_level_lines
 from l2c.extract.config import DEFAULT_CONFIG, Config
 from l2c.extract.grid import Grid, fit_grid
@@ -120,7 +121,7 @@ def shop_layout(page: PageData, etype: str | None, config: Config) -> str:
         if config.starts(r.text, config.shop_vert) and parse_shop_vert(r.text, config)
     ]
     if not verts:
-        return "no_column_blocks"
+        return "shop_schedule_table" if is_schedule_page(page, config) else "no_column_blocks"
     if not find_labels(page.words, config, scale.word_h):
         return "shop_unlabelled_unsupported"
     if not find_level_lines(page, runs, config, scale.word_h):
@@ -214,8 +215,13 @@ def extract_project(
                 page = prepare_page(page, pdf, use_ocr, config) if folder == "colonne" else page
                 cfg = learn_config(page.words, config) if learn else config
                 layout = shop_layout(page, folder, cfg)
-                if layout == "shop_label_strip":
-                    els, lvls = extract_shop_columns(page, cfg)
+                if layout in {"shop_label_strip", "shop_schedule_table"}:
+                    extractor = (
+                        extract_shop_columns
+                        if layout == "shop_label_strip"
+                        else extract_schedule_columns
+                    )
+                    els, lvls = extractor(page, cfg)
                     elements.extend(mark_ocr(els, page.words, cfg) if page.source == "ocr" else els)
                     for lv in lvls:
                         current = levels.get(lv.level)

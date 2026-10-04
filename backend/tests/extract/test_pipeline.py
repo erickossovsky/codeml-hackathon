@@ -142,3 +142,15 @@ def test_a_corrupt_pdf_is_reported_and_the_rest_of_the_run_continues(tmp_path):
     assert set(bad) == {"DA/Colonnes/broken.pdf", "DA/Colonnes/empty.pdf"}
     assert all(v.startswith("error:open_failed:") for v in bad.values())
     assert len([e for e in b.elements if e.source == "shop"]) == 6  # the good file still ran
+
+
+def test_a_schedule_table_sheet_is_extracted_through_the_pipeline(tmp_path):
+    from tests.extract.test_columns_schedule import schedule_pdf
+
+    root = tmp_path / "S"
+    (root / "DA" / "Colonnes").mkdir(parents=True)
+    schedule_pdf(tmp_path).rename(root / "DA" / "Colonnes" / "COLONNE-NIV-3@4.pdf")
+    b = extract_project(root)
+    assert b.sheets[0].layout == "shop_schedule_table"
+    assert len(b.elements) == 6 and {e.level for e in b.elements} == {"N3"}
+    assert {lv.level for lv in b.levels} == {"N3"}

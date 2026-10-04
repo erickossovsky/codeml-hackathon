@@ -71,3 +71,34 @@ def test_grid_rows_may_be_fractional_like_columns():
     assert N.parse_grid_label("J.5-12") == ("J.5", 12.0)
     assert N.parse_grid_label("A.5-7.5") == ("A.5", 7.5)
     assert N.parse_grid_label("C.5-01") is None  # still a mark, not a cell
+
+
+def test_schedule_title_gives_the_lower_level_of_the_span():
+    assert N.schedule_level("COLONNE NIV3@NIV4 PART 1") == "N3"
+    assert N.schedule_level("COLONNE-NIV-11@Toit") == "N11"
+    assert N.schedule_level("COLONNE NIV-FDN@SS1") == "FDN"
+    assert N.schedule_level("COLONNE NIV-SS1@RDC") == "SS"
+    assert N.schedule_level("COLONNE NIV-RDC@2") == "RDC"
+    assert N.schedule_level("COLONNENIV2@NIV3") == "N2"  # OCR dropped the spaces
+    assert N.schedule_level("PLAN DES COLONNES - NIVEAU 4") is None
+
+
+def test_grid_rows_may_carry_a_prime():
+    assert N.parse_grid_label("F'-34") == ("F'", 34.0)
+    assert N.parse_grid_label("B.1-35.1") == ("B.1", 35.1)
+
+
+def test_schedule_bar_specs_survive_glued_ocr_text():
+    spec = N.parse_schedule_specs("5x425M25Z2620A 2x4 30M 30Z2600,")
+    assert [(s.mult, s.count, s.size, s.mark) for s in spec] == [
+        (5, 4, "25M", "25Z2620A"),
+        (2, 4, "30M", "30Z2600"),
+    ]
+    ties = N.parse_schedule_specs('5x18 10M 10E3752 @150 3x18 10M10E3752 @6"')
+    assert [(s.mult, s.count, s.size, s.mark, s.spacing_mm) for s in ties] == [
+        (5, 18, "10M", "10E3752", 150.0),
+        (3, 18, "10M", "10E3752", 152.4),
+    ]
+    single = N.parse_schedule_specs("4 25M 25Z2620A")
+    assert single[0].mult is None and single[0].count == 4
+    assert N.parse_schedule_specs("450 x 600") == []

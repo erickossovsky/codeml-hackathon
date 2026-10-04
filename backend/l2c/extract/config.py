@@ -21,6 +21,8 @@ LEVEL_NAMES: tuple[tuple[str, str], ...] = (
     ("BASEMENT", "SS"),
     ("REZ-DE-CHAUSSEE", "RDC"),
     ("RDC", "RDC"),
+    ("FDN", "FDN"),
+    ("SS", "SS"),
     ("GROUND FLOOR", "RDC"),
     ("GROUND", "RDC"),
     ("TOIT APPENTIS", "TOIT_APP"),
@@ -41,15 +43,14 @@ class Config:
     shop_ties: tuple[str, ...] = ("ÉTRI", "ETRI", "TIES", "STIRRUP")
     elevation_line: tuple[str, ...] = ("EL.", "EL:", "ELEV.", "EL ")  # OCR often drops the dot
     level_names: tuple[tuple[str, str], ...] = LEVEL_NAMES
-    level_numbered: tuple[str, ...] = ("NIVEAU", "LEVEL", "FLOOR")
+    level_numbered: tuple[str, ...] = ("NIVEAU", "LEVEL", "FLOOR", "NIV")
     # ---- notation
     bar_size_pattern: str = r"(?:10|15|20|25|30|35)M"
     bar_sizes: tuple[str, ...] = ("10M", "15M", "20M", "25M", "30M", "35M")
-    grid_letter_pattern: str = r"^[A-Z]{1,2}(?:\.\d)?$"  # past Z: AA, BB; fractional rows: A.5
+    grid_letter_pattern: str = r"^[A-Z]{1,2}(?:\.\d|')?$"  # AA past Z; A.5 or A' between rows
     grid_number_pattern: str = r"^\d{1,2}(?:\.\d)?$"
-    grid_label_pattern: str = (
-        r"^([A-Z]{1,2}(?:\.\d)?)-([1-9]\d?(?:\.\d)?)$"  # a cell like J-12 or J.5-12; C-01 is a mark
-    )
+    # a cell like J-12, J.5-12 or J'-12; C-01 is a mark, not a cell
+    grid_label_pattern: str = r"^([A-Z]{1,2}(?:\.\d|')?)-([1-9]\d?(?:\.\d)?)$"
     sheet_id_pattern: str = r"^S-\d{3}$"
     default_spacing_unit: str = "in"  # a bare number after @ is inches; "mm" is always explicit
     # ---- tuning ratios (multiples of the page's own geometry)
