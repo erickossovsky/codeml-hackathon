@@ -146,12 +146,37 @@ def shop_layout(page: PageData, etype: str | None, config: Config) -> str:
     return "shop_label_strip"
 
 
-def prepare_page(page: PageData, pdf: Path, use_ocr: bool, config: Config) -> PageData:
-    """Replace a text-less page's words with OCR words when OCR is enabled."""
-    if use_ocr and not has_text(page, config) and page.layer in {"vector", "image"}:
+def needs_ocr(page: PageData, config: Config) -> bool:
+    return not has_text(page, config) and page.layer in {"vector", "image"}
+
+
+def _ocr_job(args):
+    """One OCR page in a worker process; a failure is returned so the page can record it."""
+    pdf, number, config = args
+    try:
+        from l2c.ingest.ocr import ocr_pdf_page
+
+        return ocr_pdf_page(pdf, number, config)
+    except Exception as exc:
+        return exc
+
+
+def prepare_page(
+    page: PageData, pdf: Path, use_ocr: bool, config: Config, ocr_done: dict | None = None
+) -> PageData:
+    """Replace a text-less page's words with OCR words when OCR is enabled.
+
+    `ocr_done` holds results already computed in parallel, keyed by (file, page number).
+    """
+    if use_ocr and needs_ocr(page, config):
         from l2c.ingest.ocr import ocr_pdf_page, with_ocr_words
 
-        return with_ocr_words(page, ocr_pdf_page(pdf, page.page, config))
+        result = (ocr_done or {}).get((pdf, page.page))
+        if result is None:
+            result = ocr_pdf_page(pdf, page.page, config)
+        if isinstance(result, Exception):
+            raise result
+        return with_ocr_words(page, result, config)
     return page
 
 
@@ -161,7 +186,19 @@ def extract_project(
     config: Config = DEFAULT_CONFIG,
     use_ocr: bool = False,
     learn: bool = True,
+    workers: int = 1,
 ) -> MetaBundle:
+    """Read every PDF of a project into a MetaBundle. `workers` > 1 reads pages and runs OCR in a
+    process pool; the result is identical to the sequential run."""
+    if workers > 1:
+        from concurrent.futures import ProcessPoolExecutor
+
+        with ProcessPoolExecutor(workers) as pool:
+            return _extract(project_dir, project, config, use_ocr, learn, pool)
+    return _extract(project_dir, project, config, use_ocr, learn, None)
+
+
+def _extract(project_dir, project, config, use_ocr, learn, pool) -> MetaBundle:
     found = discover(project_dir, config)
     elements: list[ElementExt] = []
     grids: list[GridSheet] = []
@@ -183,11 +220,29 @@ def extract_project(
             layout=layout,
         )
 
-    for pdf in found.plans:
+    def load(pdf: Path):
         try:
-            pages = load_pdf(pdf, _rel(project_dir, pdf), config)
+            return load_pdf(pdf, _rel(project_dir, pdf), config, pool), None
         except Exception as exc:
-            sheets.append(_open_failed(_rel(project_dir, pdf), "plan", None, exc))
+            return None, exc
+
+    plan_loaded = [(pdf, *load(pdf)) for pdf in found.plans]
+    shop_loaded = [(pdf, folder, *load(pdf)) for pdf, folder in found.shops]
+    ocr_done: dict = {}
+    if use_ocr:
+        jobs = [
+            (pdf, page.page, config)
+            for pdf, pages, _ in [*plan_loaded, *[(a, c, d) for a, _, c, d in shop_loaded]]
+            for page in pages or []
+            if needs_ocr(page, config)
+        ]
+        if pool is not None and len(jobs) > 1:
+            for job, result in zip(jobs, pool.map(_ocr_job, jobs), strict=True):
+                ocr_done[(job[0], job[1])] = result
+
+    for pdf, pages, error in plan_loaded:
+        if error is not None:
+            sheets.append(_open_failed(_rel(project_dir, pdf), "plan", None, error))
             continue
         for page in pages:
             level = None
@@ -195,7 +250,7 @@ def extract_project(
             etype = None
             cfg = config
             try:
-                page = prepare_page(page, pdf, use_ocr, config)
+                page = prepare_page(page, pdf, use_ocr, config, ocr_done)
                 cfg = learn_config(page.words, config) if learn else config
                 text = " ".join(w.text for w in page.words)
                 level = plan_column_level(text, cfg)
@@ -221,16 +276,14 @@ def extract_project(
                 layout = f"error:{type(exc).__name__}"
             sheets.append(sheet(page, "plan", etype, level, layout))
 
-    for pdf, folder in found.shops:
-        try:
-            pages = load_pdf(pdf, _rel(project_dir, pdf), config)
-        except Exception as exc:
-            sheets.append(_open_failed(_rel(project_dir, pdf), "shop", folder, exc))
+    for pdf, folder, pages, error in shop_loaded:
+        if error is not None:
+            sheets.append(_open_failed(_rel(project_dir, pdf), "shop", folder, error))
             continue
         for page in pages:
             layout = "unknown"
             try:
-                page = prepare_page(page, pdf, use_ocr, config) if folder == "colonne" else page
+                page = prepare_page(page, pdf, use_ocr, config, ocr_done)
                 cfg = learn_config(page.words, config) if learn else config
                 layout = shop_layout(page, folder, cfg)
                 if layout in {"shop_label_strip", "shop_schedule_table"}:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from collections import Counter
 from pathlib import Path
@@ -27,6 +28,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="JSON overrides for vocabulary, notation and tuning",
     )
+    ap.add_argument(
+        "--workers",
+        type=int,
+        default=0,
+        help="processes for page reading and OCR (default: all cores but one; 1 = sequential)",
+    )
     args = ap.parse_args(argv)
     if not args.project_dir.is_dir():
         print(f"not a directory: {args.project_dir}", file=sys.stderr)
@@ -37,6 +44,7 @@ def main(argv: list[str] | None = None) -> int:
         load_config(args.config),
         use_ocr=args.ocr,
         learn=not args.no_learn,
+        workers=args.workers or max(1, (os.cpu_count() or 2) - 1),
     )
     write_bundle(args.out, bundle)
     flags = Counter(f for e in bundle.elements for f in e.quality.flags)

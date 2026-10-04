@@ -128,14 +128,16 @@ def _read_page(page: pymupdf.Page, fichier: str, number: int, config: Config) ->
         r = _rect_through(m, pymupdf.Rect(w[:4]))
         words.append(Word(w[4], r.x0, r.y0, r.x1, r.y1))
     words.sort(key=lambda w: (round(w.y0, 1), w.x0, w.text))
-    drawings = page.get_drawings()
+    # raw drawing records (plain tuples): the object-building variant is about 6x slower on the
+    # large vector sheets, and only each path's bounding box and segment count are needed here
+    drawings = page.get_cdrawings()
     lo = SHAPE_MIN_PAGE_FRACTION * page.rect.width
     hi = SHAPE_MAX_PAGE_FRACTION * page.rect.width
     shapes: list[Shape] = []
     for d in drawings:
-        r = d["rect"]
-        if lo <= r.width <= hi and lo <= r.height <= hi and len(d["items"]) <= MAX_SHAPE_PATH_ITEMS:
-            t = _rect_through(m, r)
+        x0, y0, x1, y1 = d["rect"]
+        if lo <= x1 - x0 <= hi and lo <= y1 - y0 <= hi and len(d["items"]) <= MAX_SHAPE_PATH_ITEMS:
+            t = _rect_through(m, pymupdf.Rect(x0, y0, x1, y1))
             shapes.append(Shape(t.x0, t.y0, t.x1, t.y1))
     shapes.sort(key=lambda s: (round(s.cy, 1), s.cx))
     n_images = len(page.get_images())
@@ -155,9 +157,20 @@ def _read_page(page: pymupdf.Page, fichier: str, number: int, config: Config) ->
     )
 
 
+def _load_page_task(args: tuple[Path, str, int, Config]) -> PageData:
+    path, name, index, config = args
+    with pymupdf.open(path) as doc:
+        return _read_page(doc[index], name, index + 1, config)
+
+
 def load_pdf(
-    path: Path, fichier: str | None = None, config: Config = DEFAULT_CONFIG
+    path: Path, fichier: str | None = None, config: Config = DEFAULT_CONFIG, pool=None
 ) -> list[PageData]:
+    """Every page of a PDF. With a process pool the pages are read in parallel (same result,
+    same order); a file that cannot be opened raises either way."""
     name = fichier or path.name
     with pymupdf.open(path) as doc:
-        return [_read_page(p, name, i + 1, config) for i, p in enumerate(doc)]
+        count = len(doc)
+        if pool is None or count < 2:
+            return [_read_page(p, name, i + 1, config) for i, p in enumerate(doc)]
+    return list(pool.map(_load_page_task, [(path, name, i, config) for i in range(count)]))

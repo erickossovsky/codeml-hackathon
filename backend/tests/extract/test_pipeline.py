@@ -240,3 +240,20 @@ def test_shop_folder_names_come_from_the_config(tmp_path):
     es = dataclasses.replace(DEFAULT_CONFIG, folder_types=(("columnas", "colonne"),))
     assert folder_type(("Columnas",), es) == "colonne"
     assert folder_type(("Colonnes",), es) is None
+
+
+def test_a_parallel_run_gives_byte_identical_output(tmp_path):
+    root = make_project(tmp_path)
+    a, b = tmp_path / "seq", tmp_path / "par"
+    write_bundle(a, extract_project(root, workers=1))
+    write_bundle(b, extract_project(root, workers=3))
+    for f in sorted(p.name for p in a.iterdir()):
+        assert (a / f).read_bytes() == (b / f).read_bytes(), f
+
+
+def test_a_corrupt_pdf_is_still_reported_in_a_parallel_run(tmp_path):
+    root = make_project(tmp_path)
+    (root / "DA" / "Colonnes" / "broken.pdf").write_bytes(b"%PDF-1.4 this is not a pdf")
+    bundle = extract_project(root, workers=2)
+    assert any((s.layout or "").startswith("error:open_failed") for s in bundle.sheets)
+    assert len([e for e in bundle.elements if e.source == "shop"]) == 6
