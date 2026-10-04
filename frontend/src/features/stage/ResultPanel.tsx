@@ -41,7 +41,7 @@ export function ResultPanel({ result, file, onReset }: { result: RunResult; file
           <p className={label}>Review sheet · {result.run_id} · {result.project}</p>
           <div className="flex flex-wrap gap-3">
             <a href={json} download={`${result.run_id}-findings.json`} className={btn}>findings.json</a>
-            <a href="/fixtures/report.pdf" download={`${result.run_id}-report.pdf`} className={btn}>report.pdf</a>
+            <a href={`http://localhost:8000/api/report/${result.run_id}`} download={`${result.run_id}-report.pdf`} className={btn}>report.pdf</a>
             <button type="button" onClick={onReset} className={btnGhost}>New run</button>
           </div>
         </div>

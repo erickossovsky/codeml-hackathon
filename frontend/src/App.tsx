@@ -3,16 +3,14 @@ import { btn } from './shared/ui'
 import { Logo } from './shared/Logo'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import type { RunClient } from './api/client'
-import { createMockClient } from './api/mockClient'
+import { createLiveClient } from './api/liveClient'
 import { SidePanel } from './features/side/SidePanel'
 import { Stage } from './features/stage/Stage'
 import { StackedFlow } from './features/stage/StackedFlow'
 import type { ProgressEvent } from './shared/types'
 import { initialRunState, runReducer, type Phase } from './state/runReducer'
 
-// `?fail=1` forces the mock error path for demos.
-const failMode = new URLSearchParams(window.location.search).get('fail') === '1'
-const client: RunClient = createMockClient({ fail: failMode })
+const client: RunClient = createLiveClient()
 
 const STATUS: Record<Phase, { text: string; tone: string }> = {
   idle: { text: 'Idle', tone: 'text-mute' },
