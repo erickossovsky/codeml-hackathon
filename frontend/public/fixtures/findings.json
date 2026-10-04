@@ -1,0 +1,225 @@
+{
+  "run_id": "demo-0001",
+  "project": "MOCK",
+  "plan": "Plan.pdf",
+  "shop_drawings": [
+    "DA/Colonnes",
+    "DA/Poutres",
+    "DA/Dalles",
+    "DA/Fondations",
+    "DA/Refends"
+  ],
+  "counts": {
+    "compliant": 118,
+    "non_compliant": 3,
+    "missing": 2,
+    "added": 2,
+    "needs_review": 4
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "status": "non_compliant",
+      "type_element": "poutre",
+      "grid": "K-4",
+      "level": "N2",
+      "check_type": "cross.plan_vs_shop",
+      "notes": "count",
+      "diffs": [
+        {
+          "field": "quantite",
+          "plan": 6,
+          "shop": 4,
+          "delta": -2
+        }
+      ],
+      "plan_ref": {
+        "fichier": "Plan.pdf",
+        "page": 12,
+        "x": 412.0,
+        "y": 288.5
+      },
+      "shop_ref": {
+        "fichier": "DA/Poutres/P-N2.pdf",
+        "page": 3,
+        "x": 401.2,
+        "y": 276.0
+      },
+      "confidence": 0.94
+    },
+    {
+      "id": "F-002",
+      "status": "non_compliant",
+      "type_element": "poutre",
+      "grid": "L-5",
+      "level": "N3",
+      "check_type": "cross.plan_vs_shop",
+      "notes": "spacing",
+      "diffs": [
+        {
+          "field": "espacement_mm",
+          "plan": 150,
+          "shop": 200,
+          "delta": 50
+        }
+      ],
+      "plan_ref": {
+        "fichier": "Plan.pdf",
+        "page": 19,
+        "x": 530.4,
+        "y": 141.0
+      },
+      "shop_ref": {
+        "fichier": "DA/Poutres/P-N3.pdf",
+        "page": 1,
+        "x": 522.9,
+        "y": 139.8
+      },
+      "confidence": 0.91
+    },
+    {
+      "id": "F-003",
+      "status": "non_compliant",
+      "type_element": "colonne",
+      "grid": "K-5",
+      "level": "N2",
+      "check_type": "cross.plan_vs_shop",
+      "notes": "size",
+      "diffs": [
+        {
+          "field": "diametre",
+          "plan": "12",
+          "shop": "10",
+          "delta": -2
+        }
+      ],
+      "plan_ref": {
+        "fichier": "Plan.pdf",
+        "page": 12,
+        "x": 455.1,
+        "y": 301.7
+      },
+      "shop_ref": {
+        "fichier": "DA/Colonnes/C-N2.pdf",
+        "page": 2,
+        "x": 449.0,
+        "y": 300.2
+      },
+      "confidence": 0.88
+    },
+    {
+      "id": "F-004",
+      "status": "missing",
+      "type_element": "fondation",
+      "grid": "L-8",
+      "level": "FDN",
+      "check_type": "cross.plan_vs_shop",
+      "notes": "",
+      "diffs": [],
+      "plan_ref": {
+        "fichier": "Plan.pdf",
+        "page": 4,
+        "x": 610.0,
+        "y": 420.0
+      },
+      "confidence": 0.97
+    },
+    {
+      "id": "F-005",
+      "status": "added",
+      "type_element": "colonne",
+      "grid": "K-9",
+      "level": "N3",
+      "check_type": "cross.plan_vs_shop",
+      "notes": "",
+      "diffs": [],
+      "shop_ref": {
+        "fichier": "DA/Colonnes/C-N3.pdf",
+        "page": 1,
+        "x": 712.3,
+        "y": 233.4
+      },
+      "confidence": 0.9
+    },
+    {
+      "id": "F-006",
+      "status": "needs_review",
+      "type_element": "poutre",
+      "grid": "K-4",
+      "level": "N3",
+      "check_type": "cross.plan_vs_shop",
+      "notes": "low trust",
+      "diffs": [
+        {
+          "field": "quantite",
+          "plan": 4,
+          "shop": "4 (2)",
+          "delta": null
+        }
+      ],
+      "plan_ref": {
+        "fichier": "Plan.pdf",
+        "page": 19,
+        "x": 402.0,
+        "y": 190.0
+      },
+      "confidence": 0.52
+    },
+    {
+      "id": "F-007",
+      "status": "needs_review",
+      "type_element": "dalle",
+      "grid": "K-3",
+      "level": "FDN",
+      "check_type": "cross.plan_vs_shop",
+      "notes": "level",
+      "diffs": [],
+      "plan_ref": {
+        "fichier": "Plan.pdf",
+        "page": 4,
+        "x": 300.0,
+        "y": 150.0
+      },
+      "confidence": 0.47
+    },
+    {
+      "id": "F-008",
+      "status": "needs_review",
+      "type_element": "mur_refend",
+      "grid": "L-3",
+      "level": "N2",
+      "check_type": "self.internal_consistency",
+      "notes": "",
+      "diffs": [],
+      "confidence": 0.5
+    },
+    {
+      "id": "F-009",
+      "status": "missing",
+      "type_element": "poutre",
+      "grid": "L-8",
+      "level": "N2",
+      "check_type": "cross.plan_vs_shop",
+      "notes": "",
+      "diffs": [],
+      "plan_ref": {
+        "fichier": "Plan.pdf",
+        "page": 12,
+        "x": 640.2,
+        "y": 330.8
+      },
+      "confidence": 0.93
+    },
+    {
+      "id": "F-010",
+      "status": "needs_review",
+      "type_element": "colonne",
+      "grid": null,
+      "level": "N3",
+      "check_type": "cross.plan_vs_shop",
+      "notes": "unbound",
+      "diffs": [],
+      "confidence": 0.4
+    }
+  ]
+}
