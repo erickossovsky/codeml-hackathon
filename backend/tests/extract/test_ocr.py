@@ -160,3 +160,20 @@ def test_mark_ocr_lowers_confidence_and_flags_snapped_tokens(tmp_path):
     assert "ocr_snapped" in out.quality.flags and "ocr_text" in out.quality.flags
     assert out.quality.overall <= round(0.8 * 0.9, 3)
     assert out.extraction_method == "rules+ocr"
+
+
+def test_a_low_confidence_word_that_swallows_better_words_is_a_ghost():
+    good = [
+        Word("3x4", 0, 0, 30, 20, conf=0.96),
+        Word("20M", 40, 0, 70, 20, conf=0.96),
+        Word("3900", 80, 0, 120, 20, conf=0.96),
+    ]
+    ghost = Word("2074.3900.20X3900", 20, 5, 125, 15, conf=0.8)
+    kept = ocr.dedupe([ghost, *good])
+    assert [w.text for w in kept] == ["3x4", "20M", "3900"]
+
+
+def test_a_longer_word_is_kept_over_its_own_fragment():
+    full = Word("10E2752@100", 0, 0, 110, 20, conf=0.95)
+    part = Word("10E2752", 0, 0, 70, 20, conf=0.97)
+    assert [w.text for w in ocr.dedupe([part, full])] == ["10E2752@100"]

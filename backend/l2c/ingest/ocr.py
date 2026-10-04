@@ -26,6 +26,8 @@ RELEVANT = re.compile(r"\b(?:VERT|ETRI|ÉTRI|ARM|LIG)\b|\d{1,2}\s?-\s?\d{2}\s?M\
 MIN_INK = 0.00002  # only tiles with essentially no ink are skipped (labels are tiny)
 DEDUP_IOU = 0.5
 CONTAINED_SHARE = 0.6  # a box mostly inside a better one is a fragment of it
+GHOST_SWALLOWED = 2  # a word covering this many better words is a misreading of them
+GHOST_SHARE = 0.4  # ... where each of them lies at least this much inside it
 
 
 @lru_cache(maxsize=1)
@@ -139,7 +141,22 @@ def dedupe(words: list[Word]) -> list[Word]:
         covered = any(_inside(w, k) >= CONTAINED_SHARE for k in kept)
         if not (same or covered):
             kept.append(w)
+    kept = [w for w in kept if not _is_ghost(w, kept)]
     return sorted(kept, key=lambda w: (round(w.y0, 1), w.x0, w.text))
+
+
+def _is_ghost(w: Word, kept: list[Word]) -> bool:
+    """A low-confidence word lying over several better-read words is a bad reading of that text
+    (the same line read twice from overlapping tiles, the longer misreading winning on length)."""
+    better = [
+        k
+        for k in kept
+        if k is not w
+        and (k.conf or 0.0) > (w.conf or 0.0)
+        and _inside(k, w) >= GHOST_SHARE
+        and k.text != w.text
+    ]
+    return len(better) >= GHOST_SWALLOWED
 
 
 def choose_orientations(img: np.ndarray, config: Config) -> tuple[int, ...]:
