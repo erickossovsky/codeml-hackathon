@@ -53,9 +53,8 @@ def armature_groups(e: ElementExt) -> dict[str, list[tuple[int | None, float | N
     """Bar groups keyed by bar size: [(count, spacing_mm), ...]. Works for any element type."""
     groups: dict[str, list[tuple[int | None, float | None]]] = {}
     for a in e.armature:
-        if a.diametre is None:
-            continue
-        groups.setdefault(a.diametre, []).append((a.quantite, a.espacement_mm))
+        # a bar with no printed size (composite slab counts) is a group of its own, not dropped
+        groups.setdefault(a.diametre or "no size", []).append((a.quantite, a.espacement_mm))
     for g in groups.values():
         g.sort(key=lambda t: (t[0] if t[0] is not None else -1, t[1] if t[1] is not None else -1.0))
     return groups

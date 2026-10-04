@@ -40,6 +40,12 @@ def main(argv: list[str] | None = None) -> int:
         default=Path("data/cache/ocr"),
         help="folder where OCR readings are kept so a page is read once (default: data/cache/ocr)",
     )
+    ap.add_argument(
+        "--ocr-workers",
+        type=int,
+        default=1,
+        help="OCR worker processes (default 1: measured no faster in parallel)",
+    )
     ap.add_argument("--no-ocr-cache", action="store_true", help="read every page again")
     args = ap.parse_args(argv)
     if not args.project_dir.is_dir():
@@ -53,6 +59,7 @@ def main(argv: list[str] | None = None) -> int:
         learn=not args.no_learn,
         workers=args.workers or max(1, (os.cpu_count() or 2) - 1),
         ocr_cache=None if args.no_ocr_cache else args.ocr_cache,
+        ocr_workers=args.ocr_workers,
     )
     write_bundle(args.out, bundle)
     flags = Counter(f for e in bundle.elements for f in e.quality.flags)

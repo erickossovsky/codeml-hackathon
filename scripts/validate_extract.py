@@ -8,14 +8,17 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections import Counter
 from pathlib import Path
 
+from l2c.compare.run import run_comparison
+from l2c.contract import constants as C
 from l2c.extract.calibrate import calibrate
 from l2c.extract.columns_plan import assemble_blocks, extract_plan_columns
 from l2c.extract.columns_shop import extract_shop_columns
 from l2c.extract.grid import fit_grid
 from l2c.extract.notation import plan_column_level
-from l2c.extract.pipeline import discover
+from l2c.extract.pipeline import discover, extract_project
 from l2c.ingest.pages import load_pdf
 
 PLAN_BOUND_MIN = 0.90
@@ -58,6 +61,24 @@ def main() -> int:
             flag = "" if pp >= SHOP_PARSED_MIN else "  <-- below threshold"
             ok &= not flag
             print(f"  shop file #{shop_no} p{page.page} {census} {len(els)} {pp:.0%}{flag}")
+    print("ALL TYPES: type sheets elements failed-pages | plan-shop pairs: compliant non_compliant needs_review")
+    bundle = extract_project(args.project_dir)
+    findings = run_comparison(bundle)
+    for t in C.ELEMENT_TYPES:
+        sheets = [s for s in bundle.sheets if s.type_element == t]
+        n_el = sum(1 for e in bundle.elements if e.type_element == t)
+        failed = sum(1 for s in sheets if s.layout.startswith("error"))
+        pairs = Counter(f.status for f in findings if f.type_element == t and f.plan_ref and f.shop_ref)
+        flag = ""
+        if sheets and n_el == 0:
+            flag = "  <-- sheets found, no elements"
+        elif failed:
+            flag = "  <-- pages failed"
+        ok &= not flag
+        print(
+            f"  {t} {len(sheets)} {n_el} {failed} | {pairs[C.STATUS_COMPLIANT]} "
+            f"{pairs[C.STATUS_NON_COMPLIANT]} {pairs[C.STATUS_NEEDS_REVIEW]}{flag}"
+        )
     print("RESULT:", "pass" if ok else "below threshold")
     return 0 if ok else 1
 

@@ -19,6 +19,9 @@ from l2c.extract.config import DEFAULT_CONFIG, Config
 SHAPE_MIN_PAGE_FRACTION = 0.001
 SHAPE_MAX_PAGE_FRACTION = 0.05
 MAX_SHAPE_PATH_ITEMS = 8  # a closed rectangle-like path has only a few segments
+BOX_MIN_PAGE_FRACTION = 0.01  # footing and slab outlines: larger than column outlines
+BOX_MAX_PAGE_FRACTION = 0.08
+MAX_BOX_PATH_ITEMS = 40  # footings may be drawn with their hatching and labels
 
 
 @dataclass(frozen=True)
@@ -75,6 +78,7 @@ class PageData:
     rotation: int
     words: list[Word] = field(default_factory=list)
     shapes: list[Shape] = field(default_factory=list)
+    boxes: list[Shape] = field(default_factory=list)  # larger rectangles: footing and slab outlines
     n_paths: int = 0
     n_images: int = 0
     layer: str = "empty"  # text | vector | image | empty
@@ -140,8 +144,20 @@ def _read_page(page: pymupdf.Page, fichier: str, number: int, config: Config) ->
             t = _rect_through(m, pymupdf.Rect(x0, y0, x1, y1))
             shapes.append(Shape(t.x0, t.y0, t.x1, t.y1))
     shapes.sort(key=lambda s: (round(s.cy, 1), s.cx))
+    boxes: list[Shape] = []
+    blo, bhi = BOX_MIN_PAGE_FRACTION * page.rect.width, BOX_MAX_PAGE_FRACTION * page.rect.width
+    for d in drawings:
+        x0, y0, x1, y1 = d["rect"]
+        if (
+            blo <= x1 - x0 <= bhi
+            and blo <= y1 - y0 <= bhi
+            and len(d["items"]) <= MAX_BOX_PATH_ITEMS
+        ):
+            t = _rect_through(m, pymupdf.Rect(x0, y0, x1, y1))
+            boxes.append(Shape(t.x0, t.y0, t.x1, t.y1))
     n_images = len(page.get_images())
     return PageData(
+        boxes=boxes,
         fichier=fichier,
         page=number,
         width=page.rect.width,

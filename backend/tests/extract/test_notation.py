@@ -165,3 +165,21 @@ def test_a_basement_number_may_carry_an_s_prefix():
     assert N.plan_column_level("PLAN DES COLONNES - SOUS-SOL S2 N° CONTRAT") == "SS2"
     assert N.plan_column_level("PLAN DES COLONNES - SOUS-SOL S1 C CL") == "SS"
     assert N.plan_column_level("PLAN DES COLONNES - SOUS-SOL - A") == "SS"
+
+
+def test_levels_are_found_anywhere_in_a_title_or_file_name():
+    assert N.find_level("CLP_DALLE NIV 2") == "N2"
+    assert N.find_level("ARMATURE DU NIVEAU 5 PLAN") == "N5"
+    assert N.find_level("DALLE NIV RDC") == "RDC"
+    assert N.find_level("DALLE TRÉFOND") == "FDN"
+    assert N.find_level("PLAN DU REZ-DE-CHAUSSÉE - BETON") == "RDC"
+    assert N.find_level("ELEVATIONS MURS") is None
+
+
+def test_the_sheet_type_comes_from_the_title_then_from_the_series():
+    title = N.sheet_title("... TITRE DU DESSIN ELEVATIONS POUTRES DE BETON ...")
+    assert N.sheet_type(title, "S-300") == ("poutre", 1.0)
+    assert N.sheet_type("", "S-601") == ("dalle", 0.7)
+    assert N.sheet_type("", "S-400") == ("mur_refend", 0.7)
+    assert N.sheet_type("", None) == (None, 0.0)
+    assert N.sheet_type("PLAN DES RADIERS", "S-050")[0] == "fondation"

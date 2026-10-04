@@ -179,7 +179,8 @@ def test_element_ids_are_unique_even_without_a_sheet_id(tmp_path):
         ),
     )
     ids = [e.id for e in b.elements]
-    assert len(ids) == 8 and len(set(ids)) == 8
+    # the same four columns are on both pages of one file: they collapse to four elements
+    assert len(ids) == 4 and len(set(ids)) == 4
 
 
 def test_a_failing_ocr_or_learning_step_does_not_stop_the_run(tmp_path, monkeypatch):
@@ -257,3 +258,63 @@ def test_a_corrupt_pdf_is_still_reported_in_a_parallel_run(tmp_path):
     bundle = extract_project(root, workers=2)
     assert any((s.layout or "").startswith("error:open_failed") for s in bundle.sheets)
     assert len([e for e in bundle.elements if e.source == "shop"]) == 6
+
+
+def _grid_sheet(title: str, statements, name: str, tmp_path, *, with_sheet_id=True):
+    from tests.extract.pdfmaker import new_doc, put, save
+
+    doc, page = new_doc(1100, 800)
+    for r, y in {"A": 150, "B": 300, "C": 450, "D": 600}.items():
+        put(page, 40, y, r)
+        put(page, 1000, y, r)
+    for c, x in {"1": 150, "2": 400, "3": 650, "4": 900}.items():
+        put(page, x, 60, c)
+        put(page, x, 740, c)
+    put(page, 700, 770, "TITRE DU DESSIN " + title)
+    if with_sheet_id:
+        put(page, 1050, 770, "S-601")
+    for x, y, text in statements:
+        put(page, x, y, text)
+    return save(doc, tmp_path / name)
+
+
+def test_beams_walls_slabs_and_foundations_are_extracted_not_skipped(tmp_path):
+    root = tmp_path / "T"
+    (root / "DA" / "Dalles").mkdir(parents=True)
+    (root / "DA" / "Poutres").mkdir(parents=True)
+    plan = _grid_sheet(
+        "ARMATURE DU NIVEAU 2", [(155, 155, "11-25M"), (405, 305, '10M@6" c/c')], "p.pdf", tmp_path
+    )
+    plan.rename(root / "plan.pdf")
+    shop = _grid_sheet("DALLE", [(155, 155, "11-25M"), (405, 305, '10M@6" c/c')], "s.pdf", tmp_path)
+    shop.rename(root / "DA" / "Dalles" / "SHOP_DALLE NIV 2.pdf")
+    beam = _grid_sheet("POUTRES", [(155, 155, "4-25M")], "b.pdf", tmp_path)
+    beam.rename(root / "DA" / "Poutres" / "SHOP_POUTRES.pdf")
+    b = extract_project(root)
+    layouts = {s.fichier: s.layout for s in b.sheets}
+    assert layouts["plan.pdf"] == "generic_dalle"
+    assert layouts["DA/Dalles/SHOP_DALLE NIV 2.pdf"] == "generic_dalle"
+    assert layouts["DA/Poutres/SHOP_POUTRES.pdf"] == "generic_poutre"
+    types = {(e.source, e.type_element, e.level) for e in b.elements}
+    assert ("plan", "dalle", "N2") in types and ("shop", "dalle", "N2") in types
+    assert any(e.source == "shop" and e.type_element == "poutre" for e in b.elements)
+    ids = [e.id for e in b.elements]
+    assert len(ids) == len(set(ids))
+
+
+def test_typical_details_and_empty_sheets_are_reported_with_a_reason(tmp_path):
+    root = tmp_path / "R"
+    root.mkdir()
+    import pymupdf
+
+    doc = pymupdf.open()
+    for title, statements in (
+        ("DETAILS TYPIQUES - BETON", [(155, 155, "11-25M")]),
+        ("PLAN DU NIVEAU 2", []),
+    ):
+        src = _grid_sheet(title, statements, f"x{len(doc)}.pdf", tmp_path, with_sheet_id=False)
+        doc.insert_pdf(pymupdf.open(src))
+    doc.save(root / "plan.pdf")
+    b = extract_project(root)
+    assert [s.layout for s in b.sheets] == ["typical_details", "no_rebar_annotations"]
+    assert b.elements == []

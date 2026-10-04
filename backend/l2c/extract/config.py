@@ -25,6 +25,7 @@ LEVEL_NAMES: tuple[tuple[str, str], ...] = (
     ("SS", "SS"),
     ("GROUND FLOOR", "RDC"),
     ("GROUND", "RDC"),
+    ("TREFOND", "FDN"),
     ("TOIT APPENTIS", "TOIT_APP"),
     ("TOIT", "TOIT"),
     ("ROOF", "TOIT"),
@@ -47,19 +48,49 @@ class Config:
     dowel_notes: tuple[str, ...] = ("GOUJ", "DOWEL")  # a block that mentions dowels is flagged
     # shop folder name (lower case, substring) -> element type
     folder_types: tuple[tuple[str, str], ...] = (
-        ("colonnes", "colonne"),
-        ("columns", "colonne"),
-        ("poutres", "poutre"),
-        ("beams", "poutre"),
-        ("dalles", "dalle"),
-        ("slabs", "dalle"),
-        ("fondations", "fondation"),
-        ("foundations", "fondation"),
-        ("semelles", "fondation"),
-        ("refends", "mur_refend"),
-        ("murs", "mur_refend"),
-        ("walls", "mur_refend"),
+        ("colonne", "colonne"),
+        ("column", "colonne"),
+        ("poutre", "poutre"),
+        ("beam", "poutre"),
+        ("dalle", "dalle"),
+        ("slab", "dalle"),
+        ("fondation", "fondation"),
+        ("foundation", "fondation"),
+        ("semelle", "fondation"),
+        ("radier", "fondation"),
+        ("refend", "mur_refend"),
+        ("mur", "mur_refend"),
+        ("wall", "mur_refend"),
     )
+    # words in a sheet title that give the element type (accents and case ignored)
+    type_keywords: tuple[tuple[str, str], ...] = (
+        ("RADIER", "fondation"),
+        ("FONDATION", "fondation"),
+        ("SEMELLE", "fondation"),
+        ("FOUNDATION", "fondation"),
+        ("FOOTING", "fondation"),
+        ("POUTRE", "poutre"),
+        ("BEAM", "poutre"),
+        ("REFEND", "mur_refend"),
+        ("CONTREVENTEMENT", "mur_refend"),
+        ("MURS", "mur_refend"),
+        ("WALL", "mur_refend"),
+        ("DALLE", "dalle"),
+        ("SLAB", "dalle"),
+        ("ARMATURE DU NIVEAU", "dalle"),
+        ("COLONNE", "colonne"),
+        ("COLUMN", "colonne"),
+    )
+    # sheet number hundreds digit -> element type, used when the title says nothing
+    series_types: tuple[tuple[int, str], ...] = (
+        (1, "fondation"),
+        (3, "poutre"),
+        (4, "mur_refend"),
+        (5, "colonne"),
+        (6, "dalle"),
+    )
+    title_markers: tuple[str, ...] = ("TITRE DU DESSIN", "DRAWING TITLE", "TITLE")
+    detail_keywords: tuple[str, ...] = ("DETAILS TYPIQUES", "TYPICAL DETAILS")
     # ---- notation
     bar_size_pattern: str = r"(?:10|15|20|25|30|35)M"
     bar_sizes: tuple[str, ...] = ("10M", "15M", "20M", "25M", "30M", "35M")

@@ -214,12 +214,12 @@ def test_a_failing_page_does_not_stop_the_run(tmp_path, monkeypatch):
 
 def test_unsupported_folder_types_are_covered_in_sheets_not_elements(tmp_path):
     root = tmp_path / "P"
-    (root / "DA" / "Dalles").mkdir(parents=True)
+    (root / "DA" / "Divers").mkdir(parents=True)
     doc, page = new_doc()
     put(page, 100, 100, "SOMETHING " * 5)
-    save(doc, root / "DA" / "Dalles" / "slab.pdf")
+    save(doc, root / "DA" / "Divers" / "notes.pdf")
     b = extract_project(root)
-    assert b.elements == [] and b.sheets[0].layout == "type_not_supported:dalle"
+    assert b.elements == [] and b.sheets[0].layout == "type_not_supported:unknown"
 
 
 def test_a_shop_sheet_without_any_level_marks_is_reported_not_emitted_as_unusable_elements(

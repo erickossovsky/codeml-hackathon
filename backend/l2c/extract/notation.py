@@ -263,3 +263,118 @@ def schedule_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
     """Lower level of a title such as `COLONNE NIV3@NIV4` (the column rises from it)."""
     spans = schedule_spans(text, config)
     return spans[0][0] if spans else None
+
+
+@dataclass(frozen=True)
+class Statement:
+    """One reinforcement statement on a non-column sheet: `[label:] N-25M` or `[label:] 10M@6"`.
+
+    Beams, walls, slabs and foundations print loose statements instead of one fixed block, so a
+    statement carries whatever it states: a count, a spacing, or both, plus the label before it
+    (`RANG 2`, `LIG.`, `H.`).
+    """
+
+    label: str | None
+    count: int | None
+    size: str | None
+    spacing_mm: float | None
+    start: int
+    secondary: int | None = None  # the number in brackets of a composite slab statement: 16(8)
+
+
+@lru_cache(maxsize=64)
+def _statement_re(size: str) -> re.Pattern[str]:
+    return re.compile(
+        # a shop bar list: `4 25M MARK` or `18 10M MARK @6"`
+        rf"(?:(?P<n3>\d{{1,3}})\s+(?P<s3>{size})\s+(?P<mark>[A-Za-z0-9][A-Za-z0-9.\-]*?)"
+        rf"(?=\s|$|@)(?:\s*@\s*(?P<sp3>\d+(?:\.\d+)?)\s*(?P<u3>mm|cm|[{_QUOTES}]{{1,2}})?)?)"
+        # composite slab `16(8)` or `16(8)-25M`: count, then a secondary number in brackets
+        rf"|(?:(?P<cc>\d{{1,2}})\s*\(\s*(?P<sec>\d{{1,2}})\s*\)(?:\s*-\s*(?P<cs>{size})\b)?)"
+        # `11-25M`
+        rf"|(?:(?P<count>\d{{1,2}})\s*-\s*(?P<s1>{size})\b)"
+        # `10M@6"`
+        rf"|(?:(?P<s2>{size})\s*@\s*(?P<sp>\d+(?:\.\d+)?)\s*(?P<unit>mm|cm|[{_QUOTES}]{{1,2}})?)",
+        re.IGNORECASE,
+    )
+
+
+def parse_statements(text: str, config: Config = DEFAULT_CONFIG) -> list[Statement]:
+    """Every reinforcement statement in a text, in order (one run can hold several)."""
+    out: list[Statement] = []
+    previous_end = 0
+    for m in _statement_re(config.bar_size_pattern).finditer(text):
+        label = text[previous_end : m.start()].strip(" :+-")
+        if not label or len(label) > 24 or label[-1] in "-":
+            label = None
+        if m.group("cc"):
+            size_c = m.group("cs").upper() if m.group("cs") else None
+            out.append(
+                Statement(label, int(m.group("cc")), size_c, None, m.start(), int(m.group("sec")))
+            )
+        elif m.group("n3"):
+            spacing = (
+                _spacing_mm(float(m.group("sp3")), m.group("u3"), config)
+                if m.group("sp3")
+                else None
+            )
+            out.append(
+                Statement(
+                    m.group("mark").rstrip(".-"),
+                    int(m.group("n3")),
+                    m.group("s3").upper(),
+                    spacing,
+                    m.start(),
+                )
+            )
+        elif m.group("count"):
+            out.append(
+                Statement(label, int(m.group("count")), m.group("s1").upper(), None, m.start())
+            )
+        else:
+            spacing = _spacing_mm(float(m.group("sp")), m.group("unit"), config)
+            out.append(Statement(label, None, m.group("s2").upper(), spacing, m.start()))
+        previous_end = m.end()
+    return out
+
+
+def find_level(text: str, config: Config = DEFAULT_CONFIG) -> str | None:
+    """First level named anywhere in a text (`NIVEAU 2`, `RDC`, `SOUS-SOL S2`, `TRÉFOND`)."""
+    numbered = "|".join(re.escape(n) for n in config.level_numbered)
+    names = "|".join(
+        sorted(
+            (re.escape(_plain(n)).replace("\\ ", r"\s+") for n, _ in config.level_names),
+            key=len,
+            reverse=True,
+        )
+    )
+    plain = _plain(text)
+    m = re.search(
+        rf"\b(?:(?:{numbered})\s*\d{{1,2}}\b|(?:{names})(?:\s*-?\s*S?\d{{1,2}}\b)?)", plain
+    )
+    return canon_level(m.group(0), config) if m else None
+
+
+def sheet_title(page_text: str, config: Config = DEFAULT_CONFIG) -> str:
+    """The words after the title marker of a title block (empty when there is none)."""
+    plain = _plain(page_text)
+    for marker in config.title_markers:
+        i = plain.find(_plain(marker))
+        if i >= 0:
+            return plain[i + len(marker) : i + len(marker) + 160]
+    return ""
+
+
+def sheet_type(
+    title: str, feuillet: str | None, config: Config = DEFAULT_CONFIG
+) -> tuple[str | None, float]:
+    """(element type, confidence): from title keywords, else from the sheet number series."""
+    plain = _plain(title)
+    hits = [(plain.find(_plain(k)), v) for k, v in config.type_keywords if _plain(k) in plain]
+    if hits:
+        return min(hits)[1], 1.0
+    m = re.search(r"(\d)\d\d", feuillet or "")
+    if m:
+        series = dict(config.series_types)
+        if int(m.group(1)) in series:
+            return series[int(m.group(1))], 0.7
+    return None, 0.0

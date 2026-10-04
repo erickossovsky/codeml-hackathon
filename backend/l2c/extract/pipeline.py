@@ -22,13 +22,24 @@ from l2c.extract.columns_schedule import (
 )
 from l2c.extract.columns_shop import extract_shop_columns, find_labels, find_level_lines
 from l2c.extract.config import DEFAULT_CONFIG, Config
+from l2c.extract.generic import collapse_duplicates, extract_generic
 from l2c.extract.grid import Grid, fit_grid
 from l2c.extract.learn import learn_config
-from l2c.extract.notation import parse_shop_vert, plan_column_level
+from l2c.extract.notation import (
+    _plain,
+    find_level,
+    parse_shop_vert,
+    parse_statements,
+    plan_column_level,
+    sheet_title,
+    sheet_type,
+)
 from l2c.extract.ocr_quality import mark_ocr
 from l2c.extract.runs import text_runs
 from l2c.ingest.pages import PageData, load_pdf
 
+GENERIC_TYPES = {"fondation", "poutre", "mur_refend", "dalle"}
+UNKNOWN_LEVEL = "UNKNOWN"
 VERTICAL_TEXT_LIMIT = 0.5  # more than this share of vertical words means rotated text
 
 
@@ -57,7 +68,9 @@ def discover(project_dir: Path, config: Config = DEFAULT_CONFIG) -> Discovery:
     da = project_dir / "DA"
     if da.is_dir():
         for pdf in sorted(p for p in da.rglob("*") if _is_pdf(p)):
-            shops.append((pdf, folder_type(pdf.relative_to(da).parts[:-1], config)))
+            parts = pdf.relative_to(da).parts
+            etype = folder_type(parts[:-1], config) or folder_type((pdf.stem,), config)
+            shops.append((pdf, etype))
     return Discovery(plans, shops)
 
 
@@ -122,12 +135,14 @@ def plan_layout(page: PageData, level: str | None, grid: Grid | None, config: Co
 
 
 def shop_layout(page: PageData, etype: str | None, config: Config) -> str:
-    if etype != "colonne":
+    if etype != "colonne" and etype not in GENERIC_TYPES:
         return f"type_not_supported:{etype or 'unknown'}"
     if not has_text(page, config):
         return "needs_ocr" if page.layer in {"vector", "image"} else "empty_page"
     if page.vertical_text > VERTICAL_TEXT_LIMIT:
         return "rotated_text_unsupported"
+    if etype in GENERIC_TYPES:
+        return f"generic_{etype}"
     scale = calibrate(page.words, None, config)
     runs = text_runs(page.words, gap=scale.run_gap, split_before=config.keywords())
     verts = [
@@ -174,6 +189,44 @@ def prepare_page(
     return page
 
 
+def _level_for(etype: str, *texts: str, config: Config) -> tuple[str, float]:
+    """Level of a non-column sheet: foundations sit at FDN, otherwise the first level named in the
+    given texts (file name, title); `UNKNOWN` (low confidence) when none is named."""
+    if etype == "fondation":
+        return "FDN", 1.0
+    for text in texts:
+        found = find_level(text, config)
+        if found:
+            return found, 1.0
+    return UNKNOWN_LEVEL, 0.3
+
+
+def _extract_other_plan(page: PageData, text: str, grid, config: Config):
+    """A plan page that is not a column plan: typical details, or beams, walls, slabs and
+    foundations read with the generic extractor. Returns (layout, type, level, elements)."""
+    title = sheet_title(text, config)
+    if any(_plain(k) in _plain(title or text) for k in config.detail_keywords):
+        return "typical_details", None, None, []
+    etype, type_conf = sheet_type(title, page.feuillet, config)
+    if etype == "colonne":
+        return "not_a_column_plan", None, None, []
+    if etype is None:
+        # a page whose element type cannot be told is never guessed; say whether it matters
+        has_statements = bool(parse_statements(text, config))
+        return ("type_not_found" if has_statements else "no_rebar_annotations"), None, None, []
+    level, level_conf = _level_for(etype, title, config=config)
+    if etype == "fondation":
+        from l2c.extract.generic import extract_footings
+
+        els = extract_footings(page, level, grid, "plan", config)
+        if els:
+            return "generic_fondation", etype, level, els
+    els = extract_generic(page, etype, level, grid, "plan", config, type_conf, level_conf)
+    if not els:
+        return "no_rebar_annotations", etype, level, []
+    return f"generic_{etype}", etype, level, els
+
+
 def extract_project(
     project_dir: Path,
     project: str | None = None,
@@ -182,19 +235,23 @@ def extract_project(
     learn: bool = True,
     workers: int = 1,
     ocr_cache: Path | None = None,
+    ocr_workers: int = 1,
 ) -> MetaBundle:
     """Read every PDF of a project into a MetaBundle.
 
-    `workers` > 1 reads pages in a process pool and OCRs pages in worker processes; the result is
-    identical to the sequential run. `ocr_cache` is a folder where OCR readings are kept, so a page
+    `workers` > 1 reads pages in a process pool; `ocr_workers` > 1 also OCRs pages in worker
+    processes (measured: no faster on the development machine, so it is off by default). The
+    result is identical to the sequential run. `ocr_cache` is a folder where OCR readings are kept, so a page
     is read once per file and settings.
     """
     if workers > 1:
         from concurrent.futures import ProcessPoolExecutor
 
         with ProcessPoolExecutor(workers) as pool:
-            return _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_cache)
-    return _extract(project_dir, project, config, use_ocr, learn, None, 1, ocr_cache)
+            return _extract(
+                project_dir, project, config, use_ocr, learn, pool, ocr_workers, ocr_cache
+            )
+    return _extract(project_dir, project, config, use_ocr, learn, None, ocr_workers, ocr_cache)
 
 
 def _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_cache) -> MetaBundle:
@@ -230,7 +287,7 @@ def _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_ca
     # OCR: pages are read by worker processes (each its own interpreter, a few threads) and kept in
     # the on-disk cache; whatever they could not read is read here, one page at a time
     ocr_done: dict = {}
-    if use_ocr and workers > 1:
+    if use_ocr and workers > 1:  # here `workers` is the OCR worker count
         jobs = [
             (pdf, page.page)
             for pdf, pages, _ in [*plan_loaded, *[(a, c, d) for a, _, c, d in shop_loaded]]
@@ -258,6 +315,14 @@ def _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_ca
                 level = plan_column_level(text, cfg)
                 grid = fit_grid(page.words, cfg) if has_text(page, cfg) else None
                 layout = plan_layout(page, level, grid, cfg)
+                if layout == "not_a_column_plan":
+                    layout, etype, level, els = _extract_other_plan(page, text, grid, cfg)
+                    if els:
+                        if level != UNKNOWN_LEVEL:
+                            levels.setdefault(level, LevelInfo(level=level, name=level))
+                        elements.extend(
+                            mark_ocr(els, page.words, cfg) if page.source == "ocr" else els
+                        )
                 if grid is not None and layout in {"plan_outline", "not_a_column_plan"}:
                     grids.append(
                         GridSheet(
@@ -288,6 +353,20 @@ def _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_ca
                 page = prepare_page(page, pdf, use_ocr, config, ocr_done, ocr_cache)
                 cfg = learn_config(page.words, config) if learn else config
                 layout = shop_layout(page, folder, cfg)
+                if layout.startswith("generic_"):
+                    stem = PurePosixPath(page.fichier).stem
+                    text = " ".join(w.text for w in page.words)
+                    level, level_conf = _level_for(folder, stem, sheet_title(text, cfg), config=cfg)
+                    grid = fit_grid(page.words, cfg)
+                    els = extract_generic(page, folder, level, grid, "shop", cfg, 0.9, level_conf)
+                    if els:
+                        if level != UNKNOWN_LEVEL:
+                            levels.setdefault(level, LevelInfo(level=level, name=level))
+                        elements.extend(
+                            mark_ocr(els, page.words, cfg) if page.source == "ocr" else els
+                        )
+                    else:
+                        layout = "no_rebar_annotations"
                 if layout in {"shop_label_strip", "shop_schedule_table"}:
                     extractor = (
                         extract_shop_columns
@@ -308,7 +387,7 @@ def _extract(project_dir, project, config, use_ocr, learn, pool, workers, ocr_ca
 
     return MetaBundle(
         project=project or project_dir.name,
-        elements=make_ids_unique(elements),
+        elements=make_ids_unique(collapse_duplicates(elements)),
         grids=grids,
         levels=[levels[k] for k in sorted(levels)],
         sheets=sheets,
