@@ -115,3 +115,13 @@ def test_schedule_level_without_a_numbered_prefix():
     assert N.schedule_level("COLONNE FDN@SS1 CLE 3.2") == "FDN"
     assert N.schedule_level("COLONNE SS1@RDC") == "SS"
     assert N.schedule_level("EMAIL ME@HOME") is None  # not level names
+
+
+def test_schedule_specs_accept_dots_where_ocr_lost_the_spaces():
+    specs = N.parse_schedule_specs("5x4.25M.2572620 25Z2620.")
+    assert [(s.mult, s.count, s.size) for s in specs] == [(5, 4, "25M")]
+    assert specs[0].mark == "2572620"
+    ties = N.parse_schedule_specs("3x7 10M.10E3752 @400")
+    assert [(s.mult, s.count, s.size, s.spacing_mm) for s in ties] == [(3, 7, "10M", 400.0)]
+    assert N.parse_schedule_specs("scale 2.5 note") == []
+    assert N.parse_schedule_specs("12.25M 25Z2620")[0].count == 12  # not split mid-number

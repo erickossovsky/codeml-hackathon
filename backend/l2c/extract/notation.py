@@ -184,7 +184,7 @@ class ScheduleSpec:
 @lru_cache(maxsize=64)
 def _schedule_re(size: str) -> re.Pattern[str]:
     return re.compile(
-        rf"(?:(\d{{1,2}})\s*[xX×]\s*)?(\d{{1,2}})\s*({size})\s*([A-Za-z0-9][A-Za-z0-9.\-]*?)"
+        rf"(?:(\d{{1,2}})\s*[xX×]\s*)?(\d{{1,2}})[\s.]*({size})[\s.]*([A-Za-z0-9][A-Za-z0-9.\-]*?)"
         rf"[,;]?(?=\s|$|@)(?:\s*@\s*(\d{{1,3}}(?:\.\d+)?)\s*(mm|cm|[{_QUOTES}]{{1,2}})?)?",
         re.IGNORECASE,
     )
@@ -210,7 +210,7 @@ def parse_schedule_specs(text: str, config: Config = DEFAULT_CONFIG) -> list[Sch
                 int(m.group(1)) if m.group(1) else None,
                 int(m.group(2)),
                 m.group(3).upper(),
-                m.group(4),
+                m.group(4).rstrip(".-"),
                 spacing,
                 m.start(),
             )
